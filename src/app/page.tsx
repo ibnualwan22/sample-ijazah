@@ -1,63 +1,167 @@
-import Image from "next/image";
+import prisma from "@/lib/prisma";
+import Link from "next/link";
+import { CheckCircle2, Clock, MapPin, Search } from "lucide-react";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+async function getSantriData() {
+  try {
+    const res = await fetch("https://ppdb-markaz.vercel.app/api/santri", {
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error("Failed to fetch");
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching santri API", error);
+    return [];
+  }
+}
+
+async function getLocalIjazahMap() {
+  try {
+    const ijazahs = await prisma.ijazah.findMany({
+      select: { santriId: true },
+    });
+    return new Set(ijazahs.map((i: any) => i.santriId));
+  } catch (error) {
+    console.error("Database connection failed", error);
+    return new Set();
+  }
+}
+
+export default async function AdminDashboard() {
+  const [santriData, ijazahMap] = await Promise.all([
+    getSantriData(),
+    getLocalIjazahMap(),
+  ]);
+
+  // Transform data
+  const transformedSantri = santriData.map((s: any) => {
+    const assignedRiwayat = s.riwayat?.find(
+      (r: any) => r.status === "ASSIGNED"
+    );
+    const sakan = assignedRiwayat?.lemari?.kamar?.sakan?.nama || "-";
+    const kamar = assignedRiwayat?.lemari?.kamar?.nama || "-";
+    const lemari = assignedRiwayat?.lemari?.nomor || "-";
+    const hasIjazah = ijazahMap.has(s.id);
+
+    return {
+      id: s.id,
+      nama: s.nama,
+      gender: s.gender,
+      lokasi: `${sakan} / ${kamar} / ${lemari}`,
+      hasIjazah,
+    };
+  });
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-teal-800 to-emerald-900 pb-32 pt-10 px-8">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-4xl font-extrabold text-white tracking-tight">
+            Sistem Ijazah Online
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-teal-100 mt-2 text-lg font-medium">
+            Markaz Arabiyah - Manajemen Sertifikat & Nilai
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-8 -mt-24">
+        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
+              Data Master Santri
+              <span className="bg-teal-100 text-teal-800 text-sm py-1 px-3 rounded-full font-semibold">
+                {transformedSantri.length} Total
+              </span>
+            </h2>
+          </div>
+
+          <div className="overflow-hidden rounded-xl border border-slate-200">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold text-sm">
+                  <th className="py-4 px-6">Nama Lengkap</th>
+                  <th className="py-4 px-6 text-center">Gender</th>
+                  <th className="py-4 px-6"><div className="flex items-center gap-2"><MapPin className="w-4 h-4"/> Lokasi (Sakan/Kmr/Lmr)</div></th>
+                  <th className="py-4 px-6 text-center">Status Ijazah</th>
+                  <th className="py-4 px-6 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                {transformedSantri.map((santri: any) => (
+                  <tr
+                    key={santri.id}
+                    className="hover:bg-slate-50/80 transition duration-150 ease-in-out group"
+                  >
+                    <td className="py-4 px-6 font-medium text-slate-900">
+                      {santri.nama}
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${santri.gender === 'BANIN' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'}`}>
+                        {santri.gender}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-sm">{santri.lokasi}</td>
+                    <td className="py-4 px-6 text-center">
+                      {santri.hasIjazah ? (
+                        <div className="inline-flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full text-sm font-medium">
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>Selesai</span>
+                        </div>
+                      ) : (
+                        <div className="inline-flex items-center gap-1.5 text-amber-600 bg-amber-50 px-3 py-1 rounded-full text-sm font-medium">
+                          <Clock className="w-4 h-4" />
+                          <span>Pending</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      {santri.hasIjazah ? (
+                        <div className="flex justify-end gap-2">
+                          <Link
+                            href={`/input/${santri.id}`}
+                            className="text-teal-600 hover:text-teal-800 hover:bg-teal-50 px-3 py-1.5 rounded-lg text-sm font-medium transition"
+                          >
+                            Edit
+                          </Link>
+                          <Link
+                            href={`/ijazah/${santri.id}`}
+                            className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition shadow-sm shadow-teal-200"
+                          >
+                            Ijazah
+                          </Link>
+                          <Link
+                            href={`/cetak/${santri.id}`}
+                            className="bg-amber-700 hover:bg-amber-800 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition shadow-sm shadow-amber-200"
+                          >
+                            🖨 Syahadah
+                          </Link>
+                        </div>
+                      ) : (
+                        <Link
+                          href={`/input/${santri.id}`}
+                          className="inline-block bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm"
+                        >
+                          Input Nilai
+                        </Link>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {transformedSantri.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-slate-500">
+                      Tidak ada data santri ditemukan.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
     </div>

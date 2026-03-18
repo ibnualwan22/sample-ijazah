@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Ijazah {
+  id               String   @id @default(uuid())
+  santriId         String   @unique
+  tempatLahir      String
+  tanggalLahir     DateTime
+  alamat           String
+  programPeminatan String
+  tanggalMulai     DateTime
+  tanggalSampai    DateTime
+  
+  presensi         Float
+  qawaid           Float
+  qiraah           Float
+  tasmi            Float
+  nilaiAkumulatif  Float
+  predikat         String
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
