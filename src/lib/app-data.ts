@@ -3,13 +3,18 @@ import { calculateStatus } from "@/lib/kelulusan";
 import { formatDateIndo, getPredikat, translateDateToArabic } from "@/lib/formatters";
 import { getMasterSantriById, getMasterSantriList } from "@/lib/santri-api";
 
-const kelasInclude = {
-  kelasMapels: {
+const programInclude = {
+  programMapels: {
     include: {
       mapel: true,
     },
     orderBy: {
       urutan: "asc" as const,
+    },
+  },
+  kelasList: {
+    orderBy: {
+      nama: "asc" as const,
     },
   },
 };
@@ -21,6 +26,10 @@ function buildDefaultTemplate() {
     id: 0,
     tgl_cetak_indo: formatDateIndo(today),
     tgl_cetak_arab: translateDateToArabic(today),
+    tgl_mulai_indo: null,
+    tgl_mulai_arab: null,
+    tgl_selesai_indo: null,
+    tgl_selesai_arab: null,
     nama_mudir_indo: "Nama Mudir",
     nama_mudir_arab: "اسم المدير",
     jabatan_mudir_indo: "Mudir Markaz Arabiyah",
@@ -28,12 +37,12 @@ function buildDefaultTemplate() {
   };
 }
 
-function serializeKelas(kelas: {
+function serializeProgram(program: {
   id: string;
   nama_indo: string;
   nama_arab: string;
   kkm: number;
-  kelasMapels: Array<{
+  programMapels: Array<{
     urutan: number;
     mapel: {
       id: string;
@@ -41,30 +50,35 @@ function serializeKelas(kelas: {
       nama_arab: string;
     };
   }>;
+  kelasList?: Array<{
+    id: string;
+    nama: string;
+  }>;
 }) {
   return {
-    id: kelas.id,
-    nama_indo: kelas.nama_indo,
-    nama_arab: kelas.nama_arab,
-    kkm: kelas.kkm,
-    mapelList: kelas.kelasMapels.map((kelasMapel) => ({
-      id: kelasMapel.mapel.id,
-      nama_indo: kelasMapel.mapel.nama_indo,
-      nama_arab: kelasMapel.mapel.nama_arab,
-      urutan: kelasMapel.urutan,
+    id: program.id,
+    nama_indo: program.nama_indo,
+    nama_arab: program.nama_arab,
+    kkm: program.kkm,
+    mapelList: program.programMapels.map((programMapel) => ({
+      id: programMapel.mapel.id,
+      nama_indo: programMapel.mapel.nama_indo,
+      nama_arab: programMapel.mapel.nama_arab,
+      urutan: programMapel.urutan,
     })),
+    kelasList: program.kelasList ?? [],
   };
 }
 
-export async function getKelasCatalog() {
-  const kelasList = await prisma.kelas.findMany({
-    include: kelasInclude,
+export async function getProgramCatalog() {
+  const programList = await prisma.program.findMany({
+    include: programInclude,
     orderBy: {
       nama_indo: "asc",
     },
   });
 
-  return kelasList.map(serializeKelas);
+  return programList.map(serializeProgram);
 }
 
 export async function getTemplateData() {
@@ -78,34 +92,40 @@ export async function getTemplateData() {
 }
 
 export async function getDashboardSantriRows() {
-  const [masterSantriList, internalSantriList] = await Promise.all([
+  const [masterSantriList, riwayatList] = await Promise.all([
     getMasterSantriList(),
-    prisma.santriInternal.findMany({
+    prisma.riwayatSantri.findMany({
       include: {
-        kelas: {
-          include: kelasInclude,
+        program: {
+          include: programInclude,
         },
+        kelas: true,
         nilaiList: true,
       },
     }),
   ]);
 
-  const internalMap = new Map(internalSantriList.map((santri) => [santri.id, santri]));
+  // Map riwayat by santriId + dufahNama
+  const riwayatMap = new Map<string, typeof riwayatList[0]>();
+  for (const riwayat of riwayatList) {
+    riwayatMap.set(`${riwayat.santriId}_${riwayat.dufahNama}`, riwayat);
+  }
 
   return masterSantriList
     .map((masterSantri) => {
-      const internal = internalMap.get(masterSantri.id);
-      const kelas = internal?.kelas ?? null;
-      const nilaiList = internal?.nilaiList ?? [];
-      const totalMapel = kelas?.kelasMapels.length ?? 0;
+      // Find riwayat for the current active Dufah from API
+      const riwayat = riwayatMap.get(`${masterSantri.id}_${masterSantri.dufahNama}`);
+      const program = riwayat?.program ?? null;
+      const kelas = riwayat?.kelas ?? null;
+      const nilaiList = riwayat?.nilaiList ?? [];
+      const totalMapel = program?.programMapels.length ?? 0;
       const hasCompleteNilai = totalMapel > 0 && nilaiList.length === totalMapel;
       const status = calculateStatus(
         {
-          is_tasmi: internal?.is_tasmi ?? false,
-          is_setoran_lulus: internal?.is_setoran_lulus ?? false,
+          is_tasmi: riwayat?.is_tasmi ?? false,
         },
         nilaiList,
-        kelas,
+        program,
       );
 
       return {
@@ -113,77 +133,141 @@ export async function getDashboardSantriRows() {
         nama: masterSantri.nama,
         gender: masterSantri.gender,
         lokasi: `${masterSantri.sakan} / ${masterSantri.kamar} / ${masterSantri.nomorLemari}`,
-        kelasNama: kelas?.nama_indo ?? "Belum diatur",
-        statusKelulusan: kelas && hasCompleteNilai ? status : "TIDAK_LULUS",
-        isTasmi: internal?.is_tasmi ?? false,
-        isSetoranLulus: internal?.is_setoran_lulus ?? false,
+        programNama: program?.nama_indo ?? "Belum diatur",
+        programId: program?.id ?? null,
+        kelasNama: kelas?.nama ?? "-",
+        kelasId: kelas?.id ?? null,
+        statusKelulusan: program && hasCompleteNilai ? status : "TIDAK_LULUS",
+        isTasmi: riwayat?.is_tasmi ?? false,
         isAktif: masterSantri.isAktif,
         canPrintSyahadah:
-          Boolean(kelas) &&
+          Boolean(program) &&
           hasCompleteNilai &&
           status !== "TIDAK_LULUS",
-        canViewIjazah: Boolean(kelas) && hasCompleteNilai,
+        canViewIjazah: Boolean(program) && hasCompleteNilai,
+        dufahNama: masterSantri.dufahNama,
+        riwayatId: riwayat?.id ?? null,
       };
     })
-    .sort((left, right) => left.nama.localeCompare(right.nama, "id"));
+    .sort((left: any, right: any) => left.nama.localeCompare(right.nama, "id"));
 }
 
 export async function getSantriFormData(id: string) {
-  const [masterSantri, kelasList, internalSantri] = await Promise.all([
-    getMasterSantriById(id),
-    getKelasCatalog(),
+  let riwayatMatch = await prisma.riwayatSantri.findUnique({
+    where: { id },
+  });
+
+  const santriId = riwayatMatch ? riwayatMatch.santriId : id;
+
+  const [masterSantriRes, programList, santriInternal] = await Promise.all([
+    getMasterSantriById(santriId),
+    getProgramCatalog(),
     prisma.santriInternal.findUnique({
-      where: { id },
+      where: { id: santriId },
       include: {
-        kelas: {
-          include: kelasInclude,
-        },
-        nilaiList: {
+        riwayatRecords: {
           include: {
-            mapel: true,
+            program: {
+              include: programInclude,
+            },
+            nilaiList: {
+              include: {
+                mapel: true,
+              },
+            },
           },
         },
       },
     }),
   ]);
+
+  const masterSantri = masterSantriRes ?? (santriInternal ? {
+    id: santriInternal.id,
+    nama: santriInternal.nama ?? "Tanpa Nama",
+    gender: "-",
+    sakan: "-",
+    kamar: "-",
+    nomorLemari: "-",
+    dufahNama: riwayatMatch?.dufahNama ?? "-",
+    tanggalMulaiDufah: null,
+    tanggalSampaiDufah: null,
+    isAktif: false,
+  } : null);
 
   if (!masterSantri) {
     return null;
   }
 
+  // Cari riwayat aktif: jika id adalah riwayatId, gunakan riwayat tersebut.
+  // Jika tidak, gunakan dufah masterSantri.
+  const activeRiwayat = santriInternal?.riwayatRecords.find(
+    (r: any) => riwayatMatch ? r.id === riwayatMatch.id : r.dufahNama === masterSantri.dufahNama
+  ) ?? null;
+
   return {
     masterSantri,
-    kelasList,
-    internalSantri: internalSantri
+    programList,
+    internalSantri: santriInternal
       ? {
-          id: internalSantri.id,
-          kelasId: internalSantri.kelasId,
-          tempat_lahir: internalSantri.tempat_lahir ?? "",
-          tanggal_lahir: internalSantri.tanggal_lahir ?? "",
-          alamat: internalSantri.alamat ?? "",
-          is_tasmi: internalSantri.is_tasmi,
-          is_setoran_lulus: internalSantri.is_setoran_lulus,
-          status_kelulusan: internalSantri.status_kelulusan,
-          nilaiList: internalSantri.nilaiList.map((nilai) => ({
-            id: nilai.id,
-            mapelId: nilai.mapelId,
-            mapelNama: nilai.mapel.nama_indo,
-            skor: nilai.skor,
-          })),
-        }
+        id: santriInternal.id,
+        tempat_lahir: santriInternal.tempat_lahir ?? "",
+        tanggal_lahir: santriInternal.tanggal_lahir ?? "",
+        alamat: santriInternal.alamat ?? "",
+      }
       : null,
+    activeRiwayat: activeRiwayat
+      ? {
+        id: activeRiwayat.id,
+        dufahNama: activeRiwayat.dufahNama,
+        programId: activeRiwayat.programId,
+        kelasId: activeRiwayat.kelasId,
+        is_tasmi: activeRiwayat.is_tasmi,
+        status_kelulusan: activeRiwayat.status_kelulusan,
+        nilaiList: activeRiwayat.nilaiList.map((nilai: any) => ({
+          id: nilai.id,
+          mapelId: nilai.mapelId,
+          mapelNama: nilai.mapel.nama_indo,
+          skor: nilai.skor,
+        })),
+      } : null,
+    allRiwayat: santriInternal?.riwayatRecords ?? [],
   };
 }
 
+// Note: id here can be interpreted as santriId. To print older dufah, it needs riwayatId.
+// For now, we support the current route which passes santriId to get their current Active certificate,
+// or we rewrite it to accept RiwayatId. Let's adjust to find default active riwayat if Santri ID matches,
+// otherwise find by RiwayatId directly (to allow printing historical ones).
 export async function getCertificateData(id: string) {
-  const [masterSantri, template, internalSantri] = await Promise.all([
-    getMasterSantriById(id),
-    getTemplateData(),
-    prisma.santriInternal.findUnique({
-      where: { id },
+  // Check if id is actually a riwayatId
+  let riwayat = await prisma.riwayatSantri.findUnique({
+    where: { id },
+    include: {
+      santri: true,
+      program: {
+        include: programInclude,
+      },
+      nilaiList: {
+        include: {
+          mapel: true,
+        },
+      },
+    },
+  });
+
+  let santriIdToFetch = id;
+  
+  // If not found by riwayatId, it must be santriId. Get active riwayat by matching Dufah.
+  if (!riwayat) {
+    const masterSantriFallback = await getMasterSantriById(id);
+    if (!masterSantriFallback) return null;
+    
+    riwayat = await prisma.riwayatSantri.findUnique({
+      where: { santriId_dufahNama: { santriId: id, dufahNama: masterSantriFallback.dufahNama } },
       include: {
-        kelas: {
-          include: kelasInclude,
+        santri: true,
+        program: {
+          include: programInclude,
         },
         nilaiList: {
           include: {
@@ -191,39 +275,62 @@ export async function getCertificateData(id: string) {
           },
         },
       },
-    }),
+    });
+    // No riwayat found for active dufah either
+    if (!riwayat) return null;
+  } else {
+    santriIdToFetch = riwayat.santriId;
+  }
+
+  const [masterSantriRes, template] = await Promise.all([
+    getMasterSantriById(santriIdToFetch),
+    getTemplateData(),
   ]);
 
-  if (!masterSantri || !internalSantri || !internalSantri.kelas) {
+  const masterSantri = masterSantriRes ?? {
+    id: riwayat.santri.id,
+    nama: riwayat.santri.nama ?? "Tanpa Nama",
+    gender: "-",
+    sakan: "-",
+    kamar: "-",
+    nomorLemari: "-",
+    dufahNama: riwayat.dufahNama,
+    tanggalMulaiDufah: null,
+    tanggalSampaiDufah: null,
+    isAktif: false,
+  };
+
+  if (!masterSantri || !riwayat.program) {
     return null;
   }
 
-  const nilaiMap = new Map(internalSantri.nilaiList.map((nilai) => [nilai.mapelId, nilai]));
-  const nilaiRows = internalSantri.kelas.kelasMapels.map((kelasMapel) => {
-    const nilai = nilaiMap.get(kelasMapel.mapel.id);
+  const nilaiMap = new Map(riwayat.nilaiList.map((nilai: any) => [nilai.mapelId, nilai]));
+  const nilaiRows = riwayat.program.programMapels.map((programMapel: any) => {
+    const nilai = nilaiMap.get(programMapel.mapel.id);
     const skor = nilai?.skor ?? null;
 
     return {
-      mapelId: kelasMapel.mapel.id,
-      nama_indo: kelasMapel.mapel.nama_indo,
-      nama_arab: kelasMapel.mapel.nama_arab,
+      mapelId: programMapel.mapel.id,
+      nama_indo: programMapel.mapel.nama_indo,
+      nama_arab: programMapel.mapel.nama_arab,
       skor,
       predikat: skor === null ? null : getPredikat(skor),
     };
   });
 
-  const filledNilaiRows = nilaiRows.filter((nilai) => typeof nilai.skor === "number");
+  const filledNilaiRows = nilaiRows.filter((nilai: any) => typeof nilai.skor === "number");
   const average =
     filledNilaiRows.length > 0
-      ? filledNilaiRows.reduce((total, nilai) => total + Number(nilai.skor), 0) / filledNilaiRows.length
+      ? filledNilaiRows.reduce((total: any, nilai: any) => total + Number(nilai.skor), 0) / filledNilaiRows.length
       : 0;
-  const status = calculateStatus(internalSantri, filledNilaiRows.map((nilai) => ({ skor: Number(nilai.skor) })), internalSantri.kelas);
+  const status = calculateStatus(riwayat, filledNilaiRows.map((nilai: any) => ({ skor: Number(nilai.skor) })), riwayat.program);
 
   return {
     masterSantri,
     template,
-    santriInternal: internalSantri,
-    kelas: serializeKelas(internalSantri.kelas),
+    riwayatSantri: riwayat,
+    santriInternal: riwayat.santri,
+    program: serializeProgram(riwayat.program),
     nilaiRows,
     average,
     averagePredikat: getPredikat(average),
@@ -232,35 +339,116 @@ export async function getCertificateData(id: string) {
   };
 }
 
-export async function syncStatusKelulusanByKelasIds(kelasIds: string[]) {
-  if (kelasIds.length === 0) {
+export async function syncStatusKelulusanByProgramIds(programIds: string[]) {
+  if (programIds.length === 0) {
     return;
   }
 
-  const santriList = await prisma.santriInternal.findMany({
+  const riwayatList = await prisma.riwayatSantri.findMany({
     where: {
-      kelasId: {
-        in: kelasIds,
+      programId: {
+        in: programIds,
       },
     },
     include: {
-      kelas: true,
+      program: true,
       nilaiList: true,
     },
   });
 
-  if (santriList.length === 0) {
+  if (riwayatList.length === 0) {
     return;
   }
 
   await prisma.$transaction(
-    santriList.map((santri) =>
-      prisma.santriInternal.update({
-        where: { id: santri.id },
+    riwayatList.map((riwayat: any) =>
+      prisma.riwayatSantri.update({
+        where: { id: riwayat.id },
         data: {
-          status_kelulusan: calculateStatus(santri, santri.nilaiList, santri.kelas),
+          status_kelulusan: calculateStatus(riwayat, riwayat.nilaiList, riwayat.program),
         },
       }),
     ),
   );
+}
+
+export async function getRiwayatSantriRows() {
+  const [masterSantriList, riwayatList] = await Promise.all([
+    getMasterSantriList(),
+    prisma.riwayatSantri.findMany({
+      include: {
+        santri: true,
+        program: {
+          include: programInclude,
+        },
+        kelas: true,
+        nilaiList: {
+          include: {
+            mapel: true,
+          },
+        },
+      },
+      orderBy: {
+        dufahNama: "desc",
+      },
+    }),
+  ]);
+
+  const masterMap = new Map<string, typeof masterSantriList[0]>();
+  for (const ms of masterSantriList) {
+    masterMap.set(ms.id, ms);
+  }
+
+  const groupsMap = new Map<string, any>();
+
+  for (const riwayat of riwayatList) {
+    const ms = masterMap.get(riwayat.santriId);
+    const isHistorical = !ms || !ms.isAktif || riwayat.dufahNama !== ms.dufahNama;
+    
+    if (!isHistorical) {
+      continue;
+    }
+
+    if (!groupsMap.has(riwayat.santriId)) {
+      groupsMap.set(riwayat.santriId, {
+        santriId: riwayat.santriId,
+        nama: ms ? ms.nama : (riwayat.santri?.nama ?? "Tanpa Nama"),
+        gender: ms?.gender ?? "-",
+        lokasi: ms ? `${ms.sakan} / ${ms.kamar} / ${ms.nomorLemari}` : "-",
+        records: [],
+      });
+    }
+
+    const group = groupsMap.get(riwayat.santriId);
+    const program = riwayat.program;
+    const kelas = riwayat.kelas;
+    const nilaiList = riwayat.nilaiList ?? [];
+    const totalMapel = program?.programMapels.length ?? 0;
+    const hasCompleteNilai = totalMapel > 0 && nilaiList.length === totalMapel;
+    const status = calculateStatus(
+      { is_tasmi: riwayat.is_tasmi },
+      nilaiList,
+      program,
+    );
+
+    group.records.push({
+      riwayatId: riwayat.id,
+      dufahNama: riwayat.dufahNama,
+      programNama: program?.nama_indo ?? "Belum diatur",
+      programId: program?.id ?? null,
+      kelasNama: kelas?.nama ?? "-",
+      kelasId: kelas?.id ?? null,
+      statusKelulusan: program && hasCompleteNilai ? status : "TIDAK_LULUS",
+      isTasmi: riwayat.is_tasmi ?? false,
+      canPrintSyahadah: Boolean(program) && hasCompleteNilai && status !== "TIDAK_LULUS",
+      canViewIjazah: Boolean(program) && hasCompleteNilai,
+      nilaiList: nilaiList.map((n: any) => ({
+        mapelNama: n.mapel.nama_indo,
+        skor: n.skor,
+      })),
+      rataRata: nilaiList.length > 0 ? (nilaiList.reduce((acc: number, n: any) => acc + n.skor, 0) / nilaiList.length).toFixed(2) : null,
+    });
+  }
+
+  return Array.from(groupsMap.values()).sort((a, b) => a.nama.localeCompare(b.nama, "id"));
 }

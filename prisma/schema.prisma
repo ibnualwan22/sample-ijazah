@@ -7,62 +7,87 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Kelas {
+model Program {
   id            String          @id @default(cuid())
   nama_indo     String          @unique
   nama_arab     String
   kkm           Int
-  kelasMapels   KelasMapel[]
-  santriRecords SantriInternal[]
+  programMapels ProgramMapel[]
+  riwayatRecords RiwayatSantri[]
+  kelasList     Kelas[]
+}
+
+model Kelas {
+  id            String          @id @default(cuid())
+  nama          String          @unique
+  programId     String
+  program       Program         @relation(fields: [programId], references: [id], onDelete: Cascade)
+  riwayatRecords RiwayatSantri[]
 }
 
 model Mapel {
-  id          String       @id @default(cuid())
-  nama_indo   String       @unique
-  nama_arab   String
-  kelasMapels KelasMapel[]
-  nilaiList   Nilai[]
+  id            String         @id @default(cuid())
+  nama_indo     String         @unique
+  nama_arab     String
+  programMapels ProgramMapel[]
+  nilaiList     Nilai[]
 }
 
-model KelasMapel {
-  kelasId String
-  mapelId String
-  urutan  Int
-  kelas   Kelas @relation(fields: [kelasId], references: [id], onDelete: Cascade)
-  mapel   Mapel @relation(fields: [mapelId], references: [id], onDelete: Cascade)
+model ProgramMapel {
+  programId String
+  mapelId   String
+  urutan    Int
+  program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  mapel     Mapel   @relation(fields: [mapelId], references: [id], onDelete: Cascade)
 
-  @@id([kelasId, mapelId])
-  @@unique([kelasId, urutan])
+  @@id([programId, mapelId])
+  @@unique([programId, urutan])
 }
 
 model SantriInternal {
   id               String   @id
-  kelasId          String?
+  nama             String?
   tempat_lahir     String?
   tanggal_lahir    String?
   alamat           String?
-  is_setoran_lulus Boolean  @default(false)
+  riwayatRecords   RiwayatSantri[]
+}
+
+model RiwayatSantri {
+  id               String   @id @default(cuid())
+  santriId         String
+  dufahNama        String
+  programId        String?
+  kelasId          String?
   is_tasmi         Boolean  @default(false)
   status_kelulusan String   @default("TIDAK_LULUS")
+  santri           SantriInternal @relation(fields: [santriId], references: [id], onDelete: Cascade)
+  program          Program? @relation(fields: [programId], references: [id], onDelete: SetNull)
   kelas            Kelas?   @relation(fields: [kelasId], references: [id], onDelete: SetNull)
   nilaiList        Nilai[]
+
+  @@unique([santriId, dufahNama])
 }
 
 model Nilai {
   id       String         @id @default(cuid())
-  santriId String
-  mapelId  String
-  skor     Int
-  santri   SantriInternal @relation(fields: [santriId], references: [id], onDelete: Cascade)
-  mapel    Mapel          @relation(fields: [mapelId], references: [id], onDelete: Restrict)
+  riwayatId String
+  mapelId   String
+  skor      Int
+  riwayat   RiwayatSantri  @relation(fields: [riwayatId], references: [id], onDelete: Cascade)
+  mapel     Mapel          @relation(fields: [mapelId], references: [id], onDelete: Restrict)
 
-  @@unique([santriId, mapelId])
+  @@unique([riwayatId, mapelId])
 }
 
 model SyahadahTemplate {
   id                 Int    @id @default(autoincrement())
   tgl_cetak_indo     String
   tgl_cetak_arab     String
+  tgl_mulai_indo     String?
+  tgl_mulai_arab     String?
+  tgl_selesai_indo   String?
+  tgl_selesai_arab   String?
   nama_mudir_indo    String
   nama_mudir_arab    String
   jabatan_mudir_indo String

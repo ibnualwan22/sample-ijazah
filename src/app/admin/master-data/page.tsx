@@ -1,10 +1,10 @@
-﻿import { MasterDataForm } from "@/components/admin/master-data-form";
-import { getKelasCatalog, getTemplateData } from "@/lib/app-data";
+import { MasterDataForm } from "@/components/admin/master-data-form";
+import { getProgramCatalog, getTemplateData } from "@/lib/app-data";
 
 export const dynamic = "force-dynamic";
 
 export default async function MasterDataPage() {
-  const [kelasList, template] = await Promise.all([getKelasCatalog(), getTemplateData()]);
+  const [programList, template] = await Promise.all([getProgramCatalog(), getTemplateData()]);
 
-  return <MasterDataForm kelasList={kelasList} template={template} />;
+  return <MasterDataForm programList={programList} template={template} />;
 }

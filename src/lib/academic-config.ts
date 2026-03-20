@@ -1,16 +1,16 @@
-﻿export type AcademicMapelConfig = {
+export type AcademicMapelConfig = {
   nama_indo: string;
   nama_arab: string;
 };
 
-export type AcademicKelasConfig = {
+export type AcademicProgramConfig = {
   nama_indo: string;
   nama_arab: string;
   kkm: number;
   mapel: AcademicMapelConfig[];
 };
 
-export const KELAS_SEED_DATA: AcademicKelasConfig[] = [
+export const PROGRAM_SEED_DATA: AcademicProgramConfig[] = [
   {
     nama_indo: "Shifr",
     nama_arab: "صفر",

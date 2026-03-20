@@ -22,7 +22,7 @@ export default async function IjazahPage({
   const identityRows = [
     { label: "Nama Lengkap", value: data.masterSantri.nama, bold: true },
     { label: "Gender", value: data.masterSantri.gender },
-    { label: "Kelas", value: `${data.kelas.nama_indo} (${data.kelas.nama_arab})` },
+    { label: "Kelas", value: `${data.program.nama_indo} (${data.program.nama_arab})` },
     { label: "Duf'ah", value: data.masterSantri.dufahNama },
     { label: "Lokasi", value: data.lokasi },
     { label: "Status Kelulusan", value: data.status, bold: true },
@@ -127,9 +127,9 @@ export default async function IjazahPage({
               <tr><td style={tdLabel}>Nama Lengkap</td><td style={tdColon}>:</td><td style={tdValue}>{data.masterSantri.nama}</td></tr>
               <tr><td style={tdLabel}>Tempat, Tanggal Lahir</td><td style={tdColon}>:</td><td style={tdValue}>{data.santriInternal.tempat_lahir}, {data.santriInternal.tanggal_lahir}</td></tr>
               <tr><td style={tdLabel}>Alamat</td><td style={tdColon}>:</td><td style={tdValue}>{data.santriInternal.alamat}</td></tr>
-              <tr><td style={tdLabel}>Program Peminatan</td><td style={tdColon}>:</td><td style={tdValue}>{data.kelas.nama_indo}</td></tr>
-              <tr><td style={tdLabel}>Mulai</td><td style={tdColon}>:</td><td style={tdValue}>{data.masterSantri.tanggalMulaiDufah ? formatDateIndo(data.masterSantri.tanggalMulaiDufah) : "..."}</td></tr>
-              <tr><td style={tdLabel}>Sampai</td><td style={tdColon}>:</td><td style={tdValue}>{data.masterSantri.tanggalSampaiDufah ? formatDateIndo(data.masterSantri.tanggalSampaiDufah) : "..."}</td></tr>
+              <tr><td style={tdLabel}>Program Peminatan</td><td style={tdColon}>:</td><td style={tdValue}>{data.program.nama_indo}</td></tr>
+              <tr><td style={tdLabel}>Mulai</td><td style={tdColon}>:</td><td style={tdValue}>{data.template.tgl_mulai_indo || "..."}</td></tr>
+              <tr><td style={tdLabel}>Sampai</td><td style={tdColon}>:</td><td style={tdValue}>{data.template.tgl_selesai_indo || "..."}</td></tr>
             </tbody>
           </table>
 

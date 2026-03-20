@@ -1,4 +1,4 @@
-﻿import { syncStatusKelulusanByKelasIds } from "@/lib/app-data";
+import { syncStatusKelulusanByProgramIds } from "@/lib/app-data";
 import { formatDateIndo, translateDateToArabic } from "@/lib/formatters";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -8,6 +8,8 @@ export async function PUT(request: Request) {
   try {
     const payload = (await request.json()) as {
       tanggalCetak?: string;
+      tanggalMulai?: string;
+      tanggalSelesai?: string;
       kelas?: Array<{ id: string; kkm: number }>;
       template?: {
         nama_mudir_indo?: string;
@@ -21,7 +23,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Tanggal cetak wajib diisi." }, { status: 400 });
     }
 
-    const tanggalCetak = payload.tanggalCetak;
+    const { tanggalCetak, tanggalMulai, tanggalSelesai } = payload;
     const kelasUpdates = payload.kelas ?? [];
     const invalidKkm = kelasUpdates.find(
       (kelas) => !Number.isInteger(kelas.kkm) || kelas.kkm < 0 || kelas.kkm > 100,
@@ -32,10 +34,10 @@ export async function PUT(request: Request) {
     }
 
     await prisma.$transaction(async (transaction) => {
-      for (const kelas of kelasUpdates) {
-        await transaction.kelas.update({
-          where: { id: kelas.id },
-          data: { kkm: kelas.kkm },
+      for (const program of kelasUpdates) {
+        await transaction.program.update({
+          where: { id: program.id },
+          data: { kkm: program.kkm },
         });
       }
 
@@ -43,6 +45,10 @@ export async function PUT(request: Request) {
       const templateData = {
         tgl_cetak_indo: formatDateIndo(tanggalCetak),
         tgl_cetak_arab: translateDateToArabic(tanggalCetak),
+        tgl_mulai_indo: tanggalMulai ? formatDateIndo(tanggalMulai) : null,
+        tgl_mulai_arab: tanggalMulai ? translateDateToArabic(tanggalMulai) : null,
+        tgl_selesai_indo: tanggalSelesai ? formatDateIndo(tanggalSelesai) : null,
+        tgl_selesai_arab: tanggalSelesai ? translateDateToArabic(tanggalSelesai) : null,
         nama_mudir_indo: payload.template?.nama_mudir_indo?.trim() || "Nama Mudir",
         nama_mudir_arab: payload.template?.nama_mudir_arab?.trim() || "اسم المدير",
         jabatan_mudir_indo: payload.template?.jabatan_mudir_indo?.trim() || "Mudir Markaz Arabiyah",
@@ -61,7 +67,7 @@ export async function PUT(request: Request) {
       }
     });
 
-    await syncStatusKelulusanByKelasIds(kelasUpdates.map((kelas) => kelas.id));
+    await syncStatusKelulusanByProgramIds(kelasUpdates.map((program) => program.id));
 
     revalidatePath("/admin/dashboard");
     revalidatePath("/admin/master-data");

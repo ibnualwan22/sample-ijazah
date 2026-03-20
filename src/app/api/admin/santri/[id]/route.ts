@@ -16,36 +16,50 @@ export async function PUT(
       tanggal_lahir?: string;
       alamat?: string;
       is_tasmi?: boolean;
-      is_setoran_lulus?: boolean;
       nilaiList?: Array<{
         mapelId: string;
         skor: number;
       }>;
     };
 
-    const masterSantri = await getMasterSantriById(id);
+    const existingRiwayat = await prisma.riwayatSantri.findUnique({
+      where: { id },
+    });
+
+    const santriId = existingRiwayat ? existingRiwayat.santriId : id;
+    const masterSantri = await getMasterSantriById(santriId);
 
     if (!masterSantri) {
       return NextResponse.json({ error: "Santri tidak ditemukan di master API." }, { status: 404 });
     }
 
+    const targetDufah = existingRiwayat ? existingRiwayat.dufahNama : masterSantri.dufahNama;
+
     if (!payload.kelasId) {
-      return NextResponse.json({ error: "Kelas wajib dipilih." }, { status: 400 });
+      return NextResponse.json({ error: "Ruangan kelas wajib dipilih." }, { status: 400 });
     }
 
     const kelas = await prisma.kelas.findUnique({
       where: { id: payload.kelasId },
-      include: {
-        kelasMapels: true,
-      },
     });
 
     if (!kelas) {
-      return NextResponse.json({ error: "Kelas tidak ditemukan." }, { status: 404 });
+      return NextResponse.json({ error: "Ruang kelas tidak ditemukan." }, { status: 404 });
+    }
+
+    const program = await prisma.program.findUnique({
+      where: { id: kelas.programId },
+      include: {
+        programMapels: true,
+      },
+    });
+
+    if (!program) {
+      return NextResponse.json({ error: "Program tidak ditemukan." }, { status: 404 });
     }
 
     const nilaiList = payload.nilaiList ?? [];
-    const expectedMapelIds = kelas.kelasMapels.map((kelasMapel) => kelasMapel.mapelId).sort();
+    const expectedMapelIds = program.programMapels.map((programMapel) => programMapel.mapelId).sort();
     const submittedMapelIds = nilaiList.map((nilai) => nilai.mapelId).sort();
 
     if (
@@ -69,44 +83,74 @@ export async function PUT(
     const statusKelulusan = calculateStatus(
       {
         is_tasmi: payload.is_tasmi ?? false,
-        is_setoran_lulus: payload.is_setoran_lulus ?? false,
       },
       nilaiList,
-      kelas,
+      program,
     );
 
     await prisma.$transaction(async (transaction) => {
+      // 1. Upsert Profil Dasar Santri
       await transaction.santriInternal.upsert({
-        where: { id },
+        where: { id: santriId },
         update: {
-          kelasId: kelas.id,
           tempat_lahir: payload.tempat_lahir,
           tanggal_lahir: payload.tanggal_lahir,
           alamat: payload.alamat,
-          is_tasmi: payload.is_tasmi ?? false,
-          is_setoran_lulus: payload.is_setoran_lulus ?? false,
-          status_kelulusan: statusKelulusan,
         },
         create: {
-          id,
-          kelasId: kelas.id,
+          id: santriId,
           tempat_lahir: payload.tempat_lahir,
           tanggal_lahir: payload.tanggal_lahir,
           alamat: payload.alamat,
-          is_tasmi: payload.is_tasmi ?? false,
-          is_setoran_lulus: payload.is_setoran_lulus ?? false,
-          status_kelulusan: statusKelulusan,
         },
       });
 
+      // 2. Upsert Riwayat Akademik untuk Duf'ah ter-target
+      let riwayat;
+      if (existingRiwayat) {
+        riwayat = await transaction.riwayatSantri.update({
+          where: { id: existingRiwayat.id },
+          data: {
+            programId: program.id,
+            kelasId: kelas.id,
+            is_tasmi: payload.is_tasmi ?? false,
+            status_kelulusan: statusKelulusan,
+          },
+        });
+      } else {
+        riwayat = await transaction.riwayatSantri.upsert({
+          where: {
+            santriId_dufahNama: {
+              santriId: santriId,
+              dufahNama: targetDufah,
+            },
+          },
+          update: {
+            programId: program.id,
+            kelasId: kelas.id,
+            is_tasmi: payload.is_tasmi ?? false,
+            status_kelulusan: statusKelulusan,
+          },
+          create: {
+            santriId: santriId,
+            dufahNama: targetDufah,
+            programId: program.id,
+            kelasId: kelas.id,
+            is_tasmi: payload.is_tasmi ?? false,
+            status_kelulusan: statusKelulusan,
+          },
+        });
+      }
+
+      // 3. Reset dan Simpan Nilai untuk Riwayat ini
       await transaction.nilai.deleteMany({
-        where: { santriId: id },
+        where: { riwayatId: riwayat.id },
       });
 
       if (nilaiList.length > 0) {
         await transaction.nilai.createMany({
-          data: nilaiList.map((nilai) => ({
-            santriId: id,
+          data: nilaiList.map((nilai: any) => ({
+            riwayatId: riwayat.id,
             mapelId: nilai.mapelId,
             skor: nilai.skor,
           })),
@@ -114,7 +158,7 @@ export async function PUT(
       }
     });
 
-    revalidatePath("/admin/dashboard");
+    revalidatePath("/admin/syahadah");
     revalidatePath(`/admin/input-nilai/${id}`);
     revalidatePath(`/ijazah/${id}`);
     revalidatePath(`/cetak/${id}`);
@@ -125,3 +169,4 @@ export async function PUT(
     return NextResponse.json({ error: "Gagal menyimpan nilai santri." }, { status: 500 });
   }
 }
+

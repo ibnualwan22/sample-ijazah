@@ -1,4 +1,4 @@
-﻿import { InputNilaiForm } from "@/components/admin/input-nilai-form";
+import { InputNilaiForm } from "@/components/admin/input-nilai-form";
 import { getSantriFormData } from "@/lib/app-data";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -27,18 +27,17 @@ export default async function InputNilaiPage({
           <h2 className="mt-2 text-3xl font-bold text-slate-900">Penilaian santri per kelas dan mapel</h2>
         </div>
         <Link
-          href="/admin/dashboard"
+          href="/admin/syahadah"
           className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
         >
-          Kembali ke Dashboard
+          Kembali ke Data Syahadah
         </Link>
       </div>
 
       <InputNilaiForm
         santri={data.masterSantri}
-        kelasList={data.kelasList}
-        internalSantri={data.internalSantri}
-      />
+        programList={data.programList}
+        internalSantri={data.internalSantri} activeRiwayat={null} />
     </div>
   );
 }

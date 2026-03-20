@@ -1,10 +1,10 @@
-﻿"use client";
+"use client";
 
 import { formatDateIndo, toDateInputValue, translateDateToArabic } from "@/lib/formatters";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-type KelasSetting = {
+type ProgramSetting = {
   id: string;
   nama_indo: string;
   nama_arab: string;
@@ -18,6 +18,10 @@ type TemplateSetting = {
   id: number;
   tgl_cetak_indo: string;
   tgl_cetak_arab: string;
+  tgl_mulai_indo: string | null;
+  tgl_mulai_arab: string | null;
+  tgl_selesai_indo: string | null;
+  tgl_selesai_arab: string | null;
   nama_mudir_indo: string;
   nama_mudir_arab: string;
   jabatan_mudir_indo: string;
@@ -25,10 +29,10 @@ type TemplateSetting = {
 };
 
 export function MasterDataForm({
-  kelasList,
+  programList,
   template,
 }: {
-  kelasList: KelasSetting[];
+  programList: ProgramSetting[];
   template: TemplateSetting;
 }) {
   const router = useRouter();
@@ -38,6 +42,12 @@ export function MasterDataForm({
   const [tanggalCetak, setTanggalCetak] = useState(
     toDateInputValue(template.tgl_cetak_indo) || new Date().toISOString().slice(0, 10),
   );
+  const [tanggalMulai, setTanggalMulai] = useState(
+    template.tgl_mulai_indo ? toDateInputValue(template.tgl_mulai_indo) : ""
+  );
+  const [tanggalSelesai, setTanggalSelesai] = useState(
+    template.tgl_selesai_indo ? toDateInputValue(template.tgl_selesai_indo) : ""
+  );
   const [templateState, setTemplateState] = useState({
     nama_mudir_indo: template.nama_mudir_indo,
     nama_mudir_arab: template.nama_mudir_arab,
@@ -45,7 +55,7 @@ export function MasterDataForm({
     jabatan_mudir_arab: template.jabatan_mudir_arab,
   });
   const [kkmByKelas, setKkmByKelas] = useState<Record<string, string>>(() => {
-    return Object.fromEntries(kelasList.map((kelas) => [kelas.id, String(kelas.kkm)]));
+    return Object.fromEntries(programList.map((program) => [program.id, String(program.kkm)]));
   });
 
   const previewDate = {
@@ -70,9 +80,11 @@ export function MasterDataForm({
         },
         body: JSON.stringify({
           tanggalCetak,
-          kelas: kelasList.map((kelas) => ({
-            id: kelas.id,
-            kkm: Number(kkmByKelas[kelas.id]),
+          tanggalMulai,
+          tanggalSelesai,
+          kelas: programList.map((program) => ({
+            id: program.id,
+            kkm: Number(kkmByKelas[program.id]),
           })),
           template: templateState,
         }),
@@ -104,22 +116,22 @@ export function MasterDataForm({
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {kelasList.map((kelas) => (
-            <label key={kelas.id} className="rounded-[1.75rem] border border-slate-200 bg-slate-50 px-4 py-4">
-              <span className="block text-base font-bold text-slate-900">{kelas.nama_indo}</span>
-              <span className="mt-1 block text-xs tracking-[0.2em] text-slate-500">{kelas.nama_arab}</span>
+          {programList.map((program) => (
+            <label key={program.id} className="rounded-[1.75rem] border border-slate-200 bg-slate-50 px-4 py-4">
+              <span className="block text-base font-bold text-slate-900">{program.nama_indo}</span>
+              <span className="mt-1 block text-xs tracking-[0.2em] text-slate-500">{program.nama_arab}</span>
               <span className="mt-3 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                {kelas.mapelList.length} mapel
+                {program.mapelList.length} mapel
               </span>
               <input
                 type="number"
                 min={0}
                 max={100}
-                value={kkmByKelas[kelas.id] ?? ""}
+                value={kkmByKelas[program.id] ?? ""}
                 onChange={(event) =>
                   setKkmByKelas((current) => ({
                     ...current,
-                    [kelas.id]: event.target.value,
+                    [program.id]: event.target.value,
                   }))
                 }
                 className="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-2xl font-black text-slate-900 outline-none transition focus:border-emerald-500"
@@ -137,9 +149,27 @@ export function MasterDataForm({
             </p>
             <h2 className="mt-2 text-3xl font-bold text-slate-900">Tanggal cetak dan identitas mudir</h2>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <label className="space-y-2 text-sm font-semibold text-slate-700 md:col-span-2">
-              <span>Tanggal cetak</span>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <label className="space-y-2 text-sm font-semibold text-slate-700">
+              <span>Tanggal Mulai Program</span>
+              <input
+                type="date"
+                value={tanggalMulai}
+                onChange={(event) => setTanggalMulai(event.target.value)}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-medium text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+              />
+            </label>
+            <label className="space-y-2 text-sm font-semibold text-slate-700">
+              <span>Tanggal Selesai Program</span>
+              <input
+                type="date"
+                value={tanggalSelesai}
+                onChange={(event) => setTanggalSelesai(event.target.value)}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-medium text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+              />
+            </label>
+            <label className="space-y-2 text-sm font-semibold text-slate-700">
+              <span>Tanggal Cetak Syahadah</span>
               <input
                 type="date"
                 value={tanggalCetak}

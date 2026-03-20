@@ -1,25 +1,25 @@
-﻿import { PrismaClient } from "@prisma/client";
-import { KELAS_SEED_DATA } from "../src/lib/academic-config";
+import { PrismaClient } from "@prisma/client";
+import { PROGRAM_SEED_DATA } from "../src/lib/academic-config";
 import { formatDateIndo, translateDateToArabic } from "../src/lib/formatters";
 
 const prisma = new PrismaClient();
 
-async function seedKelasAndMapel() {
-  for (const kelasData of KELAS_SEED_DATA) {
-    const kelas = await prisma.kelas.upsert({
-      where: { nama_indo: kelasData.nama_indo },
+async function seedProgramAndMapel() {
+  for (const programData of PROGRAM_SEED_DATA) {
+    const program = await prisma.program.upsert({
+      where: { nama_indo: programData.nama_indo },
       update: {
-        nama_arab: kelasData.nama_arab,
-        kkm: kelasData.kkm,
+        nama_arab: programData.nama_arab,
+        kkm: programData.kkm,
       },
       create: {
-        nama_indo: kelasData.nama_indo,
-        nama_arab: kelasData.nama_arab,
-        kkm: kelasData.kkm,
+        nama_indo: programData.nama_indo,
+        nama_arab: programData.nama_arab,
+        kkm: programData.kkm,
       },
     });
 
-    for (const [index, mapelData] of kelasData.mapel.entries()) {
+    for (const [index, mapelData] of programData.mapel.entries()) {
       const mapel = await prisma.mapel.upsert({
         where: { nama_indo: mapelData.nama_indo },
         update: {
@@ -31,10 +31,10 @@ async function seedKelasAndMapel() {
         },
       });
 
-      await prisma.kelasMapel.upsert({
+      await prisma.programMapel.upsert({
         where: {
-          kelasId_mapelId: {
-            kelasId: kelas.id,
+          programId_mapelId: {
+            programId: program.id,
             mapelId: mapel.id,
           },
         },
@@ -42,7 +42,7 @@ async function seedKelasAndMapel() {
           urutan: index + 1,
         },
         create: {
-          kelasId: kelas.id,
+          programId: program.id,
           mapelId: mapel.id,
           urutan: index + 1,
         },
@@ -70,7 +70,7 @@ async function seedTemplate() {
 }
 
 async function main() {
-  await seedKelasAndMapel();
+  await seedProgramAndMapel();
   await seedTemplate();
 }
 
