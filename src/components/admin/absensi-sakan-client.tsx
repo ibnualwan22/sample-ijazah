@@ -18,9 +18,9 @@ type SantriAbsenTarget = {
 
 type AbsenStatus = "HADIR" | "IZIN" | "SAKIT" | "ALPHA";
 
-export function AbsensiSakanClient({ programList }: { programList: any[] }) {
+export function AbsensiSakanClient({ sakanList }: { sakanList: string[] }) {
   const [tanggal, setTanggal] = useState("");
-  const [kelasId, setKelasId] = useState("ALL");
+  const [sakan, setSakan] = useState("ALL");
   const [santriList, setSantriList] = useState<SantriAbsenTarget[]>([]);
   const [absenMap, setAbsenMap] = useState<Record<string, { status: AbsenStatus; keterangan: string }>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -38,7 +38,7 @@ export function AbsensiSakanClient({ programList }: { programList: any[] }) {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/admin/absensi/sakan?tanggal=${tanggal}&kelasId=${kelasId}`);
+        const res = await fetch(`/api/admin/absensi/sakan?tanggal=${tanggal}&sakan=${sakan}`);
         const data = await res.json();
         
         if (data.santriList) {
@@ -60,7 +60,7 @@ export function AbsensiSakanClient({ programList }: { programList: any[] }) {
     };
 
     fetchData();
-  }, [tanggal, kelasId]);
+  }, [tanggal, sakan]);
 
   const handleStatusChange = (riwayatId: string, status: AbsenStatus) => {
     setAbsenMap(prev => ({
@@ -113,13 +113,8 @@ export function AbsensiSakanClient({ programList }: { programList: any[] }) {
   };
 
   const allOptions = [
-    { id: "ALL", label: "Semua Santri", group: "" },
-    ...programList.flatMap((program) =>
-      program.kelasList.length > 0
-        ? program.kelasList.map((k: any) => ({ id: k.id, label: k.nama, group: program.nama_indo }))
-        : [{ id: `PROGRAM_${program.id}`, label: program.nama_indo, group: "Program" }]
-    ),
-    { id: "UNASSIGNED", label: "Belum Ditempatkan", group: "" },
+    { id: "ALL", label: "Semua Sakan" },
+    ...sakanList.map(s => ({ id: s, label: s })),
   ];
 
   const statHadir = Object.values(absenMap).filter(a => a.status === "HADIR").length;
@@ -130,15 +125,6 @@ export function AbsensiSakanClient({ programList }: { programList: any[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-slate-900 md:text-4xl">
-          Absen Sakan
-        </h1>
-        <p className="text-base text-slate-500 max-w-2xl">
-          Pendataan kehadiran di asrama per hari.
-        </p>
-      </div>
-
       <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col gap-4 border-b border-slate-200 p-6 md:flex-row md:items-end md:justify-between bg-slate-50/50">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:gap-4">
@@ -156,16 +142,16 @@ export function AbsensiSakanClient({ programList }: { programList: any[] }) {
             
             <div>
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                Filter Kelas / Kelompok
+                Filter Sakan
               </label>
               <select
-                value={kelasId}
-                onChange={(e) => setKelasId(e.target.value)}
+                value={sakan}
+                onChange={(e) => setSakan(e.target.value)}
                 className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-500"
               >
                 {allOptions.map((opt) => (
                   <option key={opt.id} value={opt.id}>
-                    {opt.group ? `${opt.group} — ${opt.label}` : opt.label}
+                    {opt.label}
                   </option>
                 ))}
               </select>

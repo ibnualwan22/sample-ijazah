@@ -22,15 +22,15 @@ type KategoriKegiatan = {
 };
 
 export function AbsensiKegiatanClient({
-  programList,
+  sakanList,
   kegiatanList,
 }: {
-  programList: any[];
+  sakanList: string[];
   kegiatanList: KategoriKegiatan[];
 }) {
   const [tanggal, setTanggal] = useState("");
   const [kategoriId, setKategoriId] = useState("");
-  const [kelasId, setKelasId] = useState("ALL");
+  const [sakan, setSakan] = useState("ALL");
   const [santriList, setSantriList] = useState<SantriAbsenTarget[]>([]);
   const [absenMap, setAbsenMap] = useState<Record<string, { status: AbsenStatus; keterangan: string }>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -53,7 +53,7 @@ export function AbsensiKegiatanClient({
       setIsLoading(true);
       try {
         const res = await fetch(
-          `/api/admin/absensi/kegiatan-harian?tanggal=${tanggal}&kategoriId=${kategoriId}&kelasId=${kelasId}`
+          `/api/admin/absensi/kegiatan-harian?tanggal=${tanggal}&kategoriId=${kategoriId}&sakan=${sakan}`
         );
         const data = await res.json();
         if (data.santriList) setSantriList(data.santriList);
@@ -72,7 +72,7 @@ export function AbsensiKegiatanClient({
       }
     };
     fetchData();
-  }, [tanggal, kategoriId, kelasId]);
+  }, [tanggal, kategoriId, sakan]);
 
   const handleStatusChange = (riwayatId: string, status: AbsenStatus) => {
     setAbsenMap((prev) => ({
@@ -125,13 +125,8 @@ export function AbsensiKegiatanClient({
   };
 
   const allOptions = [
-    { id: "ALL", label: "Semua Santri", group: "" },
-    ...programList.flatMap((program) =>
-      program.kelasList.length > 0
-        ? program.kelasList.map((k: any) => ({ id: k.id, label: k.nama, group: program.nama_indo }))
-        : [{ id: `PROGRAM_${program.id}`, label: program.nama_indo, group: "Program" }]
-    ),
-    { id: "UNASSIGNED", label: "Belum Ditempatkan", group: "" },
+    { id: "ALL", label: "Semua Sakan" },
+    ...sakanList.map(s => ({ id: s, label: s })),
   ];
 
   const statHadir = Object.values(absenMap).filter((a) => a.status === "HADIR").length;
@@ -142,13 +137,6 @@ export function AbsensiKegiatanClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-slate-900 md:text-4xl">Absen Kegiatan</h1>
-        <p className="text-base text-slate-500 max-w-2xl">
-          Pendataan kehadiran santri berdasarkan kegiatan harian yang terprogram.
-        </p>
-      </div>
-
       {activeKegiatanList.length === 0 ? (
         <div className="rounded-[2rem] border border-amber-200 bg-amber-50 p-6 text-sm font-medium text-amber-800">
           Belum ada kategori kegiatan yang aktif. Pergi ke{" "}
@@ -186,16 +174,16 @@ export function AbsensiKegiatanClient({
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                  Filter Kelas
+                  Filter Sakan
                 </label>
                 <select
-                  value={kelasId}
-                  onChange={(e) => setKelasId(e.target.value)}
+                  value={sakan}
+                  onChange={(e) => setSakan(e.target.value)}
                   className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-amber-500"
                 >
                   {allOptions.map((opt) => (
                     <option key={opt.id} value={opt.id}>
-                      {opt.group ? `${opt.group} — ${opt.label}` : opt.label}
+                      {opt.label}
                     </option>
                   ))}
                 </select>

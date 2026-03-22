@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, DoorOpen, GraduationCap, History, Settings, Menu, X, CalendarCheck } from "lucide-react";
+import { LayoutDashboard, Users, DoorOpen, GraduationCap, History, Settings, Menu, X, CalendarCheck, Bed, BookOpen, Activity, BarChart3 } from "lucide-react";
 import { useState } from "react";
 
 const navigationGroups = [
@@ -15,7 +15,11 @@ const navigationGroups = [
   {
     title: "Divisi Absensi",
     items: [
-      { href: "/admin/absensi", label: "Data Absensi", icon: CalendarCheck },
+      { href: "/admin/absensi/sakan", label: "Absen Sakan", icon: Bed },
+      { href: "/admin/absensi/kelas", label: "Absen Kelas", icon: BookOpen },
+      { href: "/admin/absensi/kegiatan", label: "Absen Kegiatan", icon: Activity },
+      { href: "/admin/absensi/rekap", label: "Rekapitulasi", icon: BarChart3 },
+      { href: "/admin/absensi/pengaturan", label: "Pengaturan Kegiatan", icon: Settings },
     ]
   },
   {

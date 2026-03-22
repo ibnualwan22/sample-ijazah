@@ -1,0 +1,371 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Bed, BookOpen, Activity, TrendingUp, ChevronRight, FileText } from "lucide-react";
+
+type StatusCounts = {
+  HADIR: number;
+  IZIN: number;
+  SAKIT: number;
+  ALPHA: number;
+};
+
+type KegiatanRekap = {
+  id: string;
+  nama: string;
+  counts: StatusCounts;
+};
+
+type RekapData = {
+  sakan: StatusCounts;
+  kelas: StatusCounts;
+  kegiatan: KegiatanRekap[];
+};
+
+const STATUS_CONFIG = [
+  { key: "HADIR" as const, label: "Hadir", color: "bg-emerald-500", light: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  { key: "IZIN" as const,  label: "Izin",  color: "bg-indigo-500",  light: "bg-indigo-50 text-indigo-700 border-indigo-200" },
+  { key: "SAKIT" as const, label: "Sakit", color: "bg-amber-500",   light: "bg-amber-50 text-amber-700 border-amber-200" },
+  { key: "ALPHA" as const, label: "Alpha", color: "bg-rose-500",    light: "bg-rose-50 text-rose-700 border-rose-200" },
+];
+
+function getTotalFromCounts(counts: StatusCounts) {
+  return (counts.HADIR || 0) + (counts.IZIN || 0) + (counts.SAKIT || 0) + (counts.ALPHA || 0);
+}
+
+function StatusBar({ counts }: { counts: StatusCounts }) {
+  const total = getTotalFromCounts(counts);
+  return (
+    <div className="mt-4 space-y-2">
+      {STATUS_CONFIG.map((s) => {
+        const val = counts[s.key] || 0;
+        const pct = total > 0 ? (val / total) * 100 : 0;
+        return (
+          <div key={s.key} className="flex items-center gap-3">
+            <span className="w-12 shrink-0 text-xs font-bold text-slate-500">{s.label}</span>
+            <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div
+                className={`h-full rounded-full ${s.color} transition-all duration-500`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <span className="w-8 shrink-0 text-right text-xs font-bold text-slate-700">{val}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function StatusBadges({ counts }: { counts: StatusCounts }) {
+  return (
+    <div className="flex flex-wrap gap-2 mt-3">
+      {STATUS_CONFIG.map((s) => (
+        <span
+          key={s.key}
+          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${s.light}`}
+        >
+          <span className={`h-1.5 w-1.5 rounded-full ${s.color}`} />
+          {s.label}: {counts[s.key] || 0}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function RekapCard({
+  title,
+  description,
+  icon: Icon,
+  iconBg,
+  counts,
+  onClick,
+}: {
+  title: string;
+  description: string;
+  icon: React.ElementType;
+  iconBg: string;
+  counts: StatusCounts;
+  onClick: () => void;
+}) {
+  const total = getTotalFromCounts(counts);
+  const hadirPct = total > 0 ? Math.round((counts.HADIR / total) * 100) : 0;
+
+  return (
+    <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8 relative group transition-all hover:border-violet-300 hover:shadow-md">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${iconBg}`}>
+            <Icon className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+            <p className="text-sm text-slate-500">{description}</p>
+          </div>
+        </div>
+        <div className="text-right shrink-0">
+          <p className="text-2xl font-black text-slate-900">{total.toLocaleString("id-ID")}</p>
+          <p className="text-xs font-semibold text-slate-400">total catatan</p>
+        </div>
+      </div>
+
+      <div className="mt-2 flex items-center gap-2">
+        <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-emerald-500 transition-all duration-700"
+            style={{ width: `${hadirPct}%` }}
+          />
+        </div>
+        <span className="text-xs font-bold text-emerald-600">{hadirPct}% hadir</span>
+      </div>
+
+      <StatusBar counts={counts} />
+      
+      {/* Lihat Rincian Button */}
+      <button 
+        onClick={onClick}
+        disabled={total === 0}
+        className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 py-3 text-sm font-bold text-slate-600 border border-slate-100 transition-all hover:bg-violet-50 hover:text-violet-700 disabled:opacity-50 disabled:cursor-not-allowed group-hover:border-violet-100"
+      >
+        <FileText className="h-4 w-4" />
+        Lihat Rincian Nama
+        <ChevronRight className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
+
+// Inline function to get today WIB as YYYY-MM-DD
+function getWibDateString(offsetDays = 0): string {
+  const wib = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
+  wib.setDate(wib.getDate() + offsetDays);
+  return wib.toISOString().split("T")[0];
+}
+
+// First day of this month
+function getFirstDayOfMonth(): string {
+  const wib = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
+  return `${wib.getFullYear()}-${String(wib.getMonth() + 1).padStart(2, "0")}-01`;
+}
+
+export function RekapAbsenClient() {
+  const [dari, setDari] = useState(getFirstDayOfMonth());
+  const [sampai, setSampai] = useState(getWibDateString());
+  const [data, setData] = useState<RekapData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const handleViewDetail = (type: "sakan" | "kelas" | "kegiatan", title: string, kategoriId?: string) => {
+    const params = new URLSearchParams({ type, dari, sampai, title });
+    if (kategoriId) params.append("kategoriId", kategoriId);
+    router.push(`/admin/absensi/rekap/detail?${params.toString()}`);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams({ dari, sampai });
+        const res = await fetch(`/api/admin/absensi/rekap?${params}`);
+        const json = await res.json();
+        setData(json);
+      } catch {
+        console.error("Gagal memuat rekap absensi");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [dari, sampai]);
+
+  const totalKegiatan: StatusCounts = (data?.kegiatan ?? []).reduce(
+    (acc, k) => ({
+      HADIR: acc.HADIR + (k.counts.HADIR || 0),
+      IZIN: acc.IZIN + (k.counts.IZIN || 0),
+      SAKIT: acc.SAKIT + (k.counts.SAKIT || 0),
+      ALPHA: acc.ALPHA + (k.counts.ALPHA || 0),
+    }),
+    { HADIR: 0, IZIN: 0, SAKIT: 0, ALPHA: 0 }
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Filter Tanggal */}
+      <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+          Filter Rentang Tanggal
+        </p>
+        <div className="flex flex-wrap items-end gap-4">
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-slate-500">Dari</label>
+            <input
+              type="date"
+              value={dari}
+              onChange={(e) => setDari(e.target.value)}
+              className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-violet-500"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-slate-500">Sampai</label>
+            <input
+              type="date"
+              value={sampai}
+              onChange={(e) => setSampai(e.target.value)}
+              className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-violet-500"
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setDari(getFirstDayOfMonth()); setSampai(getWibDateString()); }}
+              className="rounded-full bg-slate-100 px-4 py-2.5 text-xs font-bold text-slate-600 transition hover:bg-slate-200"
+            >
+              Bulan Ini
+            </button>
+            <button
+              onClick={() => { setDari(getWibDateString()); setSampai(getWibDateString()); }}
+              className="rounded-full bg-violet-100 px-4 py-2.5 text-xs font-bold text-violet-700 transition hover:bg-violet-200"
+            >
+              Hari Ini
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20 text-sm font-semibold text-slate-400">
+          <span className="animate-pulse">Memuat data rekap...</span>
+        </div>
+      ) : data ? (
+        <div className="space-y-6">
+          {/* Sakan */}
+          <RekapCard
+            title="Absen Sakan"
+            description="Kehadiran di asrama per hari"
+            icon={Bed}
+            iconBg="bg-blue-100 text-blue-700"
+            counts={data.sakan}
+            onClick={() => handleViewDetail("sakan", "Rincian Absen Sakan")}
+          />
+
+          {/* Kelas */}
+          <RekapCard
+            title="Absen Kelas"
+            description="Kehadiran di kelas per hissoh"
+            icon={BookOpen}
+            iconBg="bg-emerald-100 text-emerald-700"
+            counts={data.kelas}
+            onClick={() => handleViewDetail("kelas", "Rincian Absen Kelas")}
+          />
+
+          {/* Kegiatan - tampilkan per kategori */}
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+            <div className="flex items-start justify-between gap-4 mb-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                  <Activity className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Absen Kegiatan</h3>
+                  <p className="text-sm text-slate-500">Kehadiran per kategori kegiatan</p>
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-2xl font-black text-slate-900">
+                  {getTotalFromCounts(totalKegiatan).toLocaleString("id-ID")}
+                </p>
+                <p className="text-xs font-semibold text-slate-400">total catatan</p>
+              </div>
+            </div>
+
+            {data.kegiatan.length === 0 ? (
+              <p className="text-sm text-slate-400 font-medium text-center py-4">
+                Belum ada data kegiatan.
+              </p>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {data.kegiatan.map((k) => {
+                  const total = getTotalFromCounts(k.counts);
+                  return (
+                    <div key={k.id} className="py-4 first:pt-0 last:pb-0">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full bg-amber-400 shrink-0" />
+                          <span className="font-bold text-slate-800 text-sm">{k.nama}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-bold text-slate-400">
+                            {total} catatan
+                          </span>
+                          <button
+                            onClick={() => handleViewDetail("kegiatan", `Rincian: ${k.nama}`, k.id)}
+                            disabled={total === 0}
+                            className="flex items-center gap-1 rounded-full bg-slate-50 px-3 py-1.5 text-[11px] font-bold text-amber-700 border border-amber-100 transition-all hover:bg-amber-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <FileText className="h-3 w-3" />
+                            Rincian <ChevronRight className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </div>
+                      <StatusBadges counts={k.counts} />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Global summary bar */}
+            {getTotalFromCounts(totalKegiatan) > 0 && (
+              <div className="mt-6 border-t border-slate-100 pt-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400">
+                    Total Keseluruhan Kegiatan
+                  </p>
+                  <button
+                    onClick={() => handleViewDetail("kegiatan", "Rincian Global Semua Kegiatan")}
+                    className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-amber-50 px-4 py-2.5 text-xs font-bold text-amber-700 border border-amber-100 transition-all hover:bg-amber-100/80 group"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Buka Matriks Global
+                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </button>
+                </div>
+                <StatusBar counts={totalKegiatan} />
+              </div>
+            )}
+          </div>
+
+          {/* Grand Summary */}
+          <div className="rounded-[2rem] border border-violet-200 bg-violet-50 p-6 shadow-sm md:p-8">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+                <TrendingUp className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-violet-900">Ringkasan Global</h3>
+                <p className="text-xs text-violet-500 font-medium">Gabungan semua jenis absensi</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {STATUS_CONFIG.map((s) => {
+                const val =
+                  (data.sakan[s.key] || 0) +
+                  (data.kelas[s.key] || 0) +
+                  (totalKegiatan[s.key] || 0);
+                return (
+                  <div key={s.key} className="rounded-2xl bg-white border border-violet-100 p-4 text-center shadow-sm">
+                    <p className="text-2xl font-black text-slate-900">{val.toLocaleString("id-ID")}</p>
+                    <div className="flex items-center justify-center gap-1.5 mt-1">
+                      <span className={`h-2 w-2 rounded-full ${s.color}`} />
+                      <span className="text-xs font-bold text-slate-500">{s.label}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}

@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Bed, BookOpen, Activity, Settings, LayoutDashboard } from "lucide-react";
+import { Bed, BookOpen, Activity, Settings, BarChart3 } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Menu Absensi - Admin Panel",
@@ -13,6 +13,7 @@ const menus = [
     href: "/admin/absensi/sakan",
     icon: Bed,
     color: "bg-blue-100 text-blue-700",
+    accent: "group-hover:border-blue-200",
   },
   {
     title: "Absen Kelas",
@@ -20,6 +21,7 @@ const menus = [
     href: "/admin/absensi/kelas",
     icon: BookOpen,
     color: "bg-emerald-100 text-emerald-700",
+    accent: "group-hover:border-emerald-200",
   },
   {
     title: "Absen Kegiatan",
@@ -27,6 +29,15 @@ const menus = [
     href: "/admin/absensi/kegiatan",
     icon: Activity,
     color: "bg-amber-100 text-amber-700",
+    accent: "group-hover:border-amber-200",
+  },
+  {
+    title: "Rekapitulasi Absen",
+    description: "Laporan global rekap kehadiran santri dikelompokkan per jenis absensi.",
+    href: "/admin/absensi/rekap",
+    icon: BarChart3,
+    color: "bg-violet-100 text-violet-700",
+    accent: "group-hover:border-violet-200",
   },
   {
     title: "Pengaturan Kegiatan",
@@ -34,6 +45,7 @@ const menus = [
     href: "/admin/absensi/pengaturan",
     icon: Settings,
     color: "bg-slate-100 text-slate-700",
+    accent: "group-hover:border-slate-300",
   },
 ];
 
@@ -56,7 +68,7 @@ export default function AbsensiDashboardPage() {
             <Link
               key={menu.href}
               href={menu.href}
-              className="group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-emerald-200 hover:shadow-md sm:p-8"
+              className={`group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 ${menu.accent} hover:shadow-md sm:p-8`}
             >
               <div className="flex items-start justify-between">
                 <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${menu.color} transition-transform group-hover:scale-110`}>

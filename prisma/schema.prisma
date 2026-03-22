@@ -104,12 +104,13 @@ enum StatusAbsen {
   ALPHA
 }
 
-enum HissohKelas {
-  ULA
-  TSANI
-  TSALIS
-  RABI
-  KHAMIS
+enum SesiKelas {
+  SESI_1
+  SESI_2
+  SESI_3
+  SESI_4
+  SESI_5
+  SESI_6
 }
 
 model AbsenSakan {
@@ -127,12 +128,12 @@ model AbsenKelas {
   id          String        @id @default(cuid())
   riwayatId   String
   tanggal     DateTime      @db.Date
-  hissoh      HissohKelas
+  sesi        SesiKelas
   status      StatusAbsen
   keterangan  String?
   riwayat     RiwayatSantri @relation(fields: [riwayatId], references: [id], onDelete: Cascade)
 
-  @@unique([riwayatId, tanggal, hissoh])
+  @@unique([riwayatId, tanggal, sesi])
 }
 
 model KategoriKegiatan {

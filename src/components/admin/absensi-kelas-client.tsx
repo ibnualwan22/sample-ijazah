@@ -16,11 +16,11 @@ type SantriAbsenTarget = {
 };
 
 type AbsenStatus = "HADIR" | "IZIN" | "SAKIT" | "ALPHA";
-type HissohKelas = "ULA" | "TSANI" | "TSALIS" | "RABI" | "KHAMIS";
+type SesiKelas = "SESI_1" | "SESI_2" | "SESI_3" | "SESI_4" | "SESI_5" | "SESI_6";
 
 export function AbsensiKelasClient({ programList }: { programList: any[] }) {
   const [tanggal, setTanggal] = useState("");
-  const [hissoh, setHissoh] = useState<HissohKelas>("ULA");
+  const [sesi, setSesi] = useState<SesiKelas>("SESI_1");
   const [kelasId, setKelasId] = useState("ALL");
   const [santriList, setSantriList] = useState<SantriAbsenTarget[]>([]);
   const [absenMap, setAbsenMap] = useState<Record<string, { status: AbsenStatus; keterangan: string }>>({});
@@ -33,12 +33,12 @@ export function AbsensiKelasClient({ programList }: { programList: any[] }) {
   }, []);
 
   useEffect(() => {
-    if (!tanggal || !hissoh) return;
+    if (!tanggal || !sesi) return;
     
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/admin/absensi/kelas?tanggal=${tanggal}&hissoh=${hissoh}&kelasId=${kelasId}`);
+        const res = await fetch(`/api/admin/absensi/kelas?tanggal=${tanggal}&sesi=${sesi}&kelasId=${kelasId}`);
         const data = await res.json();
         
         if (data.santriList) {
@@ -60,7 +60,7 @@ export function AbsensiKelasClient({ programList }: { programList: any[] }) {
     };
 
     fetchData();
-  }, [tanggal, hissoh, kelasId]);
+  }, [tanggal, sesi, kelasId]);
 
   const handleStatusChange = (riwayatId: string, status: AbsenStatus) => {
     setAbsenMap(prev => ({
@@ -96,7 +96,7 @@ export function AbsensiKelasClient({ programList }: { programList: any[] }) {
       const res = await fetch("/api/admin/absensi/kelas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tanggal, hissoh, absenList }),
+        body: JSON.stringify({ tanggal, sesi, absenList }),
       });
       
       const result = await res.json();
@@ -130,15 +130,6 @@ export function AbsensiKelasClient({ programList }: { programList: any[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-slate-900 md:text-4xl">
-          Absen Kelas
-        </h1>
-        <p className="text-base text-slate-500 max-w-2xl">
-          Pendataan kehadiran di kelas berdasarkan hissoh (sesi) per hari.
-        </p>
-      </div>
-
       <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col gap-4 border-b border-slate-200 p-6 md:flex-row md:items-end md:justify-between bg-slate-50/50">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:gap-4 flex-wrap">
@@ -156,18 +147,19 @@ export function AbsensiKelasClient({ programList }: { programList: any[] }) {
 
             <div>
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                Hissoh (Sesi)
+                Sesi
               </label>
               <select
-                value={hissoh}
-                onChange={(e) => setHissoh(e.target.value as HissohKelas)}
+                value={sesi}
+                onChange={(e) => setSesi(e.target.value as SesiKelas)}
                 className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500"
               >
-                <option value="ULA">Ula (Pertama)</option>
-                <option value="TSANI">Tsani (Kedua)</option>
-                <option value="TSALIS">Tsalis (Ketiga)</option>
-                <option value="RABI">Rabi&apos; (Keempat)</option>
-                <option value="KHAMIS">Khamis (Kelima)</option>
+                <option value="SESI_1">Sesi 1</option>
+                <option value="SESI_2">Sesi 2</option>
+                <option value="SESI_3">Sesi 3</option>
+                <option value="SESI_4">Sesi 4</option>
+                <option value="SESI_5">Sesi 5</option>
+                <option value="SESI_6">Sesi 6</option>
               </select>
             </div>
             
@@ -198,7 +190,7 @@ export function AbsensiKelasClient({ programList }: { programList: any[] }) {
             </button>
             <button
               onClick={handleSave}
-              disabled={isSaving || isLoading || !tanggal || !hissoh}
+              disabled={isSaving || isLoading || !tanggal || !sesi}
               className="rounded-full bg-emerald-600 px-6 py-2 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
             >
               {isSaving ? "Menyimpan..." : "Simpan Absensi"}

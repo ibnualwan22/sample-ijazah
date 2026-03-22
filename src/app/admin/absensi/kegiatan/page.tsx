@@ -1,14 +1,37 @@
-import { getProgramCatalog } from "@/lib/app-data";
+import { Metadata } from "next";
+import { getMasterSantriList } from "@/lib/santri-api";
 import { AbsensiKegiatanClient } from "@/components/admin/absensi-kegiatan-client";
 import prisma from "@/lib/prisma";
+
+export const metadata: Metadata = {
+  title: "Absen Kegiatan - Admin Panel",
+};
 
 export const dynamic = "force-dynamic";
 
 export default async function AbsensiKegiatanPage() {
-  const [programList, kegiatanList] = await Promise.all([
-    getProgramCatalog(),
+  const [masterSantri, kegiatanList] = await Promise.all([
+    getMasterSantriList(),
     prisma.kategoriKegiatan.findMany({ orderBy: { nama: "asc" } }),
   ]);
 
-  return <AbsensiKegiatanClient programList={programList} kegiatanList={kegiatanList} />;
+  const sakanSet = new Set<string>();
+  masterSantri.forEach(s => {
+    if (s.sakan && s.sakan !== "-") sakanSet.add(s.sakan);
+  });
+  const sakanList = Array.from(sakanSet).sort();
+
+  return (
+    <div className="space-y-6 md:space-y-8">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-black text-slate-900 md:text-4xl">
+          Absen Kegiatan
+        </h1>
+        <p className="text-base text-slate-500 max-w-2xl">
+          Pendataan kehadiran santri untuk kegiatan dinamis seperti Halaqoh dan Tahajud.
+        </p>
+      </div>
+      <AbsensiKegiatanClient sakanList={sakanList} kegiatanList={kegiatanList} />
+    </div>
+  );
 }
