@@ -3,11 +3,12 @@ import { getMasterSantriList } from "@/lib/santri-api";
 import { AbsensiKegiatanClient } from "@/components/admin/absensi-kegiatan-client";
 import prisma from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Absen Kegiatan - Admin Panel",
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function AbsensiKegiatanPage() {
   const [masterSantri, kegiatanList] = await Promise.all([

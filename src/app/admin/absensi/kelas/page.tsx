@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import { getProgramCatalog } from "@/lib/app-data";
 import { AbsensiKelasClient } from "@/components/admin/absensi-kelas-client";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Absen Kelas - Admin Panel",
 };

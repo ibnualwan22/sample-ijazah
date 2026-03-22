@@ -2,6 +2,9 @@ import { Metadata } from "next";
 import { getMasterSantriList } from "@/lib/santri-api";
 import { AbsensiSakanClient } from "@/components/admin/absensi-sakan-client";
 
+
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Absen Sakan - Admin Panel",
 };

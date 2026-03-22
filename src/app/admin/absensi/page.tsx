@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Bed, BookOpen, Activity, Settings, BarChart3 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Menu Absensi - Admin Panel",
 };

@@ -1,11 +1,12 @@
 import { Metadata } from "next";
 import { RekapAbsenClient } from "@/components/admin/absensi-rekap-client";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Rekapitulasi Absen - Admin Panel",
 };
 
-export const dynamic = "force-dynamic";
 
 export default function RekapAbsenPage() {
   return (

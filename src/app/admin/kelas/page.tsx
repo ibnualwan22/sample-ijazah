@@ -2,6 +2,8 @@ import { getProgramCatalog } from "@/lib/app-data";
 import { KelasClient } from "@/components/admin/kelas-client";
 import { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Daftar Nama Kelas - Admin Panel",
 };
