@@ -16,26 +16,15 @@ export async function GET() {
       return NextResponse.json({ activeDufah: activeDufahName, activeUsbu: 1, usbuLabel: "Usbu' 1" });
     }
 
+    let activeUsbu = dufah.currentUsbu || 1;
     let usbuLabel = "Usbu' 1";
-    let activeUsbu = 1;
 
-    // Gunakan tanggal WIB hari ini untuk dicocokkan dengan batas cut-off @db.Date (UTC midnight literal)
-    const nowLocal = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
-    const todayStr = nowLocal.toISOString().split("T")[0];
-    const todayWibAsUtcMidnight = new Date(`${todayStr}T00:00:00Z`).getTime();
-
-    const u1 = dufah.usbu1EndDate ? new Date(dufah.usbu1EndDate).getTime() : Infinity;
-    const u2 = dufah.usbu2EndDate ? new Date(dufah.usbu2EndDate).getTime() : Infinity;
-
-    if (todayWibAsUtcMidnight <= u1) {
-      usbuLabel = "Usbu' 1";
-      activeUsbu = 1;
-    } else if (todayWibAsUtcMidnight <= u2) {
-      usbuLabel = "Usbu' 2";
-      activeUsbu = 2;
-    } else {
-      usbuLabel = "Nihai";
-      activeUsbu = 3;
+    if (activeUsbu === 1) usbuLabel = "Usbu' 1";
+    else if (activeUsbu === 2) usbuLabel = "Usbu' 2";
+    else if (activeUsbu === 3) usbuLabel = "Nihai";
+    else if (activeUsbu >= 4) {
+      activeUsbu = 4;
+      usbuLabel = "Selesai";
     }
 
     return NextResponse.json({
