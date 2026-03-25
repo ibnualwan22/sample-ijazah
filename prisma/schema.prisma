@@ -184,3 +184,30 @@ model AbsenKegiatan {
 
   @@unique([riwayatId, kategoriId, tanggal])
 }
+
+enum TipePerulangan {
+  HARIAN
+  MINGGUAN
+  BULANAN
+}
+
+model Agenda {
+  id              String          @id @default(cuid())
+  judul           String
+  deskripsi       String?
+  waktuMulai      DateTime
+  waktuSelesai    DateTime
+  isBerulang      Boolean         @default(false)
+  tipePerulangan  TipePerulangan?
+  batasPerulangan DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model InstagramPost {
+  id        String   @id @default(cuid())
+  judul     String?
+  url       String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}

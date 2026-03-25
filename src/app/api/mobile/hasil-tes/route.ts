@@ -99,13 +99,13 @@ export async function GET(request: Request) {
           { usbu: 1, label: "Usbu' 1", rata_rata_nilai: computeAverage('nilaiUsbu1') },
           { usbu: 2, label: "Usbu' 2", rata_rata_nilai: computeAverage('nilaiUsbu2') },
           { usbu: 3, label: "Usbu' 3 (Nihai)", rata_rata_nilai: computeAverage('nilaiNihai') },
-          { usbu: 4, label: "Gabungan Semua Usbu'", rata_rata_nilai: computeAverage('nilaiAkhir') }
+          { usbu: 4, label: "Semua Usbu'", rata_rata_nilai: computeAverage('nilaiAkhir') }
         ]
       });
     });
 
     // Mengurutkan kelas berdasarkan abjad (opsional)
-    const sortedData = Object.values(groupedData).sort((a: any, b: any) => 
+    const sortedData = Object.values(groupedData).sort((a: any, b: any) =>
       a.kelas.localeCompare(b.kelas)
     );
 

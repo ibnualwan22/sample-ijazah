@@ -16,6 +16,10 @@ export function CetakUsbuSelector({ kelasList }: { kelasList: { id: string, nama
       toast.error("Silakan pilih ruangan kelas terlebih dahulu!");
       return;
     }
+    if (kelasId === "ALL") {
+      router.push(`/admin/cetak-usbu/bulk/${usbu}`);
+      return;
+    }
     router.push(`/admin/cetak-usbu/${kelasId}/${usbu}`);
   };
 
@@ -29,6 +33,7 @@ export function CetakUsbuSelector({ kelasList }: { kelasList: { id: string, nama
           className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
         >
           <option value="" disabled>Pilih Ruangan Kelas...</option>
+          <option value="ALL" className="font-bold text-amber-700">-- Semua Ruangan Kelas (Cetak Bulk) --</option>
           {kelasList.map(k => (
             <option key={k.id} value={k.id}>
               {k.nama} ({k.programNama})
@@ -47,6 +52,7 @@ export function CetakUsbuSelector({ kelasList }: { kelasList: { id: string, nama
           <option value="1">Ujian Usbu' 1</option>
           <option value="2">Ujian Usbu' 2</option>
           <option value="3">Ujian Nihai</option>
+          <option value="4">Semua Usbu'</option>
         </select>
       </label>
 

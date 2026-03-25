@@ -33,8 +33,10 @@ export function CetakUsbuDocument({
 
   if (!mounted) return null;
 
+  const tableId = `rapor-table-${kelasNama.replace(/\\s+/g, '-')}`;
+
   const handleDownloadExcel = () => {
-    const table = document.getElementById('rapor-table');
+    const table = document.getElementById(tableId);
     if (!table) return;
     
     const htmlSnippet = `
@@ -141,7 +143,7 @@ export function CetakUsbuDocument({
       </div>
 
       {/* Table */}
-      <table id="rapor-table" className="w-full border-collapse border border-black text-[13px] font-sans">
+      <table id={tableId} className="w-full border-collapse border border-black text-[13px] font-sans">
         <thead>
           <tr className="bg-[#e48b32] text-black">
             <th className="border border-black px-2 py-2 w-8">No</th>

@@ -7,7 +7,7 @@ export default async function CetakUsbuPrintPage({ params }: { params: Promise<{
   const { kelasId, usbu } = await params;
   const targetUsbu = parseInt(usbu);
 
-  if (targetUsbu < 1 || targetUsbu > 3) redirect("/admin/cetak-usbu");
+  if (targetUsbu < 1 || targetUsbu > 4) redirect("/admin/cetak-usbu");
 
   const kelas = await prisma.kelas.findUnique({
     where: { id: kelasId },
@@ -51,7 +51,7 @@ export default async function CetakUsbuPrintPage({ params }: { params: Promise<{
     // Because mapels are dynamic, we need an array of values matching the program's sorted mapels
     const mapelScores: (number | "-")[] = [];
     let sum = 0;
-    
+
     // We strictly use / 3 for average according to user request, wait
     // Actually the user said accumulation. But in "NILAI AKUMULATIF", is it the sum or the average?
     // In the image, presensi=100, grades=85,90,86,86,91 -> sum is 438. Average is 87.6.
@@ -59,19 +59,20 @@ export default async function CetakUsbuPrintPage({ params }: { params: Promise<{
     // Average of (100, 85, 90, 86, 86, 91) = 538 / 6 = 89.6.
     // Wait. Maybe presensi is evaluated in standard accumulation?
     let divider = 0;
-    
+
     // Let's test standard Markaz formula: (Presensi + sum of mapels) / (total mapels + 1)
     for (const pm of kelas.program.programMapels) {
       const match = riwayat.nilaiList.find((n: any) => n.mapelId === pm.mapelId);
       const isPresensiMapel = pm.mapel.nama_indo.toLowerCase() === "presensi";
-      
+
       let score: number | null = null;
       if (match) {
         if (targetUsbu === 1) score = match.nilaiUsbu1;
         if (targetUsbu === 2) score = match.nilaiUsbu2;
         if (targetUsbu === 3) score = match.nilaiNihai;
+        if (targetUsbu === 4) score = match.nilaiAkhir;
       }
-      
+
       if (score !== null && score !== undefined) {
         mapelScores.push(score);
         if (!isPresensiMapel) {
@@ -108,9 +109,9 @@ export default async function CetakUsbuPrintPage({ params }: { params: Promise<{
 
   return (
     <div className="min-h-screen bg-slate-200 p-4 md:p-8">
-      <CetakUsbuDocument 
+      <CetakUsbuDocument
         kelasNama={kelas.nama}
-        usbuLabel={targetUsbu === 3 ? "Nihai" : targetUsbu.toString()}
+        usbuLabel={targetUsbu === 3 ? "Nihai" : targetUsbu === 4 ? "Nihai" : targetUsbu.toString()}
         mapelHeaders={kelas.program.programMapels.map(pm => pm.mapel.nama_indo.toUpperCase() as string)}
         rows={rows}
       />

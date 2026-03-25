@@ -106,6 +106,72 @@ Endpoint ini digunakan untuk memuat semua riwayat laporan (akademik, absensi, ke
 ```json
 {
   "success": false,
-  "message": "Data santri dengan nama tersebut tidak ditemukan."
+}
+```
+
+### Agenda Rutinan (Mobile App)
+
+Endpoint ini digunakan untuk memuat daftar agenda dan kegiatan rutinan yang ada di Markaz. Endpoint ini secara otomatis mengatur perulangan agenda (harian, mingguan, bulanan) sehingga aplikasi _mobile_ tidak perlu melakukan kalkulasi tanggal secara manual.
+
+- **URL:** `/api/mobile/agenda`
+- **Metode:** `GET`
+- **Content-Type:** `application/json`
+
+#### Query Parameters
+
+| Parameter | Tipe      | Wajib | Deskripsi |
+| :---      | :---      | :---  | :---      |
+| `month`   | `Integer` | Tidak | Angka bulan yang ingin dicari (1-12). Jika kosong, akan menggunakan bulan ini. |
+| `year`    | `Integer` | Tidak | Angka tahun yang ingin dicari. Jika kosong, akan menggunakan tahun ini. |
+
+#### Struktur Respon (Berhasil - 200 OK)
+
+```json
+{
+  "success": true,
+  "month": 8,
+  "year": 2026,
+  "data": [
+    {
+      "id": "cuid...",
+      "judul": "Kajian Rutin",
+      "deskripsi": "Kajian kitab...",
+      "waktuMulai": "2026-08-01T16:00:00.000Z",
+      "waktuSelesai": "2026-08-01T17:30:00.000Z",
+      "isBerulang": true,
+      "tipePerulangan": "MINGGUAN",
+      "batasPerulangan": null,
+      "instanceDate": "2026-08-08T16:00:00.000Z", 
+      "instanceWaktuSelesai": "2026-08-08T17:30:00.000Z"
+    }
+  ]
+}
+```
+*(Catatan: `instanceDate` dan `instanceWaktuSelesai` adalah tanggal aktual kejadian pada bulan yang di-*request*, meskipun `waktuMulai` aslinya ada di masa lalu).*
+
+---
+
+### Konten Instagram (Mobile App)
+
+Endpoint ini digunakan untuk mengambil daftar tautan (_link_) post Instagram aktif yang sudah dimasukkan oleh Admin.
+
+- **URL:** `/api/mobile/instagram`
+- **Metode:** `GET`
+- **Content-Type:** `application/json`
+
+#### Struktur Respon (Berhasil - 200 OK)
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "cuid...",
+      "judul": "Pengumuman Pendaftaran",
+      "url": "https://instagram.com/p/...",
+      "isActive": true,
+      "createdAt": "2026-08-15T10:00:00.000Z"
+    }
+  ]
 }
 ```
