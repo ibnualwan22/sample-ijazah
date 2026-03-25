@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getActiveDufahName } from '@/lib/absensi';
+import { getMasterSantriList } from '@/lib/santri-api';
 
 export async function GET(request: Request) {
   try {
@@ -13,6 +14,9 @@ export async function GET(request: Request) {
         { status: 404 }
       );
     }
+
+    const masterList = await getMasterSantriList();
+    const masterMap = new Map(masterList.map((m: any) => [m.id, m]));
 
     // Ambil data lengkap terkait RiwayatSantri pada Dufah aktif
     const dataRiwayatList = await prisma.riwayatSantri.findMany({
@@ -58,27 +62,45 @@ export async function GET(request: Request) {
         };
       }
 
+      const computeAverage = (key: 'nilaiUsbu1' | 'nilaiUsbu2' | 'nilaiNihai' | 'nilaiAkhir') => {
+        let sum = 0;
+        let count = 0;
+        dataRiwayat.nilaiList.forEach((n: any) => {
+          if (n.mapel.nama_indo.toLowerCase() !== 'presensi') {
+            const score = n[key];
+            if (score !== null && score !== undefined) {
+              sum += score;
+              count++;
+            }
+          }
+        });
+        return count > 0 ? Number((sum / count).toFixed(2)) : null;
+      };
+
       groupedData[kelasName].santri.push({
         id_riwayat: dataRiwayat.id,
         id_santri: dataRiwayat.santri.id,
         nama: dataRiwayat.santri.nama,
+        gender: masterMap.get(dataRiwayat.santri.id)?.gender || '-',
         tempat_lahir: dataRiwayat.santri.tempat_lahir,
         tanggal_lahir: dataRiwayat.santri.tanggal_lahir,
         akademik: {
           program: dataRiwayat.program?.nama_indo || '-',
           status_kelulusan: dataRiwayat.status_kelulusan,
         },
-        nilai_per_mapel: dataRiwayat.nilaiList.map((n) => ({
+        nilai_per_mapel: dataRiwayat.nilaiList.map((n: any) => ({
           mapel: n.mapel.nama_indo,
           nilai_usbu_1: n.nilaiUsbu1,
           nilai_usbu_2: n.nilaiUsbu2,
           nilai_nihai: n.nilaiNihai,
           nilai_akhir: n.nilaiAkhir,
         })),
-        rata_rata_per_usbu: dataRiwayat.riwayatUsbuList.map((u) => ({
-          usbu: u.usbu,
-          rata_rata_nilai: u.rataRataNilai
-        }))
+        rata_rata_per_usbu: [
+          { usbu: 1, label: "Usbu' 1", rata_rata_nilai: computeAverage('nilaiUsbu1') },
+          { usbu: 2, label: "Usbu' 2", rata_rata_nilai: computeAverage('nilaiUsbu2') },
+          { usbu: 3, label: "Usbu' 3 (Nihai)", rata_rata_nilai: computeAverage('nilaiNihai') },
+          { usbu: 4, label: "Gabungan Semua Usbu'", rata_rata_nilai: computeAverage('nilaiAkhir') }
+        ]
       });
     });
 
