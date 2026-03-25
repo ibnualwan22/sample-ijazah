@@ -4,19 +4,24 @@ import prisma from '@/lib/prisma';
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const santriId = searchParams.get('santriId');
+    const namaQuery = searchParams.get('nama');
     const dufahNama = searchParams.get('dufahNama');
 
-    if (!santriId) {
+    if (!namaQuery) {
       return NextResponse.json(
-        { success: false, message: 'Parameter santriId diperlukan (Misal: ?santriId=S001)' },
+        { success: false, message: 'Nama santri diperlukan (Misal: ?nama=Ahmad)' },
         { status: 400 }
       );
     }
 
     // Build the query where clause
     const whereClause: any = {
-      santriId: santriId,
+      santri: {
+        nama: {
+          contains: namaQuery,
+          mode: 'insensitive'
+        }
+      }
     };
 
     // Kalau param dufahNama dikirim, cari spesifik dufah itu
@@ -70,7 +75,7 @@ export async function GET(request: Request) {
 
     if (!dataRiwayat) {
       return NextResponse.json(
-        { success: false, message: 'Data santri tidak ditemukan atau belum aktif di dufah ini' },
+        { success: false, message: 'Data santri dengan nama tersebut tidak ditemukan.' },
         { status: 404 }
       );
     }
