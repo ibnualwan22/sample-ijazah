@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Edit2, Trash2, X } from "lucide-react";
+import { Plus, Edit2, Trash2, X, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 
@@ -24,6 +24,7 @@ export function InstagramClient({ initialData }: { initialData: InstagramPost[] 
   const [url, setUrl] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const handleOpenModal = (post?: InstagramPost) => {
     if (post) {
@@ -92,14 +93,41 @@ export function InstagramClient({ initialData }: { initialData: InstagramPost[] 
     }
   };
 
+  const handleSync = async () => {
+    if (!confirm("Tarik data feed terbaru dari 3 Akun Official sekarang? (Ini akan mengecek URL baru via API)")) return;
+    setIsSyncing(true);
+    try {
+      const res = await fetch("/api/instagram/sync", { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(data.message);
+        router.refresh(); // Segarkan tabel
+      } else {
+        alert(data.error || "Gagal melakukan sinkronisasi otomatis.");
+      }
+    } catch (err) {
+      alert("Terjadi kesalahan sistem saat mencoba menghubungi server.");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={handleSync}
+          disabled={isSyncing}
+          className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 shadow-sm disabled:opacity-50"
+        >
+          <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} /> 
+          {isSyncing ? "Menyinkronkan..." : "Sync Otomatis (3 Akun)"}
+        </button>
         <button
           onClick={() => handleOpenModal()}
           className="flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 shadow-sm"
         >
-          <Plus className="h-4 w-4" /> Tambah Postingan
+          <Plus className="h-4 w-4" /> Tambah Manual
         </button>
       </div>
 
