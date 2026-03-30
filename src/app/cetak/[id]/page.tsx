@@ -53,14 +53,14 @@ export default async function CetakPage({
   return (
     <>
       <style>{`
-        html, body { margin: 0; padding: 0; background: #94a3b8; }
+        html, body { margin: 0; padding: 0; background: #171717; }
         @media print {
           html, body { background: white !important; margin: 0 !important; padding: 0 !important; }
           @page { size: 330mm 215mm; landscape; margin: 0; }
         }
       `}</style>
 
-      <div className="min-h-screen bg-slate-300 px-4 py-8 print:bg-white print:p-0">
+      <div className="min-h-screen bg-neutral-900 px-4 py-8 print:bg-white print:p-0">
         <PrintToolbar backHref="/admin/dashboard" backLabel="Kembali ke Dashboard" />
         <div className="flex flex-col items-center gap-10 print:gap-0">
           <SyahadahDocument qrUrl={qrUrl} data={data as any} />

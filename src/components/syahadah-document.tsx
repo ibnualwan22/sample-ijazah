@@ -39,7 +39,7 @@ export function SyahadahDocument({ qrUrl, data }: SyahadahDocumentProps) {
   const averagePredikat = isMusyarokah ? "" : data.averagePredikat.arab;
 
   return (
-    <div className="container-syahadah flex items-center justify-center print:block print:min-h-0" style={{ pageBreakAfter: "always" }}>
+    <div className="container-syahadah print:block print:min-h-0 mx-auto mb-12" style={{ pageBreakAfter: "always" }}>
       <div
         className="doc-syahadah"
         style={{
@@ -47,7 +47,7 @@ export function SyahadahDocument({ qrUrl, data }: SyahadahDocumentProps) {
           height: "215mm",
           position: "relative",
           overflow: "hidden",
-          boxShadow: "0 12px 48px rgba(0,0,0,0.35)",
+          boxShadow: "0 24px 80px rgba(0,0,0,0.7)",
           fontFamily: "'Scheherazade New', 'Amiri', serif",
           flexShrink: 0,
           background: "white",
