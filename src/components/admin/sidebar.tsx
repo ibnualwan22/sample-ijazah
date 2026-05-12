@@ -21,7 +21,7 @@ const navigationGroups = [
   {
     title: "Divisi Absensi",
     items: [
-      { href: "/admin/absensi/sakan", label: "Absen Sakan", icon: Bed },
+      { href: "/admin/absensi/sakan", label: "Absen", icon: Bed },
       { href: "/admin/absensi/kelas", label: "Absen Kelas", icon: BookOpen },
       { href: "/admin/absensi/kegiatan", label: "Absen Kegiatan", icon: Activity },
       { href: "/admin/absensi/rekap", label: "Rekapitulasi", icon: BarChart3 },
