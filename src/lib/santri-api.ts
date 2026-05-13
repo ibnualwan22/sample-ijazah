@@ -55,16 +55,22 @@ function normalizeSantri(santri: ApiSantriResponse): MasterSantri {
 }
 
 export async function getMasterSantriList(): Promise<MasterSantri[]> {
-  const response = await fetch(SANTRI_API_URL, {
-    cache: "no-store",
-  });
+  try {
+    const response = await fetch(SANTRI_API_URL, {
+      cache: "no-store",
+    });
 
-  if (!response.ok) {
-    throw new Error("Gagal mengambil master data santri.");
+    if (!response.ok) {
+      console.error(`Gagal mengambil master data santri: HTTP ${response.status}`);
+      return [];
+    }
+
+    const santriList = (await response.json()) as ApiSantriResponse[];
+    return santriList.map(normalizeSantri);
+  } catch (error) {
+    console.error("Fetch failed for master data santri:", error);
+    return [];
   }
-
-  const santriList = (await response.json()) as ApiSantriResponse[];
-  return santriList.map(normalizeSantri);
 }
 
 export async function getMasterSantriById(id: string) {

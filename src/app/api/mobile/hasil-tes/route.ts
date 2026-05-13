@@ -63,18 +63,19 @@ export async function GET(request: Request) {
       }
 
       const computeAverage = (key: 'nilaiUsbu1' | 'nilaiUsbu2' | 'nilaiNihai' | 'nilaiAkhir') => {
-        let sum = 0;
-        let count = 0;
+        let sumBobot = 0;
+        let totalWeight = 0;
         dataRiwayat.nilaiList.forEach((n: any) => {
-          if (n.mapel.nama_indo.toLowerCase() !== 'presensi') {
+          if (n.mapel.masuk_akumulasi !== false) { // Default to true if undefined
             const score = n[key];
             if (score !== null && score !== undefined) {
-              sum += score;
-              count++;
+              const bobot = n.mapel.bobot ?? 1;
+              sumBobot += score * bobot;
+              totalWeight += bobot;
             }
           }
         });
-        return count > 0 ? Number((sum / count).toFixed(2)) : null;
+        return totalWeight > 0 ? Number((sumBobot / totalWeight).toFixed(2)) : null;
       };
 
       groupedData[kelasName].santri.push({

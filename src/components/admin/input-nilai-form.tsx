@@ -10,6 +10,10 @@ type MapelOption = {
   nama_indo: string;
   nama_arab: string;
   urutan: number;
+  jumlah_tes: number;
+  tampil_di_syahadah: boolean;
+  masuk_akumulasi: boolean;
+  bobot: number;
 };
 
 type ProgramOption = {
@@ -117,18 +121,18 @@ export function InputNilaiForm({
     const currU2 = val.u2 === "" ? null : Number(val.u2);
     const currN = val.n === "" ? null : Number(val.n);
 
-    let currA = null;
-    if (currU1 !== null || currU2 !== null || currN !== null) {
-      currA = Math.round(((currU1 || 0) + (currU2 || 0) + (currN || 0)) / 3);
-    }
+    const currA = mapel.jumlah_tes === 1 ? (val.a === "" ? null : Number(val.a)) :
+      ((currU1 !== null || currU2 !== null || currN !== null) ? Math.round(((currU1 || 0) * 0.3) + ((currU2 || 0) * 0.3) + ((currN || 0) * 0.4)) : null);
 
     return {
       mapelId: mapel.id,
-      u1: currU1,
-      u2: currU2,
-      n: currN,
+      u1: mapel.jumlah_tes === 1 ? null : currU1,
+      u2: mapel.jumlah_tes === 1 ? null : currU2,
+      n: mapel.jumlah_tes === 1 ? null : currN,
       a: currA,
       skor: currA || 0,
+      masuk_akumulasi: mapel.masuk_akumulasi,
+      bobot: mapel.bobot ?? 1,
     };
   });
   const hasIncompleteNilai =
@@ -136,17 +140,23 @@ export function InputNilaiForm({
     activeMapelList.some((mapel) => {
       const val = nilaiByMapel[mapel.id];
       if (!val) return true;
+      if (mapel.jumlah_tes === 1) {
+        return val.a.trim() === "";
+      }
       if (activeFlags.u1 && val.u1.trim() === "") return true;
       if (activeFlags.u2 && val.u2.trim() === "") return true;
       if (activeFlags.u3 && val.n.trim() === "") return true;
       return false;
     });
 
-  const numericNilai = parsedNilai.filter(n => n.a !== null);
+  const numericNilai = parsedNilai.filter(n => n.a !== null && n.masuk_akumulasi);
+
+  const totalSkorBobot = numericNilai.reduce((total, nilai) => total + (nilai.skor * nilai.bobot), 0);
+  const totalBobot = numericNilai.reduce((total, nilai) => total + nilai.bobot, 0);
 
   const average =
-    numericNilai.length > 0
-      ? numericNilai.reduce((total, nilai) => total + nilai.skor, 0) / numericNilai.length
+    totalBobot > 0
+      ? totalSkorBobot / totalBobot
       : 0;
   const averagePredikat = getPredikat(average);
   const previewStatus = !selectedProgram
@@ -372,42 +382,55 @@ export function InputNilaiForm({
                   </span>
 
                   <div className="grid grid-cols-3 gap-2 mt-auto">
-                    <div>
-                      <p className={`text-[10px] uppercase font-bold text-center mb-1 ${activeFlags.u1 ? 'text-emerald-600' : 'text-slate-400'}`}>Usbu' 1</p>
-                      {activeFlags.u1 ? (
-                      <input
-                        type="number" min={0} max={100} value={val.u1}
-                        onChange={(e) => setNilaiByMapel(c => ({ ...c, [mapel.id]: { ...c[mapel.id] || val, u1: e.target.value } }))}
-                        className="w-full rounded-xl border border-emerald-300 bg-emerald-50/50 px-2 py-2 text-center text-sm font-black text-emerald-900 outline-none transition focus:border-emerald-500 focus:bg-white"
-                      />
-                      ) : (
-                        <div className="w-full rounded-xl border border-slate-100 bg-slate-50 px-2 py-2 text-center text-sm font-bold text-slate-400">{val.u1 || "-"}</div>
-                      )}
-                    </div>
-                    <div>
-                      <p className={`text-[10px] uppercase font-bold text-center mb-1 ${activeFlags.u2 ? 'text-emerald-600' : 'text-slate-400'}`}>Usbu' 2</p>
-                      {activeFlags.u2 ? (
-                      <input
-                        type="number" min={0} max={100} value={val.u2}
-                        onChange={(e) => setNilaiByMapel(c => ({ ...c, [mapel.id]: { ...c[mapel.id] || val, u2: e.target.value } }))}
-                        className="w-full rounded-xl border border-emerald-300 bg-emerald-50/50 px-2 py-2 text-center text-sm font-black text-emerald-900 outline-none transition focus:border-emerald-500 focus:bg-white"
-                      />
-                      ) : (
-                        <div className="w-full rounded-xl border border-slate-100 bg-slate-50 px-2 py-2 text-center text-sm font-bold text-slate-400">{val.u2 || "-"}</div>
-                      )}
-                    </div>
-                    <div>
-                      <p className={`text-[10px] uppercase font-bold text-center mb-1 ${activeFlags.u3 ? 'text-emerald-600' : 'text-slate-400'}`}>Nihai</p>
-                      {activeFlags.u3 ? (
-                      <input
-                        type="number" min={0} max={100} value={val.n}
-                        onChange={(e) => setNilaiByMapel(c => ({ ...c, [mapel.id]: { ...c[mapel.id] || val, n: e.target.value } }))}
-                        className="w-full rounded-xl border border-emerald-300 bg-emerald-50/50 px-2 py-2 text-center text-sm font-black text-emerald-900 outline-none transition focus:border-emerald-500 focus:bg-white"
-                      />
-                      ) : (
-                        <div className="w-full rounded-xl border border-slate-100 bg-slate-50 px-2 py-2 text-center text-sm font-bold text-slate-400">{val.n || "-"}</div>
-                      )}
-                    </div>
+                    {mapel.jumlah_tes === 3 ? (
+                      <>
+                        <div>
+                          <p className={`text-[10px] uppercase font-bold text-center mb-1 ${activeFlags.u1 ? 'text-emerald-600' : 'text-slate-400'}`}>Usbu' 1</p>
+                          {activeFlags.u1 ? (
+                          <input
+                            type="number" min={0} max={100} value={val.u1}
+                            onChange={(e) => setNilaiByMapel(c => ({ ...c, [mapel.id]: { ...c[mapel.id] || val, u1: e.target.value } }))}
+                            className="w-full rounded-xl border border-emerald-300 bg-emerald-50/50 px-2 py-2 text-center text-sm font-black text-emerald-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+                          />
+                          ) : (
+                            <div className="w-full rounded-xl border border-slate-100 bg-slate-50 px-2 py-2 text-center text-sm font-bold text-slate-400">{val.u1 || "-"}</div>
+                          )}
+                        </div>
+                        <div>
+                          <p className={`text-[10px] uppercase font-bold text-center mb-1 ${activeFlags.u2 ? 'text-emerald-600' : 'text-slate-400'}`}>Usbu' 2</p>
+                          {activeFlags.u2 ? (
+                          <input
+                            type="number" min={0} max={100} value={val.u2}
+                            onChange={(e) => setNilaiByMapel(c => ({ ...c, [mapel.id]: { ...c[mapel.id] || val, u2: e.target.value } }))}
+                            className="w-full rounded-xl border border-emerald-300 bg-emerald-50/50 px-2 py-2 text-center text-sm font-black text-emerald-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+                          />
+                          ) : (
+                            <div className="w-full rounded-xl border border-slate-100 bg-slate-50 px-2 py-2 text-center text-sm font-bold text-slate-400">{val.u2 || "-"}</div>
+                          )}
+                        </div>
+                        <div>
+                          <p className={`text-[10px] uppercase font-bold text-center mb-1 ${activeFlags.u3 ? 'text-emerald-600' : 'text-slate-400'}`}>Nihai</p>
+                          {activeFlags.u3 ? (
+                          <input
+                            type="number" min={0} max={100} value={val.n}
+                            onChange={(e) => setNilaiByMapel(c => ({ ...c, [mapel.id]: { ...c[mapel.id] || val, n: e.target.value } }))}
+                            className="w-full rounded-xl border border-emerald-300 bg-emerald-50/50 px-2 py-2 text-center text-sm font-black text-emerald-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+                          />
+                          ) : (
+                            <div className="w-full rounded-xl border border-slate-100 bg-slate-50 px-2 py-2 text-center text-sm font-bold text-slate-400">{val.n || "-"}</div>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="col-span-3">
+                        <p className={`text-[10px] uppercase font-bold text-center mb-1 text-emerald-600`}>Nilai Langsung</p>
+                        <input
+                          type="number" min={0} max={100} value={val.a}
+                          onChange={(e) => setNilaiByMapel(c => ({ ...c, [mapel.id]: { ...c[mapel.id] || val, a: e.target.value } }))}
+                          className="w-full rounded-xl border border-emerald-300 bg-emerald-50/50 px-2 py-2 text-center text-sm font-black text-emerald-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-4 bg-slate-100 rounded-xl p-2 flex justify-between items-center px-4">

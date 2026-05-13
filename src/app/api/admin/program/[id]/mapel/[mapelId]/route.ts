@@ -9,7 +9,7 @@ export async function PUT(
   try {
     const { mapelId } = await params;
     const body = await request.json();
-    const { nama_indo, nama_arab } = body;
+    const { nama_indo, nama_arab, jumlah_tes, tampil_di_syahadah, masuk_akumulasi } = body;
 
     if (!nama_indo?.trim() || !nama_arab?.trim()) {
       return NextResponse.json({ error: "Nama mapel (Indo & Arab) wajib diisi." }, { status: 400 });
@@ -25,7 +25,14 @@ export async function PUT(
 
     const updated = await prisma.mapel.update({
       where: { id: mapelId },
-      data: { nama_indo: nama_indo.trim(), nama_arab: nama_arab.trim() },
+      data: { 
+        nama_indo: nama_indo.trim(), 
+        nama_arab: nama_arab.trim(),
+        jumlah_tes: jumlah_tes !== undefined ? Number(jumlah_tes) : undefined,
+        tampil_di_syahadah: tampil_di_syahadah !== undefined ? Boolean(tampil_di_syahadah) : undefined,
+        masuk_akumulasi: masuk_akumulasi !== undefined ? Boolean(masuk_akumulasi) : undefined,
+        bobot: body.bobot !== undefined ? Number(body.bobot) : undefined,
+      },
     });
 
     return NextResponse.json({ success: true, mapel: updated });

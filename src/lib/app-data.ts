@@ -48,6 +48,10 @@ function serializeProgram(program: {
       id: string;
       nama_indo: string;
       nama_arab: string;
+      jumlah_tes: number;
+      tampil_di_syahadah: boolean;
+      masuk_akumulasi: boolean;
+      bobot: number;
     };
   }>;
   kelasList?: Array<{
@@ -65,6 +69,10 @@ function serializeProgram(program: {
       nama_indo: programMapel.mapel.nama_indo,
       nama_arab: programMapel.mapel.nama_arab,
       urutan: programMapel.urutan,
+      jumlah_tes: programMapel.mapel.jumlah_tes,
+      tampil_di_syahadah: programMapel.mapel.tampil_di_syahadah,
+      masuk_akumulasi: programMapel.mapel.masuk_akumulasi,
+      bobot: programMapel.mapel.bobot,
     })),
     kelasList: program.kelasList ?? [],
   };
@@ -120,12 +128,20 @@ export async function getDashboardSantriRows() {
       const nilaiList = riwayat?.nilaiList ?? [];
       const totalMapel = program?.programMapels.length ?? 0;
       const hasCompleteNilai = totalMapel > 0 && nilaiList.length === totalMapel && 
-        nilaiList.every((n: any) => n.nilaiUsbu1 !== null && n.nilaiUsbu2 !== null && n.nilaiNihai !== null);
+        nilaiList.every((n: any) => {
+          const m = program?.programMapels.find((pm: any) => pm.mapelId === n.mapelId)?.mapel;
+          if (m?.jumlah_tes === 1) return n.nilaiAkhir !== null;
+          return n.nilaiUsbu1 !== null && n.nilaiUsbu2 !== null && n.nilaiNihai !== null;
+        });
+      const accumulativeNilai = nilaiList.filter((n: any) => {
+        const m = program?.programMapels.find((pm: any) => pm.mapelId === n.mapelId)?.mapel;
+        return m?.masuk_akumulasi !== false;
+      });
       const status = calculateStatus(
         {
           is_tasmi: riwayat?.is_tasmi ?? false,
         },
-        nilaiList.map((n: any) => ({ skor: n.nilaiAkhir || 0 })),
+        accumulativeNilai.map((n: any) => ({ skor: n.nilaiAkhir || 0 })),
         program,
       );
 
@@ -318,8 +334,41 @@ export async function getCertificateData(id: string) {
     return null;
   }
 
-  const nilaiMap = new Map(riwayat.nilaiList.map((nilai: any) => [nilai.mapelId, nilai]));
-  const nilaiRows = riwayat.program.programMapels.map((programMapel: any) => {
+  let allNilaiList = [...riwayat.nilaiList];
+  let allProgramMapels = [...riwayat.program.programMapels];
+
+  if (riwayat.program.nama_indo.toLowerCase().includes("akbarnas")) {
+    const historicalRiwayat = await prisma.riwayatSantri.findMany({
+      where: {
+        santriId: santriIdToFetch,
+        program: {
+          nama_indo: { contains: "akbarnas", mode: "insensitive" }
+        },
+        id: { not: riwayat.id }
+      },
+      include: {
+        nilaiList: { include: { mapel: true } }
+      },
+      orderBy: { dufahNama: 'asc' }
+    });
+
+    for (const hist of historicalRiwayat) {
+      allNilaiList = [...allNilaiList, ...hist.nilaiList];
+    }
+  }
+
+  // Filter tampil_di_syahadah
+  allProgramMapels = allProgramMapels.filter((pm: any) => pm.mapel.tampil_di_syahadah !== false);
+
+  const nilaiMap = new Map();
+  for (const nilai of allNilaiList) {
+    // Keep the one that has actual score if multiple exist
+    if (nilai.nilaiAkhir !== null || !nilaiMap.has(nilai.mapelId)) {
+      nilaiMap.set(nilai.mapelId, nilai);
+    }
+  }
+
+  const nilaiRows = allProgramMapels.map((programMapel: any) => {
     const nilai = nilaiMap.get(programMapel.mapel.id);
     const skor = nilai?.nilaiAkhir ?? null;
 
@@ -333,15 +382,19 @@ export async function getCertificateData(id: string) {
       nilaiAkhir: nilai?.nilaiAkhir ?? null,
       skor,
       predikat: skor === null ? null : getPredikat(skor),
+      masuk_akumulasi: programMapel.mapel.masuk_akumulasi ?? true,
+      bobot: programMapel.mapel.bobot ?? 1,
     };
   });
 
-  const filledNilaiRows = nilaiRows.filter((nilai: any) => typeof nilai.skor === "number");
+  const accumulativeRows = nilaiRows.filter((nilai: any) => typeof nilai.skor === "number" && nilai.masuk_akumulasi);
+  const totalSkorBobot = accumulativeRows.reduce((total: any, nilai: any) => total + (Number(nilai.skor) * nilai.bobot), 0);
+  const totalBobot = accumulativeRows.reduce((total: any, nilai: any) => total + nilai.bobot, 0);
   const average =
-    filledNilaiRows.length > 0
-      ? filledNilaiRows.reduce((total: any, nilai: any) => total + Number(nilai.skor), 0) / filledNilaiRows.length
+    totalBobot > 0
+      ? totalSkorBobot / totalBobot
       : 0;
-  const status = calculateStatus(riwayat, filledNilaiRows.map((nilai: any) => ({ skor: Number(nilai.skor) })), riwayat.program);
+  const status = calculateStatus(riwayat, accumulativeRows.map((nilai: any) => ({ skor: Number(nilai.skor) })), riwayat.program);
 
   return {
     masterSantri,
@@ -450,10 +503,18 @@ export async function getRiwayatSantriRows() {
     const nilaiList = riwayat.nilaiList ?? [];
     const totalMapel = program?.programMapels.length ?? 0;
     const hasCompleteNilai = totalMapel > 0 && nilaiList.length === totalMapel &&
-      nilaiList.every((n: any) => n.nilaiUsbu1 !== null && n.nilaiUsbu2 !== null && n.nilaiNihai !== null);
+      nilaiList.every((n: any) => {
+        const m = program?.programMapels.find((pm: any) => pm.mapelId === n.mapelId)?.mapel;
+        if (m?.jumlah_tes === 1) return n.nilaiAkhir !== null;
+        return n.nilaiUsbu1 !== null && n.nilaiUsbu2 !== null && n.nilaiNihai !== null;
+      });
+    const accumulativeNilai = nilaiList.filter((n: any) => {
+      const m = program?.programMapels.find((pm: any) => pm.mapelId === n.mapelId)?.mapel;
+      return m?.masuk_akumulasi !== false;
+    });
     const status = calculateStatus(
       { is_tasmi: riwayat.is_tasmi },
-      nilaiList.map((n: any) => ({ skor: n.nilaiAkhir || 0 })),
+      accumulativeNilai.map((n: any) => ({ skor: n.nilaiAkhir || 0 })),
       program,
     );
 

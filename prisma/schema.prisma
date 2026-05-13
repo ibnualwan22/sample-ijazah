@@ -26,11 +26,15 @@ model Kelas {
 }
 
 model Mapel {
-  id            String         @id @default(cuid())
-  nama_indo     String         @unique
-  nama_arab     String
-  programMapels ProgramMapel[]
-  nilaiList     Nilai[]
+  id                 String         @id @default(cuid())
+  nama_indo          String         @unique
+  nama_arab          String
+  jumlah_tes         Int            @default(3)
+  tampil_di_syahadah Boolean        @default(true)
+  masuk_akumulasi    Boolean        @default(true)
+  bobot              Int            @default(1)
+  programMapels      ProgramMapel[]
+  nilaiList          Nilai[]
 }
 
 model ProgramMapel {
