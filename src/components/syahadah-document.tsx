@@ -1,6 +1,8 @@
+import React from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { convertToArabicNumerals } from "@/lib/formatters";
 import { translateDufahToArabic } from "@/lib/formatters";
+import { LayoutData, LayoutElementKey, getDefaultLayout } from "@/lib/syahadah-layout";
 
 // Define a minimal required type derived from getCertificateData
 type SyahadahDocumentProps = {
@@ -29,14 +31,40 @@ type SyahadahDocumentProps = {
       skor: number | null;
     }>;
   };
+  layout?: LayoutData;
+  editorMode?: boolean;
+  selectedElement?: LayoutElementKey | null;
+  onSelectElement?: (key: LayoutElementKey) => void;
 };
 
-export function SyahadahDocument({ qrUrl, data }: SyahadahDocumentProps) {
+function elProps(
+  key: LayoutElementKey,
+  editorMode?: boolean,
+  selectedElement?: LayoutElementKey | null,
+  onSelectElement?: (key: LayoutElementKey) => void,
+  label?: string
+) {
+  if (!editorMode) return {};
+  return {
+    className: `syahadah-element ${selectedElement === key ? "selected" : ""}`,
+    "data-label": label || key,
+    onClick: (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onSelectElement?.(key);
+    },
+    style: { position: "relative" as const },
+  };
+}
+
+export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElement, onSelectElement }: SyahadahDocumentProps) {
+  const lo = layout || getDefaultLayout();
   const isMusyarokah = data.status === "MUSYAROKAH";
   const tanggalMulai = data.template.tgl_mulai_arab || "........";
   const tanggalSampai = data.template.tgl_selesai_arab || "........";
   const averageValue = isMusyarokah ? "" : convertToArabicNumerals(data.average.toFixed(1));
   const averagePredikat = isMusyarokah ? "" : data.averagePredikat.arab;
+
+  const namaFontSize = lo.namaSantri.fontSize ?? 32;
 
   return (
     <div className="container-syahadah print:block print:min-h-0 mx-auto mb-12" style={{ pageBreakAfter: "always" }}>
@@ -52,6 +80,7 @@ export function SyahadahDocument({ qrUrl, data }: SyahadahDocumentProps) {
           flexShrink: 0,
           background: "white",
         }}
+        onClick={() => editorMode && onSelectElement?.(null as any)}
       >
         <img
           src="/images/syahadah-bg.png"
@@ -68,16 +97,51 @@ export function SyahadahDocument({ qrUrl, data }: SyahadahDocumentProps) {
           }}
         />
 
+        {/* Garis Bantu Editor (Crosshairs) */}
+        {editorMode && (
+          <>
+            {/* Vertical Center Line */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                bottom: 0,
+                left: "50%",
+                width: "1px",
+                borderLeft: "1px dashed rgba(59, 130, 246, 0.5)",
+                zIndex: 1,
+                pointerEvents: "none",
+              }}
+            />
+            {/* Horizontal Center Line */}
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: 0,
+                right: 0,
+                height: "1px",
+                borderTop: "1px dashed rgba(59, 130, 246, 0.5)",
+                zIndex: 1,
+                pointerEvents: "none",
+              }}
+            />
+          </>
+        )}
+
+        {/* QR Code */}
         <div
+          {...elProps("qrCode", editorMode, selectedElement, onSelectElement, "QR Code")}
           style={{
             position: "absolute",
-            top: "70mm",
-            right: "8mm",
+            top: `calc(70mm + ${lo.qrCode.offsetY}mm)`,
+            right: `calc(8mm + ${-lo.qrCode.offsetX}mm)`,
             width: "88mm",
             zIndex: 3,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            ...(editorMode ? { cursor: "pointer" } : {}),
           }}
         >
           <p
@@ -100,102 +164,139 @@ export function SyahadahDocument({ qrUrl, data }: SyahadahDocumentProps) {
           />
         </div>
 
+        {/* Tabel Nilai */}
         {!isMusyarokah && (
           <div
+            {...elProps("tabelNilai", editorMode, selectedElement, onSelectElement, "Tabel Nilai")}
             style={{
               position: "absolute",
-              top: "130mm",
-              right: "0mm",
-              width: "90mm",
+              top: `calc(130mm + ${lo.tabelNilai.offsetY}mm)`,
+              right: `calc(0mm + ${-lo.tabelNilai.offsetX}mm)`,
+              width: "90mm", // Default width, can adjust if columns > 1
               zIndex: 3,
+              ...(editorMode ? { cursor: "pointer" } : {}),
             }}
           >
-            <table
-              style={{
-                width: "80%",
-                borderCollapse: "collapse",
-                fontSize: "13pt",
-                direction: "rtl",
-                border: "1px solid #000",
-              }}
-            >
-              <thead>
-                <tr>
-                  <th
-                    colSpan={2}
-                    style={{
-                      padding: "1.5mm 3mm",
-                      textAlign: "center",
-                      fontWeight: "500",
-                      color: "#000",
-                      border: "1px solid #000",
-                      fontSize: "15pt",
-                    }}
-                  >
-                    حصيلة نتائج الطالب/الطالبة
-                  </th>
-                </tr>
-                <tr>
-                  <th
-                    style={{
-                      padding: "1mm 3mm",
-                      textAlign: "center",
-                      fontWeight: "700",
-                      color: "#1a0e00",
-                      border: "1.2px solid #000",
-                      fontSize: "13pt",
-                    }}
-                  >
-                    المادة
-                  </th>
-                  <th
-                    style={{
-                      padding: "1mm 2mm",
-                      textAlign: "center",
-                      fontWeight: "700",
-                      color: "#1a0e00",
-                      border: "1.2px solid #000",
-                      width: "35mm",
-                      fontSize: "13pt",
-                    }}
-                  >
-                    الدرجة
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.nilaiRows.map((row) => (
-                  <tr key={row.mapelId}>
-                    <td
-                      style={{
-                        padding: "1mm 3mm",
-                        textAlign: "center",
-                        color: "#1a0e00",
-                        border: "1px solid #000",
-                        fontSize: "13pt",
-                      }}
-                    >
-                      {row.nama_arab}
-                    </td>
-                    <td
-                      style={{
-                        padding: "1mm 2mm",
-                        textAlign: "center",
-                        fontWeight: "700",
-                        color: "#1a0e00",
-                        border: "1px solid #000",
-                        fontSize: "13pt",
-                      }}
-                    >
-                      {isMusyarokah || row.skor === null ? "" : convertToArabicNumerals(row.skor)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {(() => {
+              const numCols = lo.tabelNilai.columns || 1;
+              const totalItems = data.nilaiRows.length;
+              // Ceiling division
+              const rowsPerCol = Math.ceil(totalItems / numCols);
+              const tableWidth = numCols === 1 ? "80%" : "100%";
+
+              return (
+                <table
+                  style={{
+                    width: tableWidth,
+                    borderCollapse: "collapse",
+                    fontSize: "13pt",
+                    direction: "rtl",
+                    border: "1px solid #000",
+                    marginLeft: numCols > 1 ? "-20mm" : "0", // expand left if multiple cols
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      <th
+                        colSpan={numCols * 2}
+                        style={{
+                          padding: "1.5mm 3mm",
+                          textAlign: "center",
+                          fontWeight: "500",
+                          color: "#000",
+                          border: "1px solid #000",
+                          fontSize: "15pt",
+                        }}
+                      >
+                        حصيلة نتائج الطالب/الطالبة
+                      </th>
+                    </tr>
+                    <tr>
+                      {Array.from({ length: numCols }).map((_, i) => (
+                        <React.Fragment key={i}>
+                          <th
+                            style={{
+                              padding: "1mm 3mm",
+                              textAlign: "center",
+                              fontWeight: "700",
+                              color: "#1a0e00",
+                              border: "1.2px solid #000",
+                              fontSize: "13pt",
+                            }}
+                          >
+                            المادة
+                          </th>
+                          <th
+                            style={{
+                              padding: "1mm 2mm",
+                              textAlign: "center",
+                              fontWeight: "700",
+                              color: "#1a0e00",
+                              border: "1.2px solid #000",
+                              width: "35mm",
+                              fontSize: "13pt",
+                            }}
+                          >
+                            الدرجة
+                          </th>
+                        </React.Fragment>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: rowsPerCol }).map((_, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {Array.from({ length: numCols }).map((_, colIndex) => {
+                          const itemIndex = colIndex * rowsPerCol + rowIndex;
+                          const row = data.nilaiRows[itemIndex];
+                          
+                          if (!row) {
+                            return (
+                              <React.Fragment key={colIndex}>
+                                <td style={{ border: "1px solid #000" }}></td>
+                                <td style={{ border: "1px solid #000" }}></td>
+                              </React.Fragment>
+                            );
+                          }
+
+                          return (
+                            <React.Fragment key={colIndex}>
+                              <td
+                                style={{
+                                  padding: "1mm 3mm",
+                                  textAlign: "center",
+                                  color: "#1a0e00",
+                                  border: "1px solid #000",
+                                  fontSize: "13pt",
+                                }}
+                              >
+                                {row.nama_arab}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "1mm 2mm",
+                                  textAlign: "center",
+                                  fontWeight: "700",
+                                  color: "#1a0e00",
+                                  border: "1px solid #000",
+                                  fontSize: "13pt",
+                                }}
+                              >
+                                {isMusyarokah || row.skor === null ? "" : convertToArabicNumerals(row.skor)}
+                              </td>
+                            </React.Fragment>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              );
+            })()}
           </div>
         )}
 
+        {/* Main Content Area */}
         <div
           dir="rtl"
           style={{
@@ -211,16 +312,37 @@ export function SyahadahDocument({ qrUrl, data }: SyahadahDocumentProps) {
             overflow: "visible",
           }}
         >
-          <div style={{ fontSize: "15pt", lineHeight: 2, color: "#1a0e00", textAlign: "justify", marginBottom: "4mm", marginTop: 0 }}>
+          {/* Paragraf Pembuka */}
+          <div
+            {...elProps("paragrafPembuka", editorMode, selectedElement, onSelectElement, "Paragraf Pembuka")}
+            style={{
+              fontSize: "15pt",
+              lineHeight: 2,
+              color: "#1a0e00",
+              textAlign: "justify",
+              marginBottom: "4mm",
+              marginTop: 0,
+              transform: `translate(${lo.paragrafPembuka.offsetX}mm, ${lo.paragrafPembuka.offsetY}mm)`,
+            }}
+          >
             <p dir="rtl" style={{ textAlign: "center", marginLeft: "100px", marginTop: "27px" }}>
               بعد الوصية بتقوى الله واتباع سنة رسول الله، قرر مركز العربية بباري كديري إندونيسيا، منح شهادة الاستكمال للطالب/الطالبة :
             </p>
           </div>
 
-          <div style={{ textAlign: "center", marginBottom: "2mm", marginLeft: "50px" }}>
+          {/* Nama Santri */}
+          <div
+            {...elProps("namaSantri", editorMode, selectedElement, onSelectElement, "Nama Santri")}
+            style={{
+              textAlign: "center",
+              marginBottom: "2mm",
+              marginLeft: "50px",
+              transform: `translate(${lo.namaSantri.offsetX}mm, ${lo.namaSantri.offsetY}mm)`,
+            }}
+          >
             <span
               style={{
-                fontSize: "32pt",
+                fontSize: `${namaFontSize}pt`,
                 fontWeight: "900",
                 color: "#1a6b1a",
                 fontFamily: "Georgia, 'Times New Roman', serif",
@@ -233,83 +355,176 @@ export function SyahadahDocument({ qrUrl, data }: SyahadahDocumentProps) {
             </span>
           </div>
 
-          <p style={{ fontSize: "13pt", lineHeight: 2, color: "#1a0e00", textAlign: "justify", margin: 0, marginRight: "70px" }}>
+          {/* Teks Duf'ah */}
+          <p
+            {...elProps("teksDufah", editorMode, selectedElement, onSelectElement, "Teks Duf'ah")}
+            style={{
+              fontSize: "13pt",
+              lineHeight: 2,
+              color: "#1a0e00",
+              textAlign: "justify",
+              margin: 0,
+              marginRight: "70px",
+              transform: `translate(${lo.teksDufah.offsetX}mm, ${lo.teksDufah.offsetY}mm)`,
+              position: "relative",
+            }}
+          >
             وذلك لإكماله/لإكمالها الدراسات والامتحانات التي أقيمت في الدفعة <strong style={{ color: "#8B1A1A" }}>{translateDufahToArabic(data.masterSantri.dufahNama)}</strong>
           </p>
 
-          <p style={{ fontSize: "13pt", lineHeight: 2, color: "#1a0e00", textAlign: "center", margin: 0 }}>
+          {/* Teks Program */}
+          <p
+            {...elProps("teksProgram", editorMode, selectedElement, onSelectElement, "Teks Program")}
+            style={{
+              fontSize: "13pt",
+              lineHeight: 2,
+              color: "#1a0e00",
+              textAlign: "center",
+              margin: 0,
+              transform: `translate(${lo.teksProgram.offsetX}mm, ${lo.teksProgram.offsetY}mm)`,
+              position: "relative",
+            }}
+          >
             برنامج <strong style={{ color: "#8B1A1A", textDecoration: "underline" }}>{data.program.nama_arab}</strong>
           </p>
 
-          <p style={{ fontSize: "13pt", lineHeight: 2, fontWeight: "700", textAlign: "center", margin: 0 }}>
+          {/* Teks Periode */}
+          <p
+            {...elProps("teksPeriode", editorMode, selectedElement, onSelectElement, "Teks Periode")}
+            style={{
+              fontSize: "13pt",
+              lineHeight: 2,
+              fontWeight: "700",
+              textAlign: "center",
+              margin: 0,
+              transform: `translate(${lo.teksPeriode.offsetX}mm, ${lo.teksPeriode.offsetY}mm)`,
+              position: "relative",
+            }}
+          >
             <span style={{ color: "#1a0e00" }}>التي تقام خلال فترات </span>
             <strong style={{ color: "#8B1A1A" }}>{tanggalMulai}</strong>
             <span style={{ color: "#8B1A1A" }}> إلى </span>
             <strong style={{ color: "#8B1A1A" }}>{tanggalSampai}</strong>
           </p>
 
+          {/* Rata-rata & Predikat */}
           {!isMusyarokah && (
-            <>
+            <div
+              {...elProps("rataRata", editorMode, selectedElement, onSelectElement, "Rata-rata & Predikat")}
+              style={{
+                transform: `translate(${lo.rataRata.offsetX}mm, ${lo.rataRata.offsetY}mm)`,
+                position: "relative",
+              }}
+            >
               <p style={{ fontSize: "15pt", lineHeight: 2, color: "#1a0e00", textAlign: "center", margin: 0 }}>
                 بمعدل تراكمي عام (<strong>{averageValue}</strong>)
               </p>
               <p style={{ fontSize: "15pt", lineHeight: 2, color: "#1a0e00", textAlign: "center", margin: 0 }}>
                 وبتقدير <strong style={{ color: "#8B1A1A", textDecoration: "underline" }}>{averagePredikat}</strong>
               </p>
-            </>
+            </div>
           )}
 
-          <p style={{ fontSize: "15pt", lineHeight: 2, color: "#1a0e00", textAlign: "center", margin: 0 }}>
+          {/* Doa Penutup */}
+          <p
+            {...elProps("doaPenutup", editorMode, selectedElement, onSelectElement, "Doa Penutup")}
+            style={{
+              fontSize: "15pt",
+              lineHeight: 2,
+              color: "#1a0e00",
+              textAlign: "center",
+              margin: 0,
+              transform: `translate(${lo.doaPenutup.offsetX}mm, ${lo.doaPenutup.offsetY}mm)`,
+              position: "relative",
+            }}
+          >
             نسأل الله أن يوفقه/يوفقها لخدمة الإسلام والعلم
           </p>
 
+          {/* Signature Area - Each element separate */}
           <div style={{ marginTop: "auto", display: "flex", justifyContent: "flex-end" }}>
             <div style={{ textAlign: "center", minWidth: "55mm", position: "relative" }}>
-              <p style={{ fontSize: "15pt", color: "#1a0e00", marginBottom: "2mm", marginTop: -50, marginLeft: "-39mm" }}>
+              {/* Jabatan Mudir */}
+              <p
+                {...elProps("jabatanMudir", editorMode, selectedElement, onSelectElement, "Jabatan Mudir")}
+                style={{
+                  fontSize: "15pt",
+                  color: "#1a0e00",
+                  marginBottom: "2mm",
+                  marginTop: -50,
+                  marginLeft: "-39mm",
+                  transform: `translate(${lo.jabatanMudir.offsetX}mm, ${lo.jabatanMudir.offsetY}mm)`,
+                  position: "relative",
+                }}
+              >
                 {data.template.jabatan_mudir_arab}
               </p>
+
               <div style={{ position: "relative", height: "19mm", marginBottom: "1mm" }}>
+                {/* Stempel */}
                 <img
+                  {...elProps("stempel", editorMode, selectedElement, onSelectElement, "Stempel")}
                   src="/images/stamp.png"
                   alt="Stempel"
                   style={{
                     position: "absolute",
-                    left: "-29mm",
-                    bottom: "-13mm",
+                    left: `calc(-29mm + ${lo.stempel.offsetX}mm)`,
+                    bottom: `calc(-13mm + ${-lo.stempel.offsetY}mm)`,
                     height: "40mm",
                     objectFit: "contain",
                     opacity: 0.88,
                     zIndex: 3,
+                    ...(editorMode ? { cursor: "pointer" } : {}),
                   }}
                 />
+                {/* Tanda Tangan */}
                 <img
+                  {...elProps("tandaTangan", editorMode, selectedElement, onSelectElement, "Tanda Tangan")}
                   src="/images/signature.png"
                   alt="Tanda Tangan"
                   style={{
                     position: "absolute",
-                    left: "-29mm",
-                    bottom: "-2mm",
+                    left: `calc(-29mm + ${lo.tandaTangan.offsetX}mm)`,
+                    bottom: `calc(-2mm + ${-lo.tandaTangan.offsetY}mm)`,
                     height: "25mm",
                     objectFit: "contain",
                     zIndex: 1,
+                    ...(editorMode ? { cursor: "pointer" } : {}),
                   }}
                 />
               </div>
-              <p style={{ fontSize: "15pt", fontWeight: "400", color: "#1a0e00", paddingTop: "1mm", margin: 0, marginLeft: "-50mm" }}>
+
+              {/* Nama Mudir */}
+              <p
+                {...elProps("namaMudir", editorMode, selectedElement, onSelectElement, "Nama Mudir")}
+                style={{
+                  fontSize: "15pt",
+                  fontWeight: "400",
+                  color: "#1a0e00",
+                  paddingTop: "1mm",
+                  margin: 0,
+                  marginLeft: "-50mm",
+                  transform: `translate(${lo.namaMudir.offsetX}mm, ${lo.namaMudir.offsetY}mm)`,
+                  position: "relative",
+                }}
+              >
                 {data.template.nama_mudir_arab}
               </p>
             </div>
           </div>
         </div>
 
+        {/* Tanggal Cetak */}
         <div
+          {...elProps("tanggalCetak", editorMode, selectedElement, onSelectElement, "Tanggal Cetak")}
           style={{
             position: "absolute",
-            bottom: "8mm",
-            left: "45%",
+            bottom: `calc(8mm + ${-lo.tanggalCetak.offsetY}mm)`,
+            left: `calc(45% + ${lo.tanggalCetak.offsetX}mm)`,
             transform: "translateX(-50%)",
             zIndex: 4,
             direction: "rtl",
+            ...(editorMode ? { cursor: "pointer" } : {}),
           }}
         >
           <p style={{ fontSize: "13pt", color: "#1a0e00", margin: 0, whiteSpace: "nowrap" }}>

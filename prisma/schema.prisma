@@ -15,6 +15,7 @@ model Program {
   programMapels  ProgramMapel[]
   riwayatRecords RiwayatSantri[]
   kelasList      Kelas[]
+  syahadahLayout SyahadahLayout?
 }
 
 model Kelas {
@@ -93,6 +94,7 @@ model RiwayatSantri {
   absenKelasList    AbsenKelas[]
   absenKegiatanList AbsenKegiatan[]
   riwayatUsbuList   RiwayatUsbu[]
+  syahadahLayout    SyahadahLayout?
 
   @@unique([santriId, dufahNama])
 }
@@ -138,6 +140,15 @@ model SyahadahTemplate {
   nama_mudir_arab    String
   jabatan_mudir_indo String
   jabatan_mudir_arab String
+}
+
+model SyahadahLayout {
+  id         String         @id @default(cuid())
+  riwayatId  String?        @unique
+  programId  String?        @unique
+  layoutData Json
+  riwayat    RiwayatSantri? @relation(fields: [riwayatId], references: [id], onDelete: Cascade)
+  program    Program?       @relation(fields: [programId], references: [id], onDelete: Cascade)
 }
 
 enum StatusAbsen {

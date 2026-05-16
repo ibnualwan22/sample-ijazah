@@ -56,9 +56,41 @@ a {
 @media print {
   .container-syahadah {
     display: block !important;
+    margin-bottom: 0 !important;
   }
   .doc-syahadah {
     transform: none !important;
     margin-bottom: 0 !important;
+    box-shadow: none !important;
   }
+}
+
+/* Syahadah Layout Editor */
+.syahadah-element {
+  transition: outline 0.15s ease, outline-offset 0.15s ease;
+  cursor: pointer;
+}
+.syahadah-element:hover {
+  outline: 2px dashed rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+}
+.syahadah-element.selected {
+  outline: 2.5px solid #2563eb;
+  outline-offset: 3px;
+  z-index: 10;
+}
+.syahadah-element.selected::after {
+  content: attr(data-label);
+  position: absolute;
+  top: -22px;
+  left: 0;
+  background: #2563eb;
+  color: white;
+  font-size: 9px;
+  font-family: sans-serif;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 20;
+  pointer-events: none;
 }

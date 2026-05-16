@@ -2,6 +2,7 @@ import { SyahadahDocument } from "@/components/syahadah-document";
 import { PrintToolbar } from "@/components/print-toolbar";
 import { getBaseUrl } from "@/lib/base-url";
 import { getDashboardSantriRows, getCertificateData } from "@/lib/app-data";
+import { getLayoutForRiwayat, getProgramLayout } from "@/lib/syahadah-layout";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -31,11 +32,37 @@ export default async function CetakBulkPage({
     );
   }
 
-  // Fetch all certificate data in parallel for eligible santris
+  // Fetch global layout as fallback
+  const globalLayout = await getProgramLayout("global");
+
+  // Pre-fetch layouts for known programs to avoid N+1 queries
+  const programLayouts = new Map<string, any>();
+  const uniquePrograms = Array.from(new Set(eligibleSantris.map(s => s.programId).filter(Boolean)));
+  for (const pid of uniquePrograms) {
+    if (pid) {
+      programLayouts.set(pid, await getProgramLayout(pid));
+    }
+  }
+
+  // Fetch all certificate data + layouts in parallel for eligible santris
   const certificateDataList = await Promise.all(
     eligibleSantris.map(async (santri) => {
       const data = await getCertificateData(santri.id);
-      return { id: santri.id, data };
+      
+      let layout = globalLayout;
+      const programId = data?.program?.id;
+      
+      // Try per-program layout
+      if (programId && programLayouts.has(programId)) {
+        layout = programLayouts.get(programId);
+      }
+      
+      // Try per-santri layout override
+      if (data?.riwayatSantri?.id && programId) {
+        layout = await getLayoutForRiwayat(data.riwayatSantri.id, programId);
+      }
+      
+      return { id: santri.id, data, layout };
     })
   );
 
@@ -54,10 +81,10 @@ export default async function CetakBulkPage({
         <PrintToolbar backHref="/admin/syahadah" backLabel="Kembali ke Data Syahadah" />
 
         <div className="flex flex-col items-center gap-10 print:gap-0">
-          {certificateDataList.map(({ id, data }) => {
+          {certificateDataList.map(({ id, data, layout }) => {
             if (!data) return null;
             const qrUrl = `${baseUrl}/ijazah/${id}`;
-            return <SyahadahDocument key={id} qrUrl={qrUrl} data={data as any} />;
+            return <SyahadahDocument key={id} qrUrl={qrUrl} data={data as any} layout={layout} />;
           })}
         </div>
       </div>

@@ -1,8 +1,8 @@
 import { getCertificateData } from "@/lib/app-data";
 import { getBaseUrl } from "@/lib/base-url";
 import { notFound } from "next/navigation";
-import { SyahadahDocument } from "@/components/syahadah-document";
-import { PrintToolbar } from "@/components/print-toolbar";
+import { SyahadahEditor } from "@/components/syahadah-editor";
+import { getLayoutForRiwayat } from "@/lib/syahadah-layout";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -50,22 +50,29 @@ export default async function CetakPage({
   const baseUrl = await getBaseUrl();
   const qrUrl = `${baseUrl}/ijazah/${id}`;
 
-  return (
-    <>
-      <style>{`
-        html, body { margin: 0; padding: 0; background: #171717; }
-        @media print {
-          html, body { background: white !important; margin: 0 !important; padding: 0 !important; }
-          @page { size: 330mm 215mm; landscape; margin: 0; }
-        }
-      `}</style>
+  const riwayatId = data.riwayatSantri?.id ?? null;
+  const programId = data.program?.id ?? null;
+  
+  // Fetch layout: per-santri override → per-program → global → default
+  let layout;
+  if (riwayatId && programId) {
+    layout = await (await import("@/lib/syahadah-layout")).getLayoutForRiwayat(riwayatId, programId);
+  } else if (programId) {
+    layout = await (await import("@/lib/syahadah-layout")).getProgramLayout(programId);
+  } else {
+    layout = await (await import("@/lib/syahadah-layout")).getProgramLayout("global");
+  }
 
-      <div className="min-h-screen bg-neutral-900 px-4 py-8 print:bg-white print:p-0">
-        <PrintToolbar backHref="/admin/dashboard" backLabel="Kembali ke Dashboard" />
-        <div className="flex flex-col items-center gap-10 print:gap-0">
-          <SyahadahDocument qrUrl={qrUrl} data={data as any} />
-        </div>
-      </div>
-    </>
+  return (
+    <SyahadahEditor
+      qrUrl={qrUrl}
+      data={data as any}
+      initialLayout={layout}
+      riwayatId={riwayatId}
+      programId={programId}
+      mode="per-santri"
+      backHref="/admin/dashboard"
+      backLabel="← Kembali ke Dashboard"
+    />
   );
 }

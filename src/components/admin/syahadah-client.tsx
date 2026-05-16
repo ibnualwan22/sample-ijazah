@@ -122,6 +122,12 @@ export function SyahadahClient({
             >
               Atur KKM &amp; Template
             </Link>
+            <Link
+              href="/layout-editor"
+              className="rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100"
+            >
+              🎨 Atur Layout Syahadah
+            </Link>
             {filterKelasId !== "ALL" && filterKelasId !== "UNASSIGNED" && !filterKelasId.startsWith("PROGRAM_") && (
               <a
                 href={`/cetak-bulk/${filterKelasId}`}
