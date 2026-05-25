@@ -14,6 +14,8 @@ type MapelOption = {
   tampil_di_syahadah: boolean;
   masuk_akumulasi: boolean;
   bobot: number;
+  bulan_aktif?: number;
+  jumlah_tes_b2?: number | null;
 };
 
 type ProgramOption = {
@@ -79,12 +81,14 @@ export function InputNilaiForm({
   internalSantri,
   activeRiwayat,
   activeFlags,
+  allRiwayat,
 }: {
   santri: MasterSantri;
   programList: ProgramOption[];
   internalSantri: InternalSantri;
   activeRiwayat: ActiveRiwayat;
   activeFlags: { u1: boolean; u2: boolean; u3: boolean };
+  allRiwayat: any[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -92,9 +96,6 @@ export function InputNilaiForm({
   const [selectedKelasId, setSelectedKelasId] = useState(
     activeRiwayat?.kelasId ?? "",
   );
-  const [tempatLahir, setTempatLahir] = useState(internalSantri?.tempat_lahir ?? "");
-  const [tanggalLahir, setTanggalLahir] = useState(internalSantri?.tanggal_lahir ?? "");
-  const [alamat, setAlamat] = useState(internalSantri?.alamat ?? "");
   const [isTasmi, setIsTasmi] = useState(activeRiwayat?.is_tasmi ?? false);
   const [nilaiByMapel, setNilaiByMapel] = useState<Record<string, { u1: string, u2: string, n: string, a: string }>>(() => {
     return Object.fromEntries(
@@ -113,7 +114,27 @@ export function InputNilaiForm({
   const selectedProgram = programList.find((program) =>
     program.kelasList.some((k) => k.id === selectedKelasId)
   ) ?? null;
-  const activeMapelList = selectedProgram?.mapelList ?? [];
+
+  const isAkbarnas = selectedProgram?.nama_indo.toLowerCase().includes("akbarnas") ?? false;
+  const akbarnasHistoricalCount = (allRiwayat ?? []).filter((r: any) => 
+    r.id !== activeRiwayat?.id && 
+    programList.find((p) => p.id === r.programId)?.nama_indo.toLowerCase().includes("akbarnas")
+  ).length;
+  const isMonth2 = isAkbarnas && akbarnasHistoricalCount > 0;
+
+  const activeMapelList = (selectedProgram?.mapelList ?? []).filter((mapel) => {
+    if (!isAkbarnas) return true;
+    if (isMonth2) {
+      return mapel.bulan_aktif !== 1;
+    } else {
+      return mapel.bulan_aktif !== 2;
+    }
+  }).map((mapel) => {
+    if (isMonth2 && mapel.jumlah_tes_b2 !== null && mapel.jumlah_tes_b2 !== undefined) {
+      return { ...mapel, jumlah_tes: mapel.jumlah_tes_b2 };
+    }
+    return mapel;
+  });
 
   const parsedNilai = activeMapelList.map((mapel) => {
     const val = nilaiByMapel[mapel.id] || { u1: "", u2: "", n: "", a: "" };
@@ -121,8 +142,18 @@ export function InputNilaiForm({
     const currU2 = val.u2 === "" ? null : Number(val.u2);
     const currN = val.n === "" ? null : Number(val.n);
 
+
+
     const currA = mapel.jumlah_tes === 1 ? (val.a === "" ? null : Number(val.a)) :
-      ((currU1 !== null || currU2 !== null || currN !== null) ? Number((((currU1 || 0) * 0.3) + ((currU2 || 0) * 0.3) + ((currN || 0) * 0.4)).toFixed(2)) : null);
+      ((currU1 !== null || currU2 !== null || currN !== null) ? Number(
+        isAkbarnas
+          ? (() => {
+              const activeValues = [currU1, currU2, currN].filter((v): v is number => v !== null);
+              const sum = activeValues.reduce((acc, v) => acc + v, 0);
+              return (sum / activeValues.length).toFixed(2);
+            })()
+          : (((currU1 || 0) * 0.3) + ((currU2 || 0) * 0.3) + ((currN || 0) * 0.4)).toFixed(2)
+      ) : null);
 
     return {
       mapelId: mapel.id,
@@ -175,10 +206,11 @@ export function InputNilaiForm({
       return;
     }
 
-    if (hasIncompleteNilai) {
-      setError("Semua nilai mapel wajib diisi.");
-      return;
-    }
+    // Validasi ini dimatikan agar admin bisa menyimpan nilai sebagian (draft)
+    // if (hasIncompleteNilai) {
+    //   setError("Semua nilai mapel wajib diisi.");
+    //   return;
+    // }
 
     startTransition(async () => {
       const response = await fetch(`/api/admin/santri/${santri.id}`, {
@@ -188,9 +220,6 @@ export function InputNilaiForm({
         },
         body: JSON.stringify({
           kelasId: selectedKelasId,
-          tempat_lahir: tempatLahir,
-          tanggal_lahir: tanggalLahir,
-          alamat: alamat,
           is_tasmi: isTasmi,
           nilaiList: parsedNilai.map((mapel) => ({
             mapelId: mapel.mapelId,
@@ -270,41 +299,6 @@ export function InputNilaiForm({
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-4">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-700">Data Diri</p>
-          <h3 className="mt-2 text-xl font-bold text-slate-900">Domisili dan Kelahiran</h3>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <label className="space-y-2 text-sm font-semibold text-slate-700">
-            <span>Tempat Lahir</span>
-            <input
-              type="text"
-              value={tempatLahir}
-              onChange={(e) => setTempatLahir(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-medium text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
-            />
-          </label>
-          <label className="space-y-2 text-sm font-semibold text-slate-700">
-            <span>Tanggal Lahir (misal: 17 Agustus 2000)</span>
-            <input
-              type="text"
-              value={tanggalLahir}
-              onChange={(e) => setTanggalLahir(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-medium text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
-            />
-          </label>
-          <label className="space-y-2 text-sm font-semibold text-slate-700 md:col-span-2">
-            <span>Alamat Lengkap</span>
-            <input
-              type="text"
-              value={alamat}
-              onChange={(e) => setAlamat(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-medium text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
-            />
-          </label>
-        </div>
-      </section>
 
       <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
         <div className="grid gap-6 md:grid-cols-2">
@@ -353,9 +347,16 @@ export function InputNilaiForm({
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-700">
               Input Nilai
             </p>
-            <h3 className="mt-2 text-2xl font-bold text-slate-900">
-              {selectedProgram ? `${selectedProgram.nama_indo} - KKM ${selectedProgram.kkm}` : "Pilih kelas untuk menampilkan mapel"}
-            </h3>
+            <div className="flex items-center gap-3 mt-2">
+              <h3 className="text-2xl font-bold text-slate-900">
+                {selectedProgram ? `${selectedProgram.nama_indo} - KKM ${selectedProgram.kkm}` : "Pilih kelas untuk menampilkan mapel"}
+              </h3>
+              {isAkbarnas && (
+                <span className={`px-3 py-1 text-xs font-bold rounded-full ${isMonth2 ? 'bg-indigo-100 text-indigo-700' : 'bg-purple-100 text-purple-700'}`}>
+                  {isMonth2 ? 'Bulan 2 (Riwayat Lanjutan)' : 'Bulan 1 (Riwayat Baru)'}
+                </span>
+              )}
+            </div>
           </div>
           <p className="text-sm text-slate-500">Skor wajib berupa angka 0-100.</p>
         </div>
@@ -372,10 +373,19 @@ export function InputNilaiForm({
                   key={mapel.id}
                   className="rounded-[1.75rem] border border-slate-200 bg-slate-50 px-4 py-4 transition hover:border-emerald-200 hover:bg-white flex flex-col"
                 >
-                  <span className="block text-sm font-bold text-slate-900">{mapel.nama_indo}</span>
-                  <span className="mt-1 block text-xs tracking-[0.2em] text-slate-500 mb-4">
-                    {mapel.nama_arab}
-                  </span>
+                  <div className="flex justify-between items-start gap-2">
+                    <div>
+                      <span className="block text-sm font-bold text-slate-900">{mapel.nama_indo}</span>
+                      <span className="mt-1 block text-xs tracking-[0.2em] text-slate-500 mb-4">
+                        {mapel.nama_arab}
+                      </span>
+                    </div>
+                    {isAkbarnas && (
+                      <span className={`shrink-0 px-2 py-1 rounded text-[10px] font-bold ${mapel.bulan_aktif === 1 ? 'bg-purple-100 text-purple-700' : mapel.bulan_aktif === 2 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-600'}`}>
+                        {mapel.bulan_aktif === 1 ? "Bulan 1" : mapel.bulan_aktif === 2 ? "Bulan 2" : "Bulan 1 & 2"}
+                      </span>
+                    )}
+                  </div>
 
                   <div className="grid grid-cols-3 gap-2 mt-auto">
                     {mapel.jumlah_tes === 3 ? (

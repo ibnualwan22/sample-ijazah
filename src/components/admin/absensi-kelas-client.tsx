@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import { Clock, Lock, CheckCircle2 } from "lucide-react";
 
@@ -42,7 +42,7 @@ export function AbsensiKelasClient({
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
-  const isTeacher = userRole === "PENGAJAR" || userRole === "WALI_KELAS";
+  const isTeacher = userRole !== "ADMIN" && allowedClassIds !== null;
   const [activeSession, setActiveSession] = useState<string | null>(null);
   const [hasCheckedSession, setHasCheckedSession] = useState(false);
   const [activeClassId, setActiveClassId] = useState<string | null>(null);
@@ -85,17 +85,20 @@ export function AbsensiKelasClient({
            const [tutupH, tutupM] = jadwal.jamTutup.split(':').map(Number);
            
            const bukaVal = bukaH * 60 + bukaM;
-           const tutupVal = tutupH * 60 + tutupM + jadwal.toleransiMenit;
-           const curVal = curHour * 60 + curMin;
+           const tutupBase = tutupH * 60 + tutupM;
+           let adjustedTutupVal = tutupBase + jadwal.toleransiMenit;
            
-           let isActive = false;
-           if (bukaVal <= tutupVal) {
-             // Normal case (e.g. 05:30 to 15:00)
-             isActive = curVal >= bukaVal && curVal <= tutupVal;
-           } else {
-             // Cross-midnight case (e.g. 22:00 to 02:00)
-             isActive = curVal >= bukaVal || curVal <= tutupVal;
+           if (tutupBase < bukaVal) {
+             adjustedTutupVal += 1440;
            }
+           
+           const curVal = curHour * 60 + curMin;
+           let adjustedCurVal = curVal;
+           if (curVal < bukaVal) {
+             adjustedCurVal += 1440;
+           }
+           
+           const isActive = adjustedCurVal >= bukaVal && adjustedCurVal <= adjustedTutupVal;
            
            if (isActive) {
              currentActive = jadwal.sesi;
@@ -107,15 +110,10 @@ export function AbsensiKelasClient({
           if (currentActive) {
             // Find class for this session
             const teachingThisSession = teacherSessions.find(ts => ts.sesi === currentActive);
-            
+            setSesi(currentActive as SesiKelas);
             if (teachingThisSession) {
-              setSesi(currentActive as SesiKelas);
               setKelasId(teachingThisSession.kelasId);
               setActiveClassId(teachingThisSession.kelasId);
-            } else {
-              // Active session exists, but teacher doesn't teach now
-              currentActive = null; 
-              setSesi("" as SesiKelas);
             }
           } else {
             setSesi("" as SesiKelas); 
@@ -126,6 +124,17 @@ export function AbsensiKelasClient({
       })
       .catch(() => setHasCheckedSession(true));
   }, [isTeacher, teacherSessions]);
+
+  const isCompleted = useMemo(() => {
+    if (!isTeacher) return false;
+    const statBelum = santriList.length - Object.keys(absenMap).length;
+    return statBelum === 0 && materi.trim() !== "" && waktuMulai !== "" && waktuSelesai !== "";
+  }, [isTeacher, santriList, absenMap, materi, waktuMulai, waktuSelesai]);
+
+  const isCompletedRef = useRef(isCompleted);
+  useEffect(() => {
+    isCompletedRef.current = isCompleted;
+  }, [isCompleted]);
 
   // Efek interval untuk auto-switch sesi
   useEffect(() => {
@@ -142,27 +151,53 @@ export function AbsensiKelasClient({
       const curHour = parseInt(parts.find(p => p.type === 'hour')?.value || '0');
       const curMin = parseInt(parts.find(p => p.type === 'minute')?.value || '0');
       
-      let currentActive: string | null = null;
+      const activeSesis: string[] = [];
       for (const jadwal of jadwalSesiList) {
          if (!jadwal.isActive) continue;
          const [bukaH, bukaM] = jadwal.jamBuka.split(':').map(Number);
          const [tutupH, tutupM] = jadwal.jamTutup.split(':').map(Number);
          
          const bukaVal = bukaH * 60 + bukaM;
-         const tutupVal = tutupH * 60 + tutupM + jadwal.toleransiMenit;
-         const curVal = curHour * 60 + curMin;
+         const tutupBase = tutupH * 60 + tutupM;
+         let adjustedTutupVal = tutupBase + jadwal.toleransiMenit;
          
-         let isActive = false;
-         if (bukaVal <= tutupVal) {
-           isActive = curVal >= bukaVal && curVal <= tutupVal;
-         } else {
-           isActive = curVal >= bukaVal || curVal <= tutupVal;
+         if (tutupBase < bukaVal) {
+           adjustedTutupVal += 1440;
          }
+         
+         const curVal = curHour * 60 + curMin;
+         let adjustedCurVal = curVal;
+         if (curVal < bukaVal) {
+           adjustedCurVal += 1440;
+         }
+         
+         const isActive = adjustedCurVal >= bukaVal && adjustedCurVal <= adjustedTutupVal;
          
          if (isActive) {
-           currentActive = jadwal.sesi;
-           break;
+           activeSesis.push(jadwal.sesi);
          }
+      }
+
+      let currentActive: string | null = null;
+      if (activeSesis.length > 0) {
+        if (activeSession && activeSesis.includes(activeSession)) {
+          // Sedang berada di sesi yang valid
+          if (isCompletedRef.current && activeSesis.length > 1) {
+            // Sudah selesai absen, dan ada sesi berikutnya yang bertabrakan (overlap)
+            const idx = activeSesis.indexOf(activeSession);
+            if (idx + 1 < activeSesis.length) {
+              currentActive = activeSesis[idx + 1];
+            } else {
+              currentActive = activeSession;
+            }
+          } else {
+            // Belum selesai ATAU tidak ada sesi overlap
+            currentActive = activeSession;
+          }
+        } else {
+          // Sesi saat ini sudah tidak valid (waktu habis), ambil yang pertama valid
+          currentActive = activeSesis[0];
+        }
       }
 
       if (activeSession !== currentActive) {
@@ -171,14 +206,15 @@ export function AbsensiKelasClient({
          if (currentActive) {
            if (isTeacher) {
              const teachingThisSession = teacherSessions.find(ts => ts.sesi === currentActive);
+             setSesi(currentActive as SesiKelas);
              if (teachingThisSession) {
-               setSesi(currentActive as SesiKelas);
                setKelasId(teachingThisSession.kelasId);
                setActiveClassId(teachingThisSession.kelasId);
                toast("Sesi berganti otomatis ke " + currentActive.replace('_', ' '), { icon: '🔄' });
+             } else if (teacherSessions.length > 0) {
+               toast("Sesi berganti otomatis ke " + currentActive.replace('_', ' '), { icon: '🔄' });
              } else {
-               setSesi("" as SesiKelas);
-               toast("Sesi berganti, Anda tidak ada jadwal", { icon: '🔄' });
+               toast("Sesi aktif berganti otomatis ke " + currentActive.replace('_', ' '), { icon: '🔄' });
              }
            } else {
              setSesi(currentActive as SesiKelas);
@@ -361,7 +397,9 @@ export function AbsensiKelasClient({
             <div className="flex flex-col gap-2 w-full md:w-auto">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 w-24">Tanggal</span>
-                <span className="text-sm font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">{tanggal}</span>
+                <span className="text-sm font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">
+                  {tanggal ? tanggal.split('-').reverse().join('-') : ""}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 w-24">Sesi Aktif</span>
@@ -369,6 +407,17 @@ export function AbsensiKelasClient({
                   {activeSession ? activeSession.replace('_', ' ') : "Tidak ada"}
                 </span>
               </div>
+              {activeSession && jadwalSesiList.find(j => j.sesi === activeSession) && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 w-24">Waktu</span>
+                  <span className="text-sm font-medium text-slate-600 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">
+                    {(() => {
+                      const j = jadwalSesiList.find(x => x.sesi === activeSession);
+                      return `${j.jamBuka} - ${j.jamTutup} (Dispensasi: ${j.toleransiMenit} mnt)`;
+                    })()}
+                  </span>
+                </div>
+              )}
               {activeClassId && (
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 w-24">Kelas</span>
@@ -570,7 +619,7 @@ export function AbsensiKelasClient({
           )}
         </div>
         
-        {isTeacher && activeSession && (
+        {isTeacher && activeSession && teacherSessions.some(ts => ts.sesi === activeSession && ts.kelasId === kelasId) && (
           <div className="p-6 md:p-8 bg-slate-50/50 border-t border-slate-200">
             {belumDiabsen > 0 ? (
               <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center flex flex-col items-center justify-center shadow-sm max-w-2xl mx-auto">
@@ -601,12 +650,20 @@ export function AbsensiKelasClient({
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-600 mb-2">Jam Masuk</label>
-                        <input type="time" value={waktuMulai} onChange={e=>setWaktuMulai(e.target.value)} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-mono" />
+                        <label className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-600 mb-2">Jam Masuk (24H)</label>
+                        <input type="text" placeholder="Contoh: 15:30" maxLength={5} value={waktuMulai} onChange={e=>{
+                          let val = e.target.value.replace(/[^0-9:]/g, '');
+                          if (val.length === 2 && !val.includes(':') && e.target.value.length > waktuMulai.length) val += ':';
+                          setWaktuMulai(val);
+                        }} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-mono placeholder:text-slate-300" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-600 mb-2">Jam Selesai</label>
-                        <input type="time" value={waktuSelesai} onChange={e=>setWaktuSelesai(e.target.value)} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-mono" />
+                        <label className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-600 mb-2">Jam Selesai (24H)</label>
+                        <input type="text" placeholder="Contoh: 17:00" maxLength={5} value={waktuSelesai} onChange={e=>{
+                          let val = e.target.value.replace(/[^0-9:]/g, '');
+                          if (val.length === 2 && !val.includes(':') && e.target.value.length > waktuSelesai.length) val += ':';
+                          setWaktuSelesai(val);
+                        }} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-mono placeholder:text-slate-300" />
                       </div>
                     </div>
                  </div>

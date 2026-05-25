@@ -47,6 +47,32 @@ export default async function CetakBulkUsbuPage({ params }: { params: Promise<{ 
 
     if (riwayatList.length === 0) continue;
 
+    const isAkbarnas = kelas.program.nama_indo.toLowerCase().includes("akbarnas");
+    let isMonth2 = false;
+
+    if (isAkbarnas && riwayatList.length > 0) {
+      const santriIds = riwayatList.map(r => r.santriId);
+      const pastRiwayat = await prisma.riwayatSantri.count({
+        where: {
+          santriId: { in: santriIds },
+          program: { nama_indo: { contains: "akbarnas", mode: "insensitive" } },
+          id: { notIn: riwayatList.map(r => r.id) }
+        }
+      });
+      if (pastRiwayat > 0) {
+        isMonth2 = true;
+      }
+    }
+
+    const activeMapels = kelas.program.programMapels.filter(pm => {
+      if (!isAkbarnas) return true;
+      if (isMonth2) {
+        return (pm.mapel as any).bulan_aktif !== 1;
+      } else {
+        return (pm.mapel as any).bulan_aktif !== 2;
+      }
+    });
+
     const rows = riwayatList.map(riwayat => {
       const ms = masterMap.get(riwayat.santriId);
       if (!ms && !riwayat.santri) return null;
@@ -56,8 +82,9 @@ export default async function CetakBulkUsbuPage({ params }: { params: Promise<{ 
 
       const mapelScores: (number | "-")[] = [];
       let totalSkorBobot = 0;
+      let totalBobotCalculated = 0;
 
-      for (const pm of kelas.program.programMapels) {
+      for (const pm of activeMapels) {
         const match = riwayat.nilaiList.find((n: any) => n.mapelId === pm.mapelId);
 
         let score: number | null = null;
@@ -73,13 +100,14 @@ export default async function CetakBulkUsbuPage({ params }: { params: Promise<{ 
           if (pm.mapel.masuk_akumulasi !== false) {
             const currentWeight = targetUsbu === 4 ? (pm.mapel.bobot ?? 1) : ((pm.mapel as any).bobot_usbu ?? 1);
             totalSkorBobot += score * currentWeight;
+            totalBobotCalculated += currentWeight;
           }
         } else {
           mapelScores.push("-");
         }
       }
 
-      const nilaiAkumulatif = Number((totalSkorBobot / 100).toFixed(2));
+      const nilaiAkumulatif = totalBobotCalculated > 0 ? Number((totalSkorBobot / totalBobotCalculated).toFixed(2)) : 0;
 
       return {
         nama,
@@ -102,7 +130,9 @@ export default async function CetakBulkUsbuPage({ params }: { params: Promise<{ 
 
     allClassData.push({
       kelas,
-      rows
+      activeMapels,
+      rows,
+      isMonth2
     });
   }
 
@@ -122,12 +152,12 @@ export default async function CetakBulkUsbuPage({ params }: { params: Promise<{ 
         }
       `}</style>
       <div className="bulk-container flex flex-col gap-8 md:gap-12">
-        {allClassData.map(({ kelas, rows }) => (
+        {allClassData.map(({ kelas, activeMapels, rows, isMonth2 }) => (
           <CetakUsbuDocument
             key={kelas.id}
-            kelasNama={kelas.nama}
+            kelasNama={kelas.nama + (isMonth2 ? " (Bulan 2)" : "")}
             usbuLabel={targetUsbu === 3 ? "Nihai" : targetUsbu === 4 ? "Akumulatif" : targetUsbu.toString()}
-            mapelHeaders={kelas.program.programMapels.map(pm => pm.mapel.nama_indo.toUpperCase() as string)}
+            mapelHeaders={activeMapels.map((pm: any) => pm.mapel.nama_indo.toUpperCase() as string)}
             rows={rows}
           />
         ))}

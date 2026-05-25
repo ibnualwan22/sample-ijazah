@@ -6,6 +6,8 @@ export type AcademicMapelConfig = {
   masuk_akumulasi?: boolean;
   tampil_di_syahadah?: boolean;
   jumlah_tes?: number;
+  bulan_aktif?: number;
+  jumlah_tes_b2?: number;
 };
 
 export type AcademicProgramConfig = {
@@ -131,7 +133,7 @@ export const PROGRAM_SEED_DATA: AcademicProgramConfig[] = [
       { nama_indo: "Uslub", nama_arab: "الأسلوب", bobot_usbu: 15, bobot: 15 },
       { nama_indo: "Mufradat", nama_arab: "المفردات", bobot_usbu: 10, bobot: 8 },
       { nama_indo: "Ta'birat", nama_arab: "التعبيرات", bobot_usbu: 15, bobot: 8 },
-      { nama_indo: "Qawaid", nama_arab: "القواعد", bobot_usbu: 15, bobot: 9 },
+      { nama_indo: "Qawaid", nama_arab: "القواعد", bobot_usbu: 15, bobot: 9, jumlah_tes_b2: 1 },
       { nama_indo: "Hiwar", nama_arab: "الحوار", bobot_usbu: 20, bobot: 9 },
       { nama_indo: "Arabiyah Lin Nasyiin", nama_arab: "العربية للناشئين", bobot_usbu: 15, bobot: 0 },
       { nama_indo: "MC", nama_arab: "إم سي", bobot_usbu: 0, bobot: 0, masuk_akumulasi: false },

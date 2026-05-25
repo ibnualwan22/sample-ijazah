@@ -2,13 +2,15 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { SesiKelas } from "@prisma/client";
+import { checkPermission } from "@/lib/permission";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ userId: string }> }
 ) {
   const session = await getSession();
-  if (!session || session.role !== "ADMIN") {
+  const hasPermission = await checkPermission("manajemen_kelas");
+  if (!session || !hasPermission) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -35,7 +37,8 @@ export async function POST(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   const session = await getSession();
-  if (!session || session.role !== "ADMIN") {
+  const hasPermission = await checkPermission("manajemen_kelas_edit");
+  if (!session || !hasPermission) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

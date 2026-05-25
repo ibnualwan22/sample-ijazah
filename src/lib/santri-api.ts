@@ -10,6 +10,9 @@ export type MasterSantri = {
   tanggalSampaiDufah: string | null;
   isAktif: boolean;
   kategori: string;
+  tempatLahir: string;
+  tanggalLahir: string | null;
+  alamat: string;
 };
 
 type ApiSantriResponse = {
@@ -35,9 +38,13 @@ type ApiSantriResponse = {
   }>;
   isAktif?: boolean;
   kategori?: string;
+  tempatLahir?: string | null;
+  tanggalLahir?: string | null;
+  detailAlamat?: string | null;
 };
 
-const SANTRI_API_URL = "https://ppdb-markaz.vercel.app/api/santri";
+// const SANTRI_API_URL = "https://ppdb-markaz.vercel.app/api/santri";
+const SANTRI_API_URL = "http://localhost:3000/api/santri";
 
 function normalizeSantri(santri: ApiSantriResponse): MasterSantri {
   const assignedRiwayat = santri.riwayat?.find((riwayat) => riwayat.status === "ASSIGNED");
@@ -54,6 +61,9 @@ function normalizeSantri(santri: ApiSantriResponse): MasterSantri {
     tanggalSampaiDufah: assignedRiwayat?.dufah?.tanggalTutup ?? null,
     isAktif: santri.isAktif ?? false,
     kategori: santri.kategori ?? "-",
+    tempatLahir: santri.tempatLahir ?? "",
+    tanggalLahir: santri.tanggalLahir ?? null,
+    alamat: santri.detailAlamat ?? "",
   };
 }
 

@@ -9,7 +9,7 @@ export async function PUT(
   try {
     const { id, mapelId } = await params;
     const body = await request.json();
-    const { nama_indo, nama_arab, jumlah_tes, tampil_di_syahadah, masuk_akumulasi } = body;
+    const { nama_indo, nama_arab, jumlah_tes, tampil_di_syahadah, masuk_akumulasi, bulan_aktif, jumlah_tes_b2 } = body;
 
     if (!nama_indo?.trim() || !nama_arab?.trim()) {
       return NextResponse.json({ error: "Nama mapel (Indo & Arab) wajib diisi." }, { status: 400 });
@@ -37,6 +37,8 @@ export async function PUT(
         masuk_akumulasi: masuk_akumulasi !== undefined ? Boolean(masuk_akumulasi) : undefined,
         bobot: body.bobot !== undefined ? Number(body.bobot) : undefined,
         bobot_usbu: body.bobot_usbu !== undefined ? Number(body.bobot_usbu) : undefined,
+        bulan_aktif: bulan_aktif !== undefined ? Number(bulan_aktif) : undefined,
+        jumlah_tes_b2: jumlah_tes_b2 !== undefined ? (jumlah_tes_b2 === null ? null : Number(jumlah_tes_b2)) : undefined,
       },
     });
 

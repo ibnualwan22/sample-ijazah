@@ -1,33 +1,10 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getMasterSantriList } from "@/lib/santri-api";
+import { syncDufahTable } from "@/lib/absensi";
 
 export async function GET() {
   try {
-    // 1. Sync dufah dari master API 
-    const masterList = await getMasterSantriList();
-    const dufahSet = new Set<string>();
-    masterList.forEach(m => {
-      if (m.dufahNama && m.dufahNama !== "-") {
-        dufahSet.add(m.dufahNama);
-      }
-    });
-
-    if (dufahSet.size > 0) {
-      const existingDufahs = await prisma.dufah.findMany({
-        where: { nama: { in: Array.from(dufahSet) } },
-        select: { nama: true }
-      });
-      const existingNames = new Set(existingDufahs.map(d => d.nama));
-      
-      const missingDufahs = Array.from(dufahSet).filter(name => !existingNames.has(name));
-      if (missingDufahs.length > 0) {
-        await prisma.dufah.createMany({
-          data: missingDufahs.map(nama => ({ nama })),
-          skipDuplicates: true
-        });
-      }
-    }
+    await syncDufahTable();
 
     const dufahList = await prisma.dufah.findMany({
       orderBy: { nama: "desc" },

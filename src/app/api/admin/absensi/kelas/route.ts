@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 
   const userSession = (await getSession()) as any;
   let absenPengajarData = null;
-  if (userSession && (userSession.role === "PENGAJAR" || userSession.role === "WALI_KELAS")) {
+  if (userSession && userSession.role !== "ADMIN") {
      absenPengajarData = await prisma.absenPengajar.findUnique({
        where: {
          userId_tanggal_sesi: {
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
       })
     );
 
-    if (userSession && (userSession.role === "PENGAJAR" || userSession.role === "WALI_KELAS") && absenPengajar && kelasId) {
+    if (userSession && userSession.role !== "ADMIN" && absenPengajar && kelasId) {
       operations.push(
         prisma.absenPengajar.upsert({
           where: {

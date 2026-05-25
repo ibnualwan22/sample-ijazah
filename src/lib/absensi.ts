@@ -4,15 +4,27 @@ import { getMasterSantriList } from "@/lib/santri-api";
 export { getTodayWibString, parseWibDateString } from "./jadwal-sesi";
 
 export async function syncDufahTable() {
-  const masterList = await getMasterSantriList();
-  
-  // 1. Kumpulkan semua dufah valid dari PPDB
-  const validDufahNames = new Set<string>();
-  masterList.forEach(m => {
-    if (m.dufahNama && m.dufahNama !== "-") {
-      validDufahNames.add(m.dufahNama);
+  let validDufahNames = new Set<string>();
+
+  try {
+    const response = await fetch("http://localhost:3000/api/dufah", { cache: "no-store" });
+    if (response.ok) {
+      const data = await response.json();
+      data.forEach((d: any) => {
+        if (d.nama && d.nama !== "-") validDufahNames.add(d.nama);
+      });
+    } else {
+      throw new Error("Failed to fetch dufah API");
     }
-  });
+  } catch (err) {
+    // Fallback to reading from master santri
+    const masterList = await getMasterSantriList();
+    masterList.forEach(m => {
+      if (m.dufahNama && m.dufahNama !== "-") {
+        validDufahNames.add(m.dufahNama);
+      }
+    });
+  }
 
   // 2. Ambil dufah yang ada di DB lokal
   const existingDufahs = await prisma.dufah.findMany({ select: { nama: true } });
@@ -20,13 +32,13 @@ export async function syncDufahTable() {
 
   // 3. Hapus dufah (dan riwayat) yang tidak ada di PPDB
   const invalidDufahNames = Array.from(existingNames).filter(name => !validDufahNames.has(name));
-  
+
   if (invalidDufahNames.length > 0) {
     // Cascade-like manual delete karena 'Restrict'
     await prisma.riwayatSantri.deleteMany({
       where: { dufahNama: { in: invalidDufahNames } }
     });
-    
+
     await prisma.dufah.deleteMany({
       where: { nama: { in: invalidDufahNames } }
     });
@@ -88,7 +100,7 @@ export async function getActiveRiwayatListForAbsen(filterKelasId?: string, filte
   // Ambil data santri aktif dari API
   const masterSantriList = await getMasterSantriList();
   const activeSantriMap = new Map<string, string>(); // santriId -> active dufahNama
-  
+
   for (const ms of masterSantriList) {
     if (ms.isAktif) {
       activeSantriMap.set(ms.id, ms.dufahNama);
@@ -106,10 +118,10 @@ export async function getActiveRiwayatListForAbsen(filterKelasId?: string, filte
       where: { santriId: { in: activeSantriIds } },
       select: { santriId: true, dufahNama: true }
     });
-    
+
     const riwayatSet = new Set(existingRiwayat.map(r => `${r.santriId}_${r.dufahNama}`));
     const missingRiwayat = activeMasterSantri.filter(ms => !riwayatSet.has(`${ms.id}_${ms.dufahNama}`));
-    
+
     if (missingRiwayat.length > 0) {
       // Upsert SantriInternal
       const existingInternal = await prisma.santriInternal.findMany({
@@ -118,24 +130,44 @@ export async function getActiveRiwayatListForAbsen(filterKelasId?: string, filte
       });
       const internalIds = new Set(existingInternal.map(s => s.id));
       const newInternals = missingRiwayat.filter(ms => !internalIds.has(ms.id));
-      
+
       if (newInternals.length > 0) {
         await prisma.santriInternal.createMany({
           data: newInternals.map(ms => ({ id: ms.id, nama: ms.nama })),
           skipDuplicates: true
         });
       }
-      
+
+      // Fetch previous riwayats to auto-assign Akbarnas
+      const previousRiwayats = await prisma.riwayatSantri.findMany({
+        where: { santriId: { in: missingRiwayat.map(ms => ms.id) } },
+        include: { program: true },
+        orderBy: { id: 'desc' }
+      });
+
+      const santriToAkbarnasClass = new Map<string, { programId: string, kelasId: string }>();
+
+      for (const pr of previousRiwayats) {
+        if (!santriToAkbarnasClass.has(pr.santriId) && pr.program && pr.program.nama_indo.toLowerCase().includes("akbarnas")) {
+          if (pr.kelasId && pr.programId) {
+            santriToAkbarnasClass.set(pr.santriId, { programId: pr.programId, kelasId: pr.kelasId });
+          }
+        }
+      }
+
       // Create missing RiwayatSantri
       await prisma.riwayatSantri.createMany({
-        data: missingRiwayat.map(ms => ({
-          santriId: ms.id,
-          dufahNama: ms.dufahNama,
-          programId: null,
-          kelasId: null,
-          is_tasmi: false,
-          status_kelulusan: "TIDAK_LULUS"
-        })),
+        data: missingRiwayat.map(ms => {
+          const pastAkbarnas = santriToAkbarnasClass.get(ms.id);
+          return {
+            santriId: ms.id,
+            dufahNama: ms.dufahNama,
+            programId: pastAkbarnas ? pastAkbarnas.programId : null,
+            kelasId: pastAkbarnas ? pastAkbarnas.kelasId : null,
+            is_tasmi: false,
+            status_kelulusan: "TIDAK_LULUS"
+          };
+        }),
         skipDuplicates: true
       });
     }
@@ -145,9 +177,9 @@ export async function getActiveRiwayatListForAbsen(filterKelasId?: string, filte
   const whereClause: any = {};
   if (filterKelasId && filterKelasId !== "ALL" && filterKelasId !== "UNASSIGNED") {
     if (filterKelasId.startsWith("PROGRAM_")) {
-       whereClause.programId = filterKelasId.replace("PROGRAM_", "");
+      whereClause.programId = filterKelasId.replace("PROGRAM_", "");
     } else {
-       whereClause.kelasId = filterKelasId;
+      whereClause.kelasId = filterKelasId;
     }
   } else if (filterKelasId === "UNASSIGNED") {
     whereClause.programId = null;

@@ -6,7 +6,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   try {
     const { id: programId } = await params;
     const body = await request.json();
-    const { nama_indo, nama_arab, jumlah_tes, tampil_di_syahadah, masuk_akumulasi } = body;
+    const { nama_indo, nama_arab, jumlah_tes, tampil_di_syahadah, masuk_akumulasi, bulan_aktif, jumlah_tes_b2 } = body;
 
     if (!nama_indo?.trim() || !nama_arab?.trim()) {
       return NextResponse.json({ error: "Nama mapel (Indo & Arab) wajib diisi." }, { status: 400 });
@@ -41,6 +41,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         masuk_akumulasi: masuk_akumulasi !== undefined ? Boolean(masuk_akumulasi) : true,
         bobot: body.bobot !== undefined ? Number(body.bobot) : 1,
         bobot_usbu: body.bobot_usbu !== undefined ? Number(body.bobot_usbu) : 1,
+        bulan_aktif: bulan_aktif !== undefined ? Number(bulan_aktif) : 0,
+        jumlah_tes_b2: jumlah_tes_b2 !== null && jumlah_tes_b2 !== undefined ? Number(jumlah_tes_b2) : null,
       },
     });
 

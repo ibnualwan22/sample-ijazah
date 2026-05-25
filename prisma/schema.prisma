@@ -38,6 +38,8 @@ model Mapel {
   masuk_akumulasi    Boolean        @default(true)
   bobot              Int            @default(1)
   bobot_usbu         Int            @default(1)
+  bulan_aktif        Int            @default(0) // 0=Semua Bulan, 1=Hanya Bulan 1, 2=Hanya Bulan 2
+  jumlah_tes_b2      Int?           // Override jumlah tes jika berada di bulan ke-2 (Contoh: Qowaid = 1)
   programMapels      ProgramMapel[]
   nilaiList          Nilai[]
 }

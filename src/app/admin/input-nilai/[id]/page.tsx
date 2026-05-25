@@ -94,6 +94,7 @@ export default async function InputNilaiPage({
         programList={data.programList}
         internalSantri={data.internalSantri} 
         activeRiwayat={data.activeRiwayat} 
+        allRiwayat={data.allRiwayat}
       />
     </div>
   );

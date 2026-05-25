@@ -15,6 +15,7 @@ type PengajarRecord = {
   materi: string;
   waktuMulai: string;
   waktuSelesai: string;
+  status?: string;
   atribut: {
     nametag: boolean;
     kopiah: boolean;
@@ -232,19 +233,35 @@ export function RekapPengajarClient() {
                             </span>
                           </td>
                           <td className="px-4 py-3 font-semibold text-emerald-700">{r.kelas}</td>
-                          <td className="px-4 py-3 max-w-[200px] truncate" title={r.materi}>{r.materi}</td>
-                          <td className="px-4 py-3 text-center">
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold font-mono">
-                              <Clock className="w-3.5 h-3.5" />
-                              {r.waktuMulai} - {r.waktuSelesai}
-                            </div>
+                          <td className="px-4 py-3 max-w-[200px] truncate" title={r.materi}>
+                            {r.status === "ALPHA" ? (
+                              <span className="text-rose-600 font-bold bg-rose-50 px-2 py-1 rounded">{r.materi}</span>
+                            ) : (
+                              r.materi
+                            )}
                           </td>
                           <td className="px-4 py-3 text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              {r.atribut.kopiah ? <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Kopiah ✓</span> : <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Kopiah X</span>}
-                              {r.atribut.nametag ? <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Tag ✓</span> : <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Tag X</span>}
-                              {r.atribut.bros ? <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Bros ✓</span> : <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Bros X</span>}
-                            </div>
+                            {r.status === "ALPHA" ? (
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 text-xs font-bold font-mono">
+                                ALPHA
+                              </div>
+                            ) : (
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold font-mono">
+                                <Clock className="w-3.5 h-3.5" />
+                                {r.waktuMulai} - {r.waktuSelesai}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {r.status === "ALPHA" ? (
+                               <span className="text-rose-400 font-bold text-lg">-</span>
+                            ) : (
+                              <div className="flex items-center justify-center gap-1">
+                                {r.atribut.kopiah ? <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Kopiah ✓</span> : <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Kopiah X</span>}
+                                {r.atribut.nametag ? <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Tag ✓</span> : <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Tag X</span>}
+                                {r.atribut.bros ? <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Bros ✓</span> : <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Bros X</span>}
+                              </div>
+                            )}
                           </td>
                         </tr>
                       ))}

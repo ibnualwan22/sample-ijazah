@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProgramLayout, getLayoutForRiwayat, saveLayout, deleteLayoutOverride } from "@/lib/syahadah-layout";
+import { checkPermission } from "@/lib/permission";
+import { getSession } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -22,6 +24,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getSession();
+    const hasPermission = await checkPermission("syahadah_edit");
+    if (!session || !hasPermission) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const body = await req.json();
     const { riwayatId, programId, layoutData } = body;
 
@@ -38,6 +43,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const session = await getSession();
+  const hasPermission = await checkPermission("syahadah_edit");
+  if (!session || !hasPermission) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { searchParams } = new URL(req.url);
   const riwayatId = searchParams.get("riwayatId");
   const programId = searchParams.get("programId");

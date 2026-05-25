@@ -48,6 +48,8 @@ type MapelItem = {
     masuk_akumulasi: boolean;
     bobot: number;
     bobot_usbu: number;
+    bulan_aktif: number;
+    jumlah_tes_b2: number | null;
   };
 };
 
@@ -65,13 +67,15 @@ type ProgramItem = {
 function SortableMapelRow({
   item,
   programId,
+  isAkbarnas,
   onDelete,
   onUpdated,
 }: {
   item: MapelItem;
   programId: string;
+  isAkbarnas: boolean;
   onDelete: (mapelId: string) => void;
-  onUpdated: (mapelId: string, namaIndo: string, namaArab: string, jumlahTes: number, tampilSyahadah: boolean, masukAkumulasi: boolean, bobot: number, bobotUsbu: number) => void;
+  onUpdated: (mapelId: string, namaIndo: string, namaArab: string, jumlahTes: number, tampilSyahadah: boolean, masukAkumulasi: boolean, bobot: number, bobotUsbu: number, bulanAktif: number, jumlahTesB2: number | null) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.mapelId,
@@ -85,6 +89,8 @@ function SortableMapelRow({
   const [editMasukAkumulasi, setEditMasukAkumulasi] = useState(item.mapel.masuk_akumulasi ?? true);
   const [editBobot, setEditBobot] = useState(item.mapel.bobot ?? 1);
   const [editBobotUsbu, setEditBobotUsbu] = useState(item.mapel.bobot_usbu ?? 1);
+  const [editBulanAktif, setEditBulanAktif] = useState(item.mapel.bulan_aktif ?? 0);
+  const [editJumlahTesB2, setEditJumlahTesB2] = useState<number | "">(item.mapel.jumlah_tes_b2 ?? "");
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -105,7 +111,9 @@ function SortableMapelRow({
           tampil_di_syahadah: editTampilSyahadah,
           masuk_akumulasi: editMasukAkumulasi,
           bobot: editBobot,
-          bobot_usbu: editBobotUsbu
+          bobot_usbu: editBobotUsbu,
+          bulan_aktif: editBulanAktif,
+          jumlah_tes_b2: editJumlahTesB2 === "" ? null : Number(editJumlahTesB2)
         }),
       });
       const data = await res.json();
@@ -114,7 +122,7 @@ function SortableMapelRow({
         return;
       }
       toast.success("Mapel diperbarui!", { id: toastId });
-      onUpdated(item.mapelId, editIndo.trim(), editArab.trim(), editJumlahTes, editTampilSyahadah, editMasukAkumulasi, editBobot, editBobotUsbu);
+      onUpdated(item.mapelId, editIndo.trim(), editArab.trim(), editJumlahTes, editTampilSyahadah, editMasukAkumulasi, editBobot, editBobotUsbu, editBulanAktif, editJumlahTesB2 === "" ? null : Number(editJumlahTesB2));
       setEditing(false);
     } finally {
       setSaving(false);
@@ -156,6 +164,9 @@ function SortableMapelRow({
             {!editTampilSyahadah && <span className="text-[10px] bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded font-medium">Non-Syahadah</span>}
             <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded font-medium">Bobot Usbu' {editBobotUsbu}%</span>
             <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded font-medium">Bobot Syahadah {editBobot}%</span>
+            {isAkbarnas && editBulanAktif === 1 && <span className="text-[10px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-medium">Hanya Bulan 1</span>}
+            {isAkbarnas && editBulanAktif === 2 && <span className="text-[10px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-medium">Hanya Bulan 2</span>}
+            {isAkbarnas && editJumlahTesB2 !== "" && <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded font-medium">Bulan 2: {editJumlahTesB2}x Tes</span>}
           </div>
         </div>
 
@@ -222,6 +233,34 @@ function SortableMapelRow({
               <span className="w-32 font-semibold text-slate-600">Bobot Syahadah Akhir (%)</span>
               <input type="number" min={0} max={100} value={editBobot} onChange={(e) => setEditBobot(Number(e.target.value))} className="rounded border-slate-200 p-1 flex-1 outline-none" />
             </label>
+            {isAkbarnas && (
+              <>
+                <label className="flex items-center gap-2">
+                  <span className="w-32 font-semibold text-slate-600">Muncul di Bulan</span>
+                  <select 
+                    value={editBulanAktif} 
+                    onChange={(e) => setEditBulanAktif(Number(e.target.value))}
+                    className="rounded border-slate-200 p-1 flex-1 outline-none"
+                  >
+                    <option value={0}>Semua Bulan (Bulan 1 & 2)</option>
+                    <option value={1}>Hanya Bulan 1</option>
+                    <option value={2}>Hanya Bulan 2</option>
+                  </select>
+                </label>
+                <label className="flex items-center gap-2">
+                  <span className="w-32 font-semibold text-slate-600">Jml. Tes (Bulan 2)</span>
+                  <select 
+                    value={editJumlahTesB2} 
+                    onChange={(e) => setEditJumlahTesB2(e.target.value === "" ? "" : Number(e.target.value))}
+                    className="rounded border-slate-200 p-1 flex-1 outline-none"
+                  >
+                    <option value="">Sama seperti bulan 1</option>
+                    <option value={3}>3x Tes</option>
+                    <option value={1}>1x Tes (Langsung Nilai Akhir)</option>
+                  </select>
+                </label>
+              </>
+            )}
           </div>
           <div className="flex gap-2">
             <button
@@ -242,6 +281,8 @@ function SortableMapelRow({
                 setEditMasukAkumulasi(item.mapel.masuk_akumulasi);
                 setEditBobot(item.mapel.bobot);
                 setEditBobotUsbu(item.mapel.bobot_usbu);
+                setEditBulanAktif(item.mapel.bulan_aktif ?? 0);
+                setEditJumlahTesB2(item.mapel.jumlah_tes_b2 ?? "");
               }}
               className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 transition"
             >
@@ -275,7 +316,11 @@ function ProgramCard({
   const [newMasukAkumulasi, setNewMasukAkumulasi] = useState(true);
   const [newBobot, setNewBobot] = useState(1);
   const [newBobotUsbu, setNewBobotUsbu] = useState(1);
+  const [newBulanAktif, setNewBulanAktif] = useState(0);
+  const [newJumlahTesB2, setNewJumlahTesB2] = useState<number | "">("");
   const [savingOrder, setSavingOrder] = useState(false);
+
+  const isAkbarnas = program.nama_indo.toLowerCase().includes("akbarnas");
 
   // Edit program state
   const [editingProgram, setEditingProgram] = useState(false);
@@ -357,7 +402,9 @@ function ProgramCard({
         tampil_di_syahadah: newTampilSyahadah,
         masuk_akumulasi: newMasukAkumulasi,
         bobot: newBobot,
-        bobot_usbu: newBobotUsbu
+        bobot_usbu: newBobotUsbu,
+        bulan_aktif: newBulanAktif,
+        jumlah_tes_b2: newJumlahTesB2 === "" ? null : Number(newJumlahTesB2)
       }),
     });
     const data = await res.json();
@@ -375,6 +422,8 @@ function ProgramCard({
     setNewMasukAkumulasi(true);
     setNewBobot(1);
     setNewBobotUsbu(1);
+    setNewBulanAktif(0);
+    setNewJumlahTesB2("");
     setAddingMapel(false);
     onReload();
   };
@@ -514,6 +563,7 @@ function ProgramCard({
                       key={item.mapelId}
                       item={item}
                       programId={program.id}
+                      isAkbarnas={isAkbarnas}
                       onDelete={handleDeleteMapel}
                       onUpdated={(mapelId, namaIndo, namaArab, jumlahTes, tampilSyahadah, masukAkumulasi, bobot, bobotUsbu) => {
                         setMapels((prev) =>
@@ -584,6 +634,34 @@ function ProgramCard({
                   <span className="w-32 font-semibold text-slate-600">Bobot Syahadah Akhir (%)</span>
                   <input type="number" min={0} max={100} value={newBobot} onChange={(e) => setNewBobot(Number(e.target.value))} className="rounded border-slate-200 p-1 flex-1 outline-none bg-slate-50" />
                 </label>
+                {isAkbarnas && (
+                  <>
+                    <label className="flex items-center gap-2">
+                      <span className="w-32 font-semibold text-slate-600">Muncul di Bulan</span>
+                      <select 
+                        value={newBulanAktif} 
+                        onChange={(e) => setNewBulanAktif(Number(e.target.value))}
+                        className="rounded border-slate-200 p-1 flex-1 outline-none bg-slate-50"
+                      >
+                        <option value={0}>Semua Bulan</option>
+                        <option value={1}>Hanya Bulan 1</option>
+                        <option value={2}>Hanya Bulan 2</option>
+                      </select>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <span className="w-32 font-semibold text-slate-600">Jml. Tes (Bulan 2)</span>
+                      <select 
+                        value={newJumlahTesB2} 
+                        onChange={(e) => setNewJumlahTesB2(e.target.value === "" ? "" : Number(e.target.value))}
+                        className="rounded border-slate-200 p-1 flex-1 outline-none bg-slate-50"
+                      >
+                        <option value="">Sama seperti bulan 1</option>
+                        <option value={3}>3x Tes</option>
+                        <option value={1}>1x Tes (Langsung Nilai Akhir)</option>
+                      </select>
+                    </label>
+                  </>
+                )}
               </div>
               <div className="flex gap-2">
                 <button
@@ -602,6 +680,8 @@ function ProgramCard({
                     setNewMasukAkumulasi(true);
                     setNewBobot(1);
                     setNewBobotUsbu(1);
+                    setNewBulanAktif(0);
+                    setNewJumlahTesB2("");
                   }}
                   className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 transition"
                 >

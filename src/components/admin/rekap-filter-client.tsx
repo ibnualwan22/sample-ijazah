@@ -79,19 +79,23 @@ export function RekapFilterClient({ type, title, useUsbu }: { type: string, titl
               dEnd = dufah.usbu3EndDate || dufah.usbu2EndDate || dufah.usbu1EndDate;
             }
 
+            let tDari = getFirstDayOfMonth();
+            let tSampai = getWibDateString();
+
             if (dStart && dEnd) {
-              const tDari = dStart.split("T")[0];
-              const tSampai = dEnd.split("T")[0];
-              setDari(tDari);
-              setSampai(tSampai);
-              
-              const params = new URLSearchParams(searchParams.toString());
-              params.set("type", type);
-              params.set("title", title);
-              params.set("dari", tDari);
-              params.set("sampai", tSampai);
-              router.replace(`?${params.toString()}`);
+              tDari = dStart.split("T")[0];
+              tSampai = dEnd.split("T")[0];
             }
+            
+            setDari(tDari);
+            setSampai(tSampai);
+            
+            const params = new URLSearchParams(searchParams.toString());
+            params.set("type", type);
+            params.set("title", title);
+            params.set("dari", tDari);
+            params.set("sampai", tSampai);
+            router.replace(`?${params.toString()}`);
           }
         }
       });
@@ -132,13 +136,15 @@ export function RekapFilterClient({ type, title, useUsbu }: { type: string, titl
       dEnd = dufah.usbu3EndDate;
     }
 
-    if (!dStart || !dEnd) {
-      alert("Tanggal Usbu' belum diatur untuk angkatan ini.");
-      return;
-    }
+    let tDari = getFirstDayOfMonth();
+    let tSampai = getWibDateString();
 
-    const tDari = dStart.split("T")[0];
-    const tSampai = dEnd.split("T")[0];
+    if (dStart && dEnd) {
+      tDari = dStart.split("T")[0];
+      tSampai = dEnd.split("T")[0];
+    } else {
+      alert("Tanggal Usbu' belum diatur. Menampilkan rekapitulasi data bulan berjalan sebagai alternatif.");
+    }
     
     setDari(tDari);
     setSampai(tSampai);

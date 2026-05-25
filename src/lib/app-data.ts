@@ -52,6 +52,8 @@ function serializeProgram(program: {
       tampil_di_syahadah: boolean;
       masuk_akumulasi: boolean;
       bobot: number;
+      bulan_aktif: number;
+      jumlah_tes_b2: number | null;
     };
   }>;
   kelasList?: Array<{
@@ -73,6 +75,8 @@ function serializeProgram(program: {
       tampil_di_syahadah: programMapel.mapel.tampil_di_syahadah,
       masuk_akumulasi: programMapel.mapel.masuk_akumulasi,
       bobot: programMapel.mapel.bobot,
+      bulan_aktif: programMapel.mapel.bulan_aktif,
+      jumlah_tes_b2: programMapel.mapel.jumlah_tes_b2,
     })),
     kelasList: program.kelasList ?? [],
   };
@@ -100,7 +104,7 @@ export async function getTemplateData() {
 }
 
 export async function getDashboardSantriRows() {
-  const [masterSantriList, riwayatList] = await Promise.all([
+  const [masterSantriList, initialRiwayatList] = await Promise.all([
     getMasterSantriList(),
     prisma.riwayatSantri.findMany({
       include: {
@@ -112,6 +116,47 @@ export async function getDashboardSantriRows() {
       },
     }),
   ]);
+
+  let riwayatList = [...initialRiwayatList];
+  const toCreate: any[] = [];
+  
+  for (const masterSantri of masterSantriList) {
+    if (!masterSantri.isAktif) continue;
+    const currentRiwayat = riwayatList.find(r => r.santriId === masterSantri.id && r.dufahNama === masterSantri.dufahNama);
+    if (!currentRiwayat) {
+      const historicalAkbarnas = riwayatList.filter(
+        r => r.santriId === masterSantri.id && r.program?.nama_indo.toLowerCase().includes("akbarnas")
+      );
+      if (historicalAkbarnas.length === 1) {
+        const prev = historicalAkbarnas[0];
+        toCreate.push({
+          santriId: masterSantri.id,
+          dufahNama: masterSantri.dufahNama,
+          programId: prev.programId,
+          kelasId: prev.kelasId,
+          is_tasmi: prev.is_tasmi,
+          status_kelulusan: "BELUM_LULUS"
+        });
+      }
+    }
+  }
+
+  if (toCreate.length > 0) {
+    await prisma.riwayatSantri.createMany({ data: toCreate, skipDuplicates: true });
+    const newRiwayats = await prisma.riwayatSantri.findMany({
+      where: {
+        OR: toCreate.map(tc => ({ santriId: tc.santriId, dufahNama: tc.dufahNama }))
+      },
+      include: {
+        program: {
+          include: programInclude,
+        },
+        kelas: true,
+        nilaiList: true,
+      },
+    });
+    riwayatList = [...riwayatList, ...newRiwayats];
+  }
 
   // Map riwayat by santriId + dufahNama
   const riwayatMap = new Map<string, typeof riwayatList[0]>();
@@ -125,19 +170,77 @@ export async function getDashboardSantriRows() {
       const riwayat = riwayatMap.get(`${masterSantri.id}_${masterSantri.dufahNama}`);
       const program = riwayat?.program ?? null;
       const kelas = riwayat?.kelas ?? null;
-      const nilaiList = riwayat?.nilaiList ?? [];
+      let nilaiList = riwayat?.nilaiList ?? [];
       const totalMapel = program?.programMapels.length ?? 0;
+      const isAkbarnas = program?.nama_indo.toLowerCase().includes("akbarnas");
+
+      if (isAkbarnas && riwayat) {
+        // Cari semua riwayat santri ini yg programnya Akbarnas
+        const historical = riwayatList.filter(
+          r => r.santriId === masterSantri.id && 
+          r.program?.nama_indo.toLowerCase().includes("akbarnas")
+        );
+        
+        // Kumpulkan nilaiList dari semua riwayat
+        const combinedNilaiMap = new Map<string, any[]>();
+        for (const hist of historical) {
+          for (const n of hist.nilaiList) {
+            if (!combinedNilaiMap.has(n.mapelId)) {
+              combinedNilaiMap.set(n.mapelId, []);
+            }
+            combinedNilaiMap.get(n.mapelId)!.push(n);
+          }
+        }
+        
+        // Sekarang, untuk setiap mapel di Akbarnas, hitung rata-rata murni
+        const mergedNilaiList: any[] = [];
+        for (const [mapelId, list] of combinedNilaiMap.entries()) {
+          const allWeeklyScores: number[] = [];
+          for (const n of list) {
+            if (n.nilaiUsbu1 !== null && n.nilaiUsbu1 !== undefined) allWeeklyScores.push(n.nilaiUsbu1);
+            if (n.nilaiUsbu2 !== null && n.nilaiUsbu2 !== undefined) allWeeklyScores.push(n.nilaiUsbu2);
+            if (n.nilaiNihai !== null && n.nilaiNihai !== undefined) allWeeklyScores.push(n.nilaiNihai);
+          }
+          
+          const directScores: number[] = [];
+          for (const n of list) {
+            if (n.nilaiUsbu1 === null && n.nilaiUsbu2 === null && n.nilaiNihai === null && n.nilaiAkhir !== null && n.nilaiAkhir !== undefined) {
+              directScores.push(n.nilaiAkhir);
+            }
+          }
+          
+          let grandNilaiAkhir = null;
+          if (allWeeklyScores.length > 0) {
+            const sum = allWeeklyScores.reduce((a, b) => a + b, 0);
+            grandNilaiAkhir = Number((sum / allWeeklyScores.length).toFixed(2));
+          } else if (directScores.length > 0) {
+            const sum = directScores.reduce((a, b) => a + b, 0);
+            grandNilaiAkhir = Number((sum / directScores.length).toFixed(2));
+          }
+          
+          mergedNilaiList.push({
+            mapelId,
+            nilaiAkhir: grandNilaiAkhir,
+          });
+        }
+        
+        nilaiList = mergedNilaiList as any[];
+      }
+
       const hasCompleteNilai = totalMapel > 0 && nilaiList.length === totalMapel && 
         nilaiList.every((n: any) => {
+          if (isAkbarnas) return n.nilaiAkhir !== null;
           const m = program?.programMapels.find((pm: any) => pm.mapelId === n.mapelId)?.mapel;
           if (m?.jumlah_tes === 1) return n.nilaiAkhir !== null;
           return n.nilaiUsbu1 !== null && n.nilaiUsbu2 !== null && n.nilaiNihai !== null;
         });
+
       const accumulativeNilai = nilaiList.filter((n: any) => {
         const m = program?.programMapels.find((pm: any) => pm.mapelId === n.mapelId)?.mapel;
         return m?.masuk_akumulasi !== false;
       });
       const status = calculateStatus(
+
         {
           is_tasmi: riwayat?.is_tasmi ?? false,
         },
@@ -209,6 +312,10 @@ export async function getSantriFormData(id: string) {
     tanggalMulaiDufah: null,
     tanggalSampaiDufah: null,
     isAktif: false,
+    kategori: "-",
+    tempatLahir: santriInternal.tempat_lahir ?? "",
+    tanggalLahir: santriInternal.tanggal_lahir ?? null,
+    alamat: santriInternal.alamat ?? "",
   } : null);
 
   if (!masterSantri) {
@@ -236,9 +343,11 @@ export async function getSantriFormData(id: string) {
     internalSantri: santriInternal
       ? {
         id: santriInternal.id,
-        tempat_lahir: santriInternal.tempat_lahir ?? "",
-        tanggal_lahir: santriInternal.tanggal_lahir ?? "",
-        alamat: santriInternal.alamat ?? "",
+        tempat_lahir: masterSantri.tempatLahir,
+        tanggal_lahir: masterSantri.tanggalLahir 
+          ? new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "long", year: "numeric" }).format(new Date(masterSantri.tanggalLahir)) 
+          : "",
+        alamat: masterSantri.alamat,
       }
       : null,
     activeRiwayat: activeRiwayat
@@ -328,6 +437,10 @@ export async function getCertificateData(id: string) {
     tanggalMulaiDufah: null,
     tanggalSampaiDufah: null,
     isAktif: false,
+    kategori: "-",
+    tempatLahir: riwayat.santri.tempat_lahir ?? "",
+    tanggalLahir: riwayat.santri.tanggal_lahir ?? null,
+    alamat: riwayat.santri.alamat ?? "",
   };
 
   if (!masterSantri || !riwayat.program) {
@@ -360,11 +473,62 @@ export async function getCertificateData(id: string) {
   // Filter tampil_di_syahadah
   allProgramMapels = allProgramMapels.filter((pm: any) => pm.mapel.tampil_di_syahadah !== false);
 
-  const nilaiMap = new Map();
+  const isAkbarnas = riwayat.program.nama_indo.toLowerCase().includes("akbarnas");
+
+  const nilaiGroups = new Map<string, any[]>();
   for (const nilai of allNilaiList) {
-    // Keep the one that has actual score if multiple exist
-    if (nilai.nilaiAkhir !== null || !nilaiMap.has(nilai.mapelId)) {
-      nilaiMap.set(nilai.mapelId, nilai);
+    if (!nilaiGroups.has(nilai.mapelId)) {
+      nilaiGroups.set(nilai.mapelId, []);
+    }
+    nilaiGroups.get(nilai.mapelId)!.push(nilai);
+  }
+
+  const nilaiMap = new Map();
+  for (const [mapelId, list] of nilaiGroups.entries()) {
+    if (isAkbarnas) {
+      // 1. Kumpulkan semua nilai usbu dari semua bulan
+      const allWeeklyScores: number[] = [];
+      for (const n of list) {
+        if (n.nilaiUsbu1 !== null && n.nilaiUsbu1 !== undefined) allWeeklyScores.push(n.nilaiUsbu1);
+        if (n.nilaiUsbu2 !== null && n.nilaiUsbu2 !== undefined) allWeeklyScores.push(n.nilaiUsbu2);
+        if (n.nilaiNihai !== null && n.nilaiNihai !== undefined) allWeeklyScores.push(n.nilaiNihai);
+      }
+
+      // 2. Kumpulkan nilai langsung jika ada
+      const directScores: number[] = [];
+      for (const n of list) {
+        if (n.nilaiUsbu1 === null && n.nilaiUsbu2 === null && n.nilaiNihai === null && n.nilaiAkhir !== null && n.nilaiAkhir !== undefined) {
+          directScores.push(n.nilaiAkhir);
+        }
+      }
+
+      let grandNilaiAkhir = null;
+      if (allWeeklyScores.length > 0) {
+        const sum = allWeeklyScores.reduce((a, b) => a + b, 0);
+        grandNilaiAkhir = Number((sum / allWeeklyScores.length).toFixed(2));
+      } else if (directScores.length > 0) {
+        const sum = directScores.reduce((a, b) => a + b, 0);
+        grandNilaiAkhir = Number((sum / directScores.length).toFixed(2));
+      }
+
+      // Ambil nilai record terakhir sebagai base
+      const baseNilai = list[list.length - 1];
+      nilaiMap.set(mapelId, {
+        ...baseNilai,
+        nilaiUsbu1: baseNilai.nilaiUsbu1,
+        nilaiUsbu2: baseNilai.nilaiUsbu2,
+        nilaiNihai: baseNilai.nilaiNihai,
+        nilaiAkhir: grandNilaiAkhir
+      });
+    } else {
+      // Logika normal non-Akbarnas
+      let selected = list[list.length - 1];
+      for (const n of list) {
+        if (n.nilaiAkhir !== null) {
+          selected = n;
+        }
+      }
+      nilaiMap.set(mapelId, selected);
     }
   }
 
@@ -396,7 +560,14 @@ export async function getCertificateData(id: string) {
     masterSantri,
     template,
     riwayatSantri: riwayat,
-    santriInternal: riwayat.santri,
+    santriInternal: {
+      ...riwayat.santri,
+      tempat_lahir: masterSantri.tempatLahir?.trim() ?? "",
+      tanggal_lahir: masterSantri.tanggalLahir 
+        ? new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "long", year: "numeric" }).format(new Date(masterSantri.tanggalLahir)) 
+        : "",
+      alamat: masterSantri.alamat,
+    },
     program: serializeProgram(riwayat.program),
     nilaiRows,
     average,

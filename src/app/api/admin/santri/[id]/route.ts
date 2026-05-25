@@ -3,20 +3,25 @@ import prisma from "@/lib/prisma";
 import { getMasterSantriById } from "@/lib/santri-api";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import { checkPermission } from "@/lib/permission";
+import { getSession } from "@/lib/auth";
 
 export async function PUT(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await getSession();
+    const hasPermission = await checkPermission("input_nilai");
+    if (!session || !hasPermission) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await context.params;
     const payload = (await request.json()) as {
       kelasId?: string;
-      tempat_lahir?: string;
-      tanggal_lahir?: string;
-      alamat?: string;
       is_tasmi?: boolean;
-      nilaiList?: Array<{
+      nilaiList: Array<{
         mapelId: string;
         nilaiUsbu1: number | null;
         nilaiUsbu2: number | null;
@@ -62,15 +67,12 @@ export async function PUT(
     }
 
     const nilaiList = payload.nilaiList ?? [];
-    const expectedMapelIds = program.programMapels.map((programMapel) => programMapel.mapelId).sort();
-    const submittedMapelIds = nilaiList.map((nilai) => nilai.mapelId).sort();
+    const expectedMapelIds = program.programMapels.map((programMapel) => programMapel.mapelId);
 
-    if (
-      nilaiList.length !== expectedMapelIds.length ||
-      JSON.stringify(expectedMapelIds) !== JSON.stringify(submittedMapelIds)
-    ) {
+    const invalidMapel = nilaiList.find(n => !expectedMapelIds.includes(n.mapelId));
+    if (invalidMapel) {
       return NextResponse.json(
-        { error: "Mapel yang dikirim harus sama persis dengan mapel kelas yang dipilih." },
+        { error: "Terdapat mapel yang tidak valid untuk kelas yang dipilih." },
         { status: 400 },
       );
     }
@@ -102,19 +104,27 @@ export async function PUT(
         create: { nama: targetDufah }
       });
 
+      // Format data sebelum disimpan ke database agar lebih efisien
+      const tempatLahirFormatted = masterSantri.tempatLahir?.trim() ?? "";
+      const tanggalLahirFormatted = masterSantri.tanggalLahir 
+        ? new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "long", year: "numeric" }).format(new Date(masterSantri.tanggalLahir)) 
+        : "";
+
       // 1. Upsert Profil Dasar Santri
       await transaction.santriInternal.upsert({
         where: { id: santriId },
-        update: {
-          tempat_lahir: payload.tempat_lahir,
-          tanggal_lahir: payload.tanggal_lahir,
-          alamat: payload.alamat,
-        },
         create: {
           id: santriId,
-          tempat_lahir: payload.tempat_lahir,
-          tanggal_lahir: payload.tanggal_lahir,
-          alamat: payload.alamat,
+          nama: masterSantri.nama,
+          tempat_lahir: tempatLahirFormatted,
+          tanggal_lahir: tanggalLahirFormatted,
+          alamat: masterSantri.alamat,
+        },
+        update: {
+          nama: masterSantri.nama,
+          tempat_lahir: tempatLahirFormatted,
+          tanggal_lahir: tanggalLahirFormatted,
+          alamat: masterSantri.alamat,
         },
       });
 

@@ -214,12 +214,20 @@ export function SyahadahClient({
                         Input Nilai
                       </Link>
                       {santri.canViewIjazah ? (
-                        <Link
-                          href={`/ijazah/${santri.id}`}
-                          className="rounded-full bg-slate-900 px-4 py-2 text-xs font-bold text-white transition hover:bg-slate-700"
-                        >
-                          Ijazah Online
-                        </Link>
+                        <>
+                          <Link
+                            href={`/admin/syahadah/${santri.id}/transkrip`}
+                            className="rounded-full bg-blue-100 px-4 py-2 text-xs font-bold text-blue-700 transition hover:bg-blue-200"
+                          >
+                            Transkrip Detail
+                          </Link>
+                          <Link
+                            href={`/ijazah/${santri.id}`}
+                            className="rounded-full bg-slate-900 px-4 py-2 text-xs font-bold text-white transition hover:bg-slate-700"
+                          >
+                            Ijazah Online
+                          </Link>
+                        </>
                       ) : (
                         <span className="rounded-full bg-slate-200 px-4 py-2 text-xs font-bold text-slate-500">
                           Ijazah Terkunci
