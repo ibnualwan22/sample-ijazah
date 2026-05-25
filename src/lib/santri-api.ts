@@ -43,7 +43,7 @@ type ApiSantriResponse = {
   detailAlamat?: string | null;
 };
 
-const SANTRI_API_URL = "http://siakad.markazarabiyah.site/api/santri";
+const SANTRI_API_URL = "http://ppdb.markazarabiyah.site/api/santri";
 
 function normalizeSantri(santri: ApiSantriResponse): MasterSantri {
   const assignedRiwayat = santri.riwayat?.find((riwayat) => riwayat.status === "ASSIGNED");
