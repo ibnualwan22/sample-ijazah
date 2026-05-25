@@ -10,6 +10,9 @@ export type MasterSantri = {
   tanggalSampaiDufah: string | null;
   isAktif: boolean;
   kategori: string;
+  tempatLahir?: string | null;
+  tanggalLahir?: string | null;
+  alamat?: string | null;
 };
 
 type ApiSantriResponse = {
@@ -17,6 +20,9 @@ type ApiSantriResponse = {
   nis?: string;
   nama: string;
   gender: string;
+  tempatLahir?: string | null;
+  tanggalLahir?: string | null;
+  detailAlamat?: string | null;
   riwayat?: Array<{
     status?: string;
     dufah?: {
@@ -55,6 +61,9 @@ function normalizeSantri(santri: ApiSantriResponse): MasterSantri {
     tanggalSampaiDufah: assignedRiwayat?.dufah?.tanggalTutup ?? null,
     isAktif: santri.isAktif ?? false,
     kategori: santri.kategori ?? "-",
+    tempatLahir: santri.tempatLahir ?? "",
+    tanggalLahir: santri.tanggalLahir ?? null,
+    alamat: santri.detailAlamat ?? "",
   };
 }
 
