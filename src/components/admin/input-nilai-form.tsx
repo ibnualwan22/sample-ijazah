@@ -41,9 +41,9 @@ type MasterSantri = {
 };
 
 type InternalSantri = {
-  tempat_lahir: string;
-  tanggal_lahir: string;
-  alamat: string;
+  tempat_lahir?: string | null;
+  tanggal_lahir?: string | null;
+  alamat?: string | null;
 } | null;
 
 type ActiveRiwayat = {
