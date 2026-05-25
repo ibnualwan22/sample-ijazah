@@ -7,7 +7,7 @@ export async function syncDufahTable() {
   let validDufahNames = new Set<string>();
 
   try {
-    const response = await fetch("http://localhost:3000/api/dufah", { cache: "no-store" });
+    const response = await fetch("http://siakad.markazarabiyah.site/api/dufah", { cache: "no-store" });
     if (response.ok) {
       const data = await response.json();
       data.forEach((d: any) => {
