@@ -3,7 +3,7 @@ import { getMasterSantriList } from "@/lib/santri-api";
 
 export { getTodayWibString, parseWibDateString } from "./jadwal-sesi";
 
-export async function syncDufahTable() {
+export async function syncDufahTable(): Promise<Set<string>> {
   let validDufahNames = new Set<string>();
 
   try {
@@ -21,7 +21,7 @@ export async function syncDufahTable() {
     const masterList = await getMasterSantriList();
     if (masterList.length === 0) {
       console.error("[CRITICAL] API Master Santri kosong/gagal! Membatalkan sinkronisasi Dufah untuk mencegah terhapusnya data nilai & absen secara permanen.");
-      return;
+      return validDufahNames;
     }
     masterList.forEach(m => {
       if (m.dufahNama && m.dufahNama !== "-") {
@@ -42,9 +42,26 @@ export async function syncDufahTable() {
       skipDuplicates: true
     });
   }
+
+  return validDufahNames;
 }
 
 export async function getActiveDufahName(): Promise<string | null> {
+  // 1. Mencoba mengambil dari API PPDB langsung untuk Single Source of Truth
+  try {
+    const response = await fetch("https://ppdb-markaz.vercel.app/api/dufah", { cache: "no-store" });
+    if (response.ok) {
+      const data = await response.json();
+      const activeDufah = data.find((d: any) => d.isActive === true);
+      if (activeDufah && activeDufah.nama && activeDufah.nama !== "-") {
+        return activeDufah.nama;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to fetch active dufah from API, falling back to dynamic calculation", err);
+  }
+
+  // 2. Fallback: Hitung dinamis dari master santri jika API gagal atau tidak ada yang aktif
   const masterList = await getMasterSantriList();
   const activeDufahs = new Map<string, Date>(); // dufahNama -> date
   masterList.forEach(m => {
