@@ -19,15 +19,19 @@ const AVAILABLE_PERMISSIONS = [
   { id: "rekap_kelas", label: "Rekap Kelas", desc: "Akses untuk melihat rekap kehadiran kelas" },
   { id: "rekap_kegiatan", label: "Rekap Kegiatan", desc: "Akses untuk melihat rekap kegiatan" },
   { id: "rekap_pengajar", label: "Rekap Pengajar", desc: "Akses untuk melihat laporan absen pengajar" },
+  { id: "pengaturan_kegiatan", label: "Pengaturan Kegiatan", desc: "Akses untuk mengatur jenis kegiatan absensi" },
   { id: "manajemen_kelas", label: "Manajemen Kelas (Lihat)", desc: "Akses untuk melihat kelas dan plotting santri" },
   { id: "manajemen_kelas_edit", label: "Manajemen Kelas (Aksi)", desc: "Akses untuk mengatur pengajar, jadwal, dan mengedit plotting" },
   { id: "manajemen_sesi", label: "Jadwal Buka/Tutup Sesi", desc: "Akses untuk mengatur jadwal mengajar (sesi)" },
-  { id: "manajemen_dufah", label: "Manajemen Angkatan & Agenda", desc: "Akses untuk tambah/edit angkatan dan agenda" },
+  { id: "manajemen_dufah", label: "Manajemen Angkatan & Usbu'", desc: "Akses untuk tambah/edit angkatan dan usbu'" },
   { id: "manajemen_user", label: "Manajemen User & Role", desc: "Akses khusus Super Admin" },
-  { id: "syahadah", label: "Manajemen Syahadah (Lihat)", desc: "Akses untuk melihat daftar syahadah dan profil santri" },
-  { id: "syahadah_edit", label: "Manajemen Syahadah (Aksi)", desc: "Akses untuk mendesain dan mengubah tata letak syahadah" },
+  { id: "manajemen_konten", label: "Manajemen Konten (Landing Page)", desc: "Akses untuk mengatur konten Instagram dan Agenda Rutinan" },
+  { id: "data_syahadah", label: "Data Syahadah", desc: "Akses untuk melihat daftar syahadah dan profil santri" },
   { id: "input_nilai", label: "Input Nilai Santri", desc: "Akses untuk menginput nilai dan status kelulusan santri" },
-  { id: "cetak_transkrip", label: "Cetak Transkrip Nilai", desc: "Akses untuk melihat dan mencetak log transparansi perhitungan nilai syahadah" },
+  { id: "cetak_nilai_pekanan", label: "Cetak Nilai Pekanan", desc: "Akses untuk melihat dan mencetak nilai pekanan santri" },
+  { id: "layout_syahadah", label: "Layout Syahadah", desc: "Akses untuk mendesain layout cetak syahadah" },
+  { id: "riwayat_santri", label: "Riwayat Santri", desc: "Akses untuk melihat riwayat historis santri (Duf'ah sebelumnya)" },
+  { id: "pengaturan_syahadah", label: "Pengaturan Syahadah", desc: "Akses ke pengaturan syahadah (Kop, TTD, Bobot Mapel, dll)" }
 ];
 
 export default function ManajemenRolePage() {

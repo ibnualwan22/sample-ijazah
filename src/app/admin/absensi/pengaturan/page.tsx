@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PengaturanKegiatanPage() {
-  await requirePermission("manajemen_dufah");
+  await requirePermission("pengaturan_kegiatan");
   const kegiatanList = await prisma.kategoriKegiatan.findMany({
     orderBy: { nama: "asc" }
   });

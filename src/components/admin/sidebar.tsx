@@ -30,7 +30,7 @@ const navigationGroups = [
       { href: "/admin/absensi/rekap/kegiatan", label: "Rekap Kegiatan", icon: Activity, permissionId: "rekap_kegiatan" },
       { href: "/admin/absensi/rekap/kelas", label: "Rekap Kelas", icon: BookOpen, permissionId: "rekap_kelas" },
       { href: "/admin/absensi/rekap/pengajar", label: "Rekap Pengajar", icon: UserCog, permissionId: "rekap_pengajar" },
-      { href: "/admin/absensi/pengaturan", label: "Pengaturan Kegiatan", icon: Settings, permissionId: "manajemen_dufah" },
+      { href: "/admin/absensi/pengaturan", label: "Pengaturan Kegiatan", icon: Settings, permissionId: "pengaturan_kegiatan" },
     ]
   },
   {
@@ -57,8 +57,8 @@ const navigationGroups = [
     items: [
       { href: "/admin/manajemen-user", label: "Manajemen User", icon: UserCog, requiredRole: "ADMIN", permissionId: "manajemen_user" },
       { href: "/admin/manajemen-role", label: "Hak Akses (Role)", icon: ShieldCheck, requiredRole: "ADMIN", permissionId: "manajemen_user" },
-      { href: "/admin/manajemen-konten/agenda", label: "Agenda Rutinan", icon: CalendarDays, permissionId: "manajemen_dufah" },
-      { href: "/admin/manajemen-konten/instagram", label: "Konten Instagram", icon: Instagram, permissionId: "manajemen_dufah" },
+      { href: "/admin/manajemen-konten/agenda", label: "Agenda Rutinan", icon: CalendarDays, permissionId: "manajemen_konten" },
+      { href: "/admin/manajemen-konten/instagram", label: "Konten Instagram", icon: Instagram, permissionId: "manajemen_konten" },
     ]
   }
 ];
