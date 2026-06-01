@@ -56,9 +56,6 @@ export function AbsensiKelasClient({
   const [isBadalMode, setIsBadalMode] = useState(false);
   const [showBadalModal, setShowBadalModal] = useState(false);
   const [badalTargetKelasId, setBadalTargetKelasId] = useState("");
-  const [isBadalMode, setIsBadalMode] = useState(false);
-  const [showBadalModal, setShowBadalModal] = useState(false);
-  const [badalTargetKelasId, setBadalTargetKelasId] = useState("");
 
   useEffect(() => {
     const formatter = new Intl.DateTimeFormat('en-US', {
@@ -373,17 +370,6 @@ export function AbsensiKelasClient({
     return list;
   }, [programList]);
 
-  const allClassesOptions = useMemo(() => {
-    const list: { id: string; label: string; group: string }[] = [];
-    programList.forEach((program) => {
-      if (program.kelasList.length > 0) {
-        program.kelasList.forEach((k: any) => {
-          list.push({ id: k.id, label: k.nama, group: program.nama_indo });
-        });
-      }
-    });
-    return list;
-  }, [programList]);
 
   const allOptions = (() => {
     const list: { id: string; label: string; group: string }[] = [];
