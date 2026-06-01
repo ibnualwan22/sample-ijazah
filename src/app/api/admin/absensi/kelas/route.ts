@@ -98,6 +98,8 @@ export async function POST(request: Request) {
             atributNametag: absenPengajar.atributNametag,
             atributKopiah: absenPengajar.atributKopiah,
             atributBros: absenPengajar.atributBros,
+            isBadal: absenPengajar.isBadal ?? false,
+            pengajarDigantikanId: absenPengajar.pengajarDigantikanId || null,
           },
           create: {
             userId: userSession.userId,
@@ -110,6 +112,8 @@ export async function POST(request: Request) {
             atributNametag: absenPengajar.atributNametag,
             atributKopiah: absenPengajar.atributKopiah,
             atributBros: absenPengajar.atributBros,
+            isBadal: absenPengajar.isBadal ?? false,
+            pengajarDigantikanId: absenPengajar.pengajarDigantikanId || null,
           }
         })
       );

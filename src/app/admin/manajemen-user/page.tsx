@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { UserCog, Plus, Search, Pencil, Trash2, Shield, Loader2, CheckCircle2, XCircle, Calendar, GraduationCap, X } from "lucide-react";
+import { UserCog, Plus, Search, Pencil, Trash2, Shield, Loader2, CheckCircle2, XCircle, Calendar, GraduationCap, X, Home } from "lucide-react";
 import toast from "react-hot-toast";
 
 type User = {
@@ -54,6 +54,12 @@ export default function ManajemenUserPage() {
   const [tempKelasId, setTempKelasId] = useState("");
   const [tempSesi, setTempSesi] = useState("");
   const [isSavingPlotting, setIsSavingPlotting] = useState(false);
+
+  // Sakan Link State
+  const [isSakanModalOpen, setIsSakanModalOpen] = useState(false);
+  const [activeSakanUser, setActiveSakanUser] = useState<User | null>(null);
+  const [tempSakan, setTempSakan] = useState("");
+  const [isSavingSakan, setIsSavingSakan] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -236,6 +242,41 @@ export default function ManajemenUserPage() {
     }
   };
 
+  const handleOpenSakanModal = (user: User) => {
+    setActiveSakanUser(user);
+    setTempSakan(user.sakan || "");
+    setIsSakanModalOpen(true);
+  };
+
+  const handleSaveSakan = async () => {
+    if (!activeSakanUser) return;
+    setIsSavingSakan(true);
+    try {
+      const payload = {
+        ...activeSakanUser,
+        sakan: tempSakan || null,
+        password: "" // Don't update password
+      };
+      
+      const res = await fetch(`/api/admin/users/${activeSakanUser.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menyimpan Sakan");
+      
+      toast.success("Sakan berhasil dihubungkan!");
+      setIsSakanModalOpen(false);
+      fetchData();
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setIsSavingSakan(false);
+    }
+  };
+
   const filteredUsers = users.filter((u) => 
     u.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
     u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -255,6 +296,12 @@ export default function ManajemenUserPage() {
   const canPlotSesi = (role: string) => {
     if (role === "PENGAJAR" || role === "WALI_KELAS") return true;
     const hasAccess = rolePermissions.some(p => p.role === role && (p.permission === "absen_kelas" || p.permission === "manajemen_sesi"));
+    return hasAccess;
+  };
+
+  const canSetSakan = (role: string) => {
+    if (role === "KSU") return true;
+    const hasAccess = rolePermissions.some(p => p.role === role && (p.permission === "absen_sakan" || p.permission === "absen_kegiatan"));
     return hasAccess;
   };
 
@@ -336,11 +383,13 @@ export default function ManajemenUserPage() {
                             <span>Wali: {user.kelas?.nama || <span className="text-rose-500 font-semibold">Belum diset</span>}</span>
                           </div>
                         )}
-                        {user.role === "KSU" && (
-                          <span>Sakan Default: {user.sakan || <span className="text-rose-500 font-semibold">Belum diset</span>}</span>
+                        {canSetSakan(user.role) && (
+                          <div className="mb-2">
+                            <span>Sakan Default: {user.sakan || <span className="text-rose-500 font-semibold">Belum diset</span>}</span>
+                          </div>
                         )}
-                        {canPlotSesi(user.role) && (
-                          <div className="flex items-center gap-1.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {canPlotSesi(user.role) && (
                             <button
                               onClick={() => handleOpenPlotting(user)}
                               className="flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1 rounded-lg border border-emerald-200 transition-colors"
@@ -348,9 +397,18 @@ export default function ManajemenUserPage() {
                               <Calendar size={12} />
                               Plotting Sesi
                             </button>
-                          </div>
-                        )}
-                        {!canPlotSesi(user.role) && user.role !== "KSU" && (
+                          )}
+                          {canSetSakan(user.role) && (
+                            <button
+                              onClick={() => handleOpenSakanModal(user)}
+                              className="flex items-center gap-1 bg-violet-50 hover:bg-violet-100 text-violet-700 font-bold px-2.5 py-1 rounded-lg border border-violet-200 transition-colors"
+                            >
+                              <Home size={12} />
+                              Hubungkan Sakan
+                            </button>
+                          )}
+                        </div>
+                        {!canPlotSesi(user.role) && !canSetSakan(user.role) && user.role !== "WALI_KELAS" && (
                           <span className="text-slate-400">-</span>
                         )}
                       </td>
@@ -480,9 +538,9 @@ export default function ManajemenUserPage() {
                 </div>
               )}
 
-              {formData.role === "KSU" && (
+              {canSetSakan(formData.role) && (
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Musyrif Untuk Sakan (Default)</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Hubungkan Sakan (Default)</label>
                   <select
                     value={formData.sakan}
                     onChange={(e) => setFormData({ ...formData, sakan: e.target.value })}
@@ -634,6 +692,64 @@ export default function ManajemenUserPage() {
                 >
                   {isSavingPlotting && <Loader2 className="h-4 w-4 animate-spin" />}
                   Simpan Jadwal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sakan Modal */}
+      {isSakanModalOpen && activeSakanUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <Home className="h-5 w-5 text-violet-600" />
+                Hubungkan Sakan
+              </h2>
+              <button onClick={() => setIsSakanModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <XCircle size={24} />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <p className="text-xs text-slate-500">Nama User</p>
+                <p className="font-bold text-slate-800">{activeSakanUser.nama}</p>
+                <p className="text-xs text-slate-600">@{activeSakanUser.username}</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Sakan Default</label>
+                <select
+                  value={tempSakan}
+                  onChange={(e) => setTempSakan(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-violet-500"
+                >
+                  <option value="">-- Tidak dihubungkan --</option>
+                  {sakanList.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsSakanModalOpen(false)}
+                  className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveSakan}
+                  disabled={isSavingSakan}
+                  className="px-4 py-2 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  {isSavingSakan && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Simpan Sakan
                 </button>
               </div>
             </div>

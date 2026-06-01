@@ -21,6 +21,7 @@ export async function GET(request: Request) {
       include: {
         user: { select: { id: true, nama: true } },
         kelas: { select: { id: true, nama: true } },
+        pengajarDigantikan: { select: { id: true, nama: true } },
       }
     });
 
@@ -34,6 +35,8 @@ export async function GET(request: Request) {
       waktuMulai: r.waktuMulai,
       waktuSelesai: r.waktuSelesai,
       status: "HADIR",
+      isBadal: r.isBadal,
+      pengajarDigantikan: r.pengajarDigantikan?.nama || null,
       atribut: {
         nametag: r.atributNametag,
         kopiah: r.atributKopiah,
@@ -73,8 +76,9 @@ export async function GET(request: Request) {
 
     for (const tgl of activeDates) {
       for (const teacher of pengajarSesi) {
-        const hasHadir = records.some(r => r.userId === teacher.userId && r.kelasId === teacher.kelasId && r.sesi === teacher.sesi && r.tanggal.toISOString().split("T")[0] === tgl);
-        if (!hasHadir) {
+        // Jika kelas sudah diajar (baik oleh guru asli maupun badal), jangan anggap guru asli ALPHA
+        const classWasTaught = records.some(r => r.kelasId === teacher.kelasId && r.sesi === teacher.sesi && r.tanggal.toISOString().split("T")[0] === tgl);
+        if (!classWasTaught) {
           formatted.push({
             id: `alpha_${teacher.userId}_${teacher.kelasId}_${teacher.sesi}_${tgl}`,
             pengajar: teacher.user.nama,
@@ -85,6 +89,8 @@ export async function GET(request: Request) {
             waktuMulai: "-",
             waktuSelesai: "-",
             status: "ALPHA",
+            isBadal: false,
+            pengajarDigantikan: null,
             atribut: { nametag: false, kopiah: false, bros: false }
           });
         }

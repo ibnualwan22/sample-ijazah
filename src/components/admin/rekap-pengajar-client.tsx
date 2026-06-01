@@ -16,6 +16,8 @@ type PengajarRecord = {
   waktuMulai: string;
   waktuSelesai: string;
   status?: string;
+  isBadal?: boolean;
+  pengajarDigantikan?: string | null;
   atribut: {
     nametag: boolean;
     kopiah: boolean;
@@ -226,6 +228,12 @@ export function RekapPengajarClient() {
                               </div>
                               <span className="font-bold text-slate-800">{r.pengajar}</span>
                             </div>
+                            {r.isBadal && (
+                              <div className="mt-1 ml-9">
+                                <span className="inline-flex items-center rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">BADAL</span>
+                                {r.pengajarDigantikan && <span className="ml-1 text-[10px] text-slate-500 font-medium">menggantikan {r.pengajarDigantikan}</span>}
+                              </div>
+                            )}
                           </td>
                           <td className="px-4 py-3">
                             <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">

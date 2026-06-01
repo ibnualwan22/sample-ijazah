@@ -259,6 +259,7 @@ model User {
   kelas             Kelas?          @relation("WaliKelas", fields: [kelasId], references: [id], onDelete: SetNull)
   pengajarSesiList  PengajarSesi[]
   absenPengajarList AbsenPengajar[]
+  absenDigantikanList AbsenPengajar[] @relation("PengajarDigantikan")
 }
 
 model RolePermission {
@@ -303,6 +304,9 @@ model AbsenPengajar {
   atributNametag Boolean   @default(false)
   atributKopiah  Boolean   @default(false)
   atributBros    Boolean   @default(false)
+  isBadal              Boolean @default(false)
+  pengajarDigantikanId String?
+  pengajarDigantikan   User?   @relation("PengajarDigantikan", fields: [pengajarDigantikanId], references: [id], onDelete: SetNull)
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   kelas Kelas @relation(fields: [kelasId], references: [id], onDelete: Cascade)
