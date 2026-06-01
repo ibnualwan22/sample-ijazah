@@ -5,9 +5,10 @@ import { redirect } from "next/navigation";
 import { CetakUsbuDocument } from "@/components/admin/cetak-usbu-document";
 import { getActiveDufahName } from "@/lib/absensi";
 
-export default async function CetakUsbuPrintPage({ params }: { params: Promise<{ kelasId: string, usbu: string }> }) {
+export default async function CetakUsbuPrintPage(props: { params: Promise<{ kelasId: string, usbu: string }>, searchParams: Promise<{ bulan?: string }> }) {
   await requirePermission("cetak_nilai_pekanan");
-  const { kelasId, usbu } = await params;
+  const { kelasId, usbu } = await props.params;
+  const { bulan } = await props.searchParams;
   const targetUsbu = parseInt(usbu);
 
   if (targetUsbu < 1 || targetUsbu > 4) redirect("/admin/cetak-usbu");
@@ -15,6 +16,7 @@ export default async function CetakUsbuPrintPage({ params }: { params: Promise<{
   const kelas = await prisma.kelas.findUnique({
     where: { id: kelasId },
     include: {
+      waliKelas: true,
       program: {
         include: {
           programMapels: {
@@ -28,41 +30,62 @@ export default async function CetakUsbuPrintPage({ params }: { params: Promise<{
 
   if (!kelas) redirect("/admin/cetak-usbu");
 
-  const activeDufah = await getActiveDufahName();
-
-  const riwayatList = await prisma.riwayatSantri.findMany({
-    where: { 
-      kelasId,
-      ...(activeDufah ? { dufahNama: activeDufah } : {})
-    },
-    include: {
-      santri: true,
-      nilaiList: true,
-      riwayatUsbuList: {
-        where: { usbu: targetUsbu }
-      },
-      absenKelasList: true, // fallback if live
-    }
-  });
-
   const masterList = await getMasterSantriList();
   const masterMap = new Map(masterList.map(m => [m.id, m]));
 
-  const isAkbarnas = kelas.program.nama_indo.toLowerCase().includes("akbarnas");
-  let isMonth2 = false;
+  // Find students CURRENTLY active in this class
+  const currentClassRiwayats = await prisma.riwayatSantri.findMany({
+    where: { kelasId },
+    select: { santriId: true, dufahNama: true }
+  });
 
-  if (isAkbarnas && riwayatList.length > 0) {
-    const santriIds = riwayatList.map(r => r.santriId);
-    const pastRiwayat = await prisma.riwayatSantri.count({
+  const activeStudentIdsInClass = currentClassRiwayats
+    .filter(r => {
+      const ms = masterMap.get(r.santriId);
+      return ms?.isAktif && ms.dufahNama === r.dufahNama;
+    })
+    .map(r => r.santriId);
+
+  const isAkbarnas = kelas.program.nama_indo.toLowerCase().includes("akbarnas");
+  const isMonth2 = isAkbarnas && bulan === "2";
+
+  let riwayatList: any[] = [];
+
+  if (isAkbarnas) {
+    const allAkbarnasRiwayats = await prisma.riwayatSantri.findMany({
       where: {
-        santriId: { in: santriIds },
-        program: { nama_indo: { contains: "akbarnas", mode: "insensitive" } },
-        id: { notIn: riwayatList.map(r => r.id) }
+        santriId: { in: activeStudentIdsInClass },
+        program: { nama_indo: { contains: "akbarnas", mode: "insensitive" } }
+      },
+      orderBy: { id: "asc" },
+      include: { santri: true, nilaiList: true }
+    });
+
+    const riwayatBulanMap = new Map<string, { bulan1: any, bulan2: any }>();
+    for (const r of allAkbarnasRiwayats) {
+      if (!riwayatBulanMap.has(r.santriId)) {
+        riwayatBulanMap.set(r.santriId, { bulan1: r, bulan2: null });
+      } else {
+        riwayatBulanMap.get(r.santriId)!.bulan2 = r;
+      }
+    }
+
+    activeStudentIdsInClass.forEach(santriId => {
+      const map = riwayatBulanMap.get(santriId);
+      if (map) {
+        const targetR = isMonth2 ? map.bulan2 : map.bulan1;
+        if (targetR) riwayatList.push(targetR);
       }
     });
-    if (pastRiwayat > 0) {
-      isMonth2 = true;
-    }
+  } else {
+    // For non-Akbarnas, just get their latest/current riwayat
+    riwayatList = await prisma.riwayatSantri.findMany({
+      where: {
+        santriId: { in: activeStudentIdsInClass },
+      },
+      include: { santri: true, nilaiList: true }
+    });
+    riwayatList = riwayatList.filter(r => masterMap.get(r.santriId)?.dufahNama === r.dufahNama);
   }
 
   const activeMapels = kelas.program.programMapels.filter(pm => {
@@ -97,7 +120,19 @@ export default async function CetakUsbuPrintPage({ params }: { params: Promise<{
         if (targetUsbu === 1) score = match.nilaiUsbu1;
         if (targetUsbu === 2) score = match.nilaiUsbu2;
         if (targetUsbu === 3) score = match.nilaiNihai;
-        if (targetUsbu === 4) score = match.nilaiAkhir;
+        if (targetUsbu === 4) {
+          if (match.nilaiAkhir !== null && match.nilaiAkhir !== undefined) {
+            score = match.nilaiAkhir;
+          } else {
+            const parts = [];
+            if (match.nilaiUsbu1 !== null && match.nilaiUsbu1 !== undefined) parts.push(match.nilaiUsbu1);
+            if (match.nilaiUsbu2 !== null && match.nilaiUsbu2 !== undefined) parts.push(match.nilaiUsbu2);
+            if (match.nilaiNihai !== null && match.nilaiNihai !== undefined) parts.push(match.nilaiNihai);
+            if (parts.length > 0) {
+              score = Number((parts.reduce((a, b) => a + b, 0) / parts.length).toFixed(2));
+            }
+          }
+        }
       }
 
       if (score !== null && score !== undefined) {
@@ -137,6 +172,7 @@ export default async function CetakUsbuPrintPage({ params }: { params: Promise<{
     <div className="min-h-screen bg-slate-200 p-4 md:p-8">
       <CetakUsbuDocument
         kelasNama={kelas.nama + (isMonth2 ? " (Bulan 2)" : "")}
+        waliKelas={kelas.waliKelas?.nama || "Belum dihubungkan"}
         usbuLabel={targetUsbu === 3 ? "Nihai" : targetUsbu === 4 ? "Akumulatif" : targetUsbu.toString()}
         mapelHeaders={activeMapels.map(pm => pm.mapel.nama_indo.toUpperCase() as string)}
         rows={rows}

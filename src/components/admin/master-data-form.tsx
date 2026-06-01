@@ -26,6 +26,8 @@ type TemplateSetting = {
   nama_mudir_arab: string;
   jabatan_mudir_indo: string;
   jabatan_mudir_arab: string;
+  teks_dufah_akbarnas_arab: string | null;
+  teks_dufah_arab: string | null;
 };
 
 export function MasterDataForm({
@@ -53,6 +55,8 @@ export function MasterDataForm({
     nama_mudir_arab: template.nama_mudir_arab,
     jabatan_mudir_indo: template.jabatan_mudir_indo,
     jabatan_mudir_arab: template.jabatan_mudir_arab,
+    teks_dufah_akbarnas_arab: template.teks_dufah_akbarnas_arab ?? "",
+    teks_dufah_arab: template.teks_dufah_arab ?? "",
   });
   const [kkmByKelas, setKkmByKelas] = useState<Record<string, string>>(() => {
     return Object.fromEntries(programList.map((program) => [program.id, String(program.kkm)]));
@@ -209,6 +213,26 @@ export function MasterDataForm({
                 value={templateState.jabatan_mudir_arab}
                 onChange={(event) => setTemplateState((current) => ({ ...current, jabatan_mudir_arab: event.target.value }))}
                 className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+              />
+            </label>
+            <label className="space-y-2 text-sm font-semibold text-slate-700">
+              <span>Teks Duf'ah Program Reguler (Arab)</span>
+              <input
+                dir="rtl"
+                placeholder="Contoh: الدفعة التسعون"
+                value={templateState.teks_dufah_arab ?? ""}
+                onChange={(event) => setTemplateState((current) => ({ ...current, teks_dufah_arab: event.target.value }))}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white font-arabic"
+              />
+            </label>
+            <label className="space-y-2 text-sm font-semibold text-slate-700">
+              <span>Teks Duf'ah Akbarnas (Arab)</span>
+              <input
+                dir="rtl"
+                placeholder="Contoh: الدفعة ٨٩ إلى ٩٠"
+                value={templateState.teks_dufah_akbarnas_arab ?? ""}
+                onChange={(event) => setTemplateState((current) => ({ ...current, teks_dufah_akbarnas_arab: event.target.value }))}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white font-arabic"
               />
             </label>
           </div>

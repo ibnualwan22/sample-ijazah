@@ -8,6 +8,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { 
       nama, 
+      namaArab,
       usbu1StartDate, usbu1EndDate, usbu1Active,
       usbu2StartDate, usbu2EndDate, usbu2Active,
       usbu3StartDate, usbu3EndDate, usbu3Active
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
     const updated = await prisma.dufah.update({
       where: { nama },
       data: {
+        namaArab: namaArab || null,
         usbu1StartDate: parseDate(usbu1StartDate),
         usbu1EndDate: parseDate(usbu1EndDate),
         usbu1Active: Boolean(usbu1Active),

@@ -7,6 +7,7 @@ import { Calendar, Save, Power, PowerOff } from "lucide-react";
 
 type DufahData = {
   nama: string;
+  namaArab: string | null;
   usbu1StartDate: string | null;
   usbu1EndDate: string | null;
   usbu1Active: boolean;
@@ -88,6 +89,17 @@ export function DufahManager({ initialData, activeDufahName }: { initialData: Du
                   <p className="text-xs text-slate-500 mt-1 font-medium flex items-center gap-1">
                     Total Santri: {dufah._count?.riwayatRecords || 0}
                   </p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Arab:</label>
+                    <input
+                      type="text"
+                      dir="rtl"
+                      placeholder="Contoh: الدفعة التسعون"
+                      value={dufah.namaArab || ""}
+                      onChange={(e) => handleChange(dufah.nama, "namaArab", e.target.value)}
+                      className="text-sm rounded border-slate-300 px-2 py-1 bg-white focus:ring-emerald-500 focus:border-emerald-500 w-48"
+                    />
+                  </div>
                 </div>
                 <button
                   onClick={() => handleUpdate(dufah.nama)}

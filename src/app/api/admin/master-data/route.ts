@@ -16,6 +16,8 @@ export async function PUT(request: Request) {
         nama_mudir_arab?: string;
         jabatan_mudir_indo?: string;
         jabatan_mudir_arab?: string;
+        teks_dufah_akbarnas_arab?: string;
+        teks_dufah_arab?: string;
       };
     };
 
@@ -53,6 +55,8 @@ export async function PUT(request: Request) {
         nama_mudir_arab: payload.template?.nama_mudir_arab?.trim() || "اسم المدير",
         jabatan_mudir_indo: payload.template?.jabatan_mudir_indo?.trim() || "Mudir Markaz Arabiyah",
         jabatan_mudir_arab: payload.template?.jabatan_mudir_arab?.trim() || "مدير مركز العربية",
+        teks_dufah_akbarnas_arab: payload.template?.teks_dufah_akbarnas_arab?.trim() || null,
+        teks_dufah_arab: payload.template?.teks_dufah_arab?.trim() || null,
       };
 
       if (existingTemplate) {

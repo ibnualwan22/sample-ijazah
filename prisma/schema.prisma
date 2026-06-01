@@ -67,6 +67,7 @@ model SantriInternal {
 
 model Dufah {
   nama String @id
+  namaArab String?
 
   usbu1StartDate DateTime? @db.Date
   usbu1EndDate   DateTime? @db.Date
@@ -145,7 +146,9 @@ model SyahadahTemplate {
   nama_mudir_indo    String
   nama_mudir_arab    String
   jabatan_mudir_indo String
-  jabatan_mudir_arab String
+  jabatan_mudir_arab       String
+  teks_dufah_akbarnas_arab String?
+  teks_dufah_arab          String?
 }
 
 model SyahadahLayout {

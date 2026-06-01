@@ -9,6 +9,10 @@ export function CetakUsbuSelector({ kelasList }: { kelasList: { id: string, nama
   const router = useRouter();
   const [kelasId, setKelasId] = useState<string>("");
   const [usbu, setUsbu] = useState<string>("1");
+  const [bulan, setBulan] = useState<string>("1");
+
+  const selectedKelas = kelasList.find(k => k.id === kelasId);
+  const isAkbarnas = selectedKelas?.programNama.toLowerCase().includes("akbarnas");
 
   const handlePrint = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +24,8 @@ export function CetakUsbuSelector({ kelasList }: { kelasList: { id: string, nama
       router.push(`/admin/cetak-usbu/bulk/${usbu}`);
       return;
     }
-    router.push(`/admin/cetak-usbu/${kelasId}/${usbu}`);
+    const searchParams = isAkbarnas ? `?bulan=${bulan}` : "";
+    router.push(`/admin/cetak-usbu/${kelasId}/${usbu}${searchParams}`);
   };
 
   return (
@@ -55,6 +60,20 @@ export function CetakUsbuSelector({ kelasList }: { kelasList: { id: string, nama
           <option value="4">Semua Usbu'</option>
         </select>
       </label>
+
+      {isAkbarnas && (
+        <label className="space-y-2 text-sm font-semibold text-slate-700">
+          <span>Bulan (Khusus Akbarnas)</span>
+          <select
+            value={bulan}
+            onChange={(e) => setBulan(e.target.value)}
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+          >
+            <option value="1">Bulan 1</option>
+            <option value="2">Bulan 2</option>
+          </select>
+        </label>
+      )}
 
       <button
         type="submit"

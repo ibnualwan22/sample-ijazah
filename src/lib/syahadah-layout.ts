@@ -25,6 +25,8 @@ export type ElementOffset = {
   offsetY: number; // mm
   fontSize?: number; // pt, only for namaSantri
   columns?: number; // only for tabelNilai
+  colWidthDarajah?: number; // mm, only for tabelNilai
+  tableWidth?: number; // %, only for tabelNilai
 };
 
 export type LayoutData = Record<LayoutElementKey, ElementOffset>;
@@ -53,8 +55,8 @@ export function getDefaultLayout(): LayoutData {
   }
   // Default font size for nama santri
   layout.namaSantri = { offsetX: 0, offsetY: 0, fontSize: 32 };
-  // Default columns for tabel nilai
-  layout.tabelNilai = { offsetX: 0, offsetY: 0, columns: 1 };
+  // Default columns for tabelNilai
+  layout.tabelNilai = { offsetX: 0, offsetY: 0, columns: 1, colWidthDarajah: 35, tableWidth: 80 };
   return layout as LayoutData;
 }
 

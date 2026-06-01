@@ -16,6 +16,7 @@ type SyahadahDocumentProps = {
       dufahNama: string;
     };
     program: {
+      nama_indo: string;
       nama_arab: string;
     };
     template: {
@@ -24,12 +25,15 @@ type SyahadahDocumentProps = {
       tgl_selesai_arab: string | null;
       jabatan_mudir_arab: string;
       nama_mudir_arab: string;
+      teks_dufah_akbarnas_arab?: string | null;
+      teks_dufah_arab?: string | null;
     };
     nilaiRows: Array<{
       mapelId: string;
       nama_arab: string;
       skor: number | null;
     }>;
+    dufahNamaArab?: string | null;
   };
   layout?: LayoutData;
   editorMode?: boolean;
@@ -64,7 +68,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
   const averageValue = isMusyarokah ? "" : convertToArabicNumerals(data.average.toFixed(1));
   const averagePredikat = isMusyarokah ? "" : data.averagePredikat.arab;
 
-  const namaFontSize = lo.namaSantri.fontSize ?? 32;
+  const namaFontSize = lo.namaSantri.fontSize ?? 40;
 
   return (
     <div className="container-syahadah print:block print:min-h-0 mx-auto mb-12" style={{ pageBreakAfter: "always" }}>
@@ -76,7 +80,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
           position: "relative",
           overflow: "hidden",
           boxShadow: "0 24px 80px rgba(0,0,0,0.7)",
-          fontFamily: "'Scheherazade New', 'Amiri', serif",
+          fontFamily: "'Traditional Arabic', 'Scheherazade New', 'Amiri', serif",
           flexShrink: 0,
           background: "white",
         }}
@@ -146,7 +150,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
         >
           <p
             style={{
-              fontSize: "11pt",
+              fontSize: "14pt",
               color: "#000",
               textAlign: "center",
               marginBottom: "5mm",
@@ -182,14 +186,14 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
               const totalItems = data.nilaiRows.length;
               // Ceiling division
               const rowsPerCol = Math.ceil(totalItems / numCols);
-              const tableWidth = numCols === 1 ? "80%" : "100%";
+              const tableWidth = lo.tabelNilai.tableWidth ?? (numCols === 1 ? 80 : 100);
 
               return (
                 <table
                   style={{
-                    width: tableWidth,
+                    width: `${tableWidth}%`,
                     borderCollapse: "collapse",
-                    fontSize: "13pt",
+                    fontSize: "15pt",
                     direction: "rtl",
                     border: "1px solid #000",
                     marginLeft: numCols > 1 ? "-20mm" : "0", // expand left if multiple cols
@@ -221,7 +225,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
                               fontWeight: "700",
                               color: "#1a0e00",
                               border: "1.2px solid #000",
-                              fontSize: "13pt",
+                              fontSize: "15pt",
                             }}
                           >
                             المادة
@@ -233,8 +237,8 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
                               fontWeight: "700",
                               color: "#1a0e00",
                               border: "1.2px solid #000",
-                              width: "35mm",
-                              fontSize: "13pt",
+                              width: `${lo.tabelNilai.colWidthDarajah ?? 35}mm`,
+                              fontSize: "15pt",
                             }}
                           >
                             الدرجة
@@ -249,7 +253,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
                         {Array.from({ length: numCols }).map((_, colIndex) => {
                           const itemIndex = colIndex * rowsPerCol + rowIndex;
                           const row = data.nilaiRows[itemIndex];
-                          
+
                           if (!row) {
                             return (
                               <React.Fragment key={colIndex}>
@@ -267,7 +271,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
                                   textAlign: "center",
                                   color: "#1a0e00",
                                   border: "1px solid #000",
-                                  fontSize: "13pt",
+                                  fontSize: "16pt",
                                 }}
                               >
                                 {row.nama_arab}
@@ -316,7 +320,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
           <div
             {...elProps("paragrafPembuka", editorMode, selectedElement, onSelectElement, "Paragraf Pembuka")}
             style={{
-              fontSize: "15pt",
+              fontSize: "18pt",
               lineHeight: 2,
               color: "#1a0e00",
               textAlign: "justify",
@@ -326,7 +330,9 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
             }}
           >
             <p dir="rtl" style={{ textAlign: "center", marginLeft: "100px", marginTop: "27px" }}>
-              بعد الوصية بتقوى الله واتباع سنة رسول الله، قرر مركز العربية بباري كديري إندونيسيا، منح شهادة الاستكمال للطالب/الطالبة :
+              بعد الوصية بتقوى الله واتباع سنة رسول الله، قرر مركز العربية بباري كديري إندونيسيا،
+              <br />
+              منح شهادة الاستكمال للطالب/الطالبة :
             </p>
           </div>
 
@@ -359,24 +365,33 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
           <p
             {...elProps("teksDufah", editorMode, selectedElement, onSelectElement, "Teks Duf'ah")}
             style={{
-              fontSize: "13pt",
+              fontSize: "18pt",
               lineHeight: 2,
               color: "#1a0e00",
-              textAlign: "justify",
+              textAlign: "center",
               margin: 0,
-              marginRight: "70px",
               transform: `translate(${lo.teksDufah.offsetX}mm, ${lo.teksDufah.offsetY}mm)`,
               position: "relative",
             }}
           >
-            وذلك لإكماله/لإكمالها الدراسات والامتحانات التي أقيمت في الدفعة <strong style={{ color: "#8B1A1A" }}>{translateDufahToArabic(data.masterSantri.dufahNama)}</strong>
+            وذلك لإكماله/لإكمالها الدراسات والامتحانات التي أقيمت
+            {data.program.nama_indo.toLowerCase().includes("akbarnas") && data.template.teks_dufah_akbarnas_arab ? (
+              <>
+                <br />
+                في <strong style={{ color: "#8B1A1A" }}>{data.template.teks_dufah_akbarnas_arab}</strong>
+              </>
+            ) : (
+              <>
+                {" "}في <strong style={{ color: "#8B1A1A" }}>{data.template.teks_dufah_arab ? data.template.teks_dufah_arab : (data.dufahNamaArab ? data.dufahNamaArab : translateDufahToArabic(data.masterSantri.dufahNama).replace("الدفعة ", ""))}</strong>
+              </>
+            )}
           </p>
 
           {/* Teks Program */}
           <p
             {...elProps("teksProgram", editorMode, selectedElement, onSelectElement, "Teks Program")}
             style={{
-              fontSize: "13pt",
+              fontSize: "18pt",
               lineHeight: 2,
               color: "#1a0e00",
               textAlign: "center",
@@ -385,14 +400,14 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
               position: "relative",
             }}
           >
-            برنامج <strong style={{ color: "#8B1A1A", textDecoration: "underline" }}>{data.program.nama_arab}</strong>
+            برنامج <strong style={{ color: "#8B1A1A" }}>{data.program.nama_arab}</strong>
           </p>
 
           {/* Teks Periode */}
           <p
             {...elProps("teksPeriode", editorMode, selectedElement, onSelectElement, "Teks Periode")}
             style={{
-              fontSize: "13pt",
+              fontSize: "18pt",
               lineHeight: 2,
               fontWeight: "700",
               textAlign: "center",
@@ -416,11 +431,11 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
                 position: "relative",
               }}
             >
-              <p style={{ fontSize: "15pt", lineHeight: 2, color: "#1a0e00", textAlign: "center", margin: 0 }}>
+              <p style={{ fontSize: "20pt", lineHeight: 2, color: "#1a0e00", textAlign: "center", margin: 0 }}>
                 بمعدل تراكمي عام (<strong>{averageValue}</strong>)
               </p>
-              <p style={{ fontSize: "15pt", lineHeight: 2, color: "#1a0e00", textAlign: "center", margin: 0 }}>
-                وبتقدير <strong style={{ color: "#8B1A1A", textDecoration: "underline" }}>{averagePredikat}</strong>
+              <p style={{ fontSize: "20pt", lineHeight: 2, color: "#1a0e00", textAlign: "center", margin: 0 }}>
+                وبتقدير <strong style={{ color: "#8B1A1A" }}>{averagePredikat}</strong>
               </p>
             </div>
           )}
@@ -429,7 +444,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
           <p
             {...elProps("doaPenutup", editorMode, selectedElement, onSelectElement, "Doa Penutup")}
             style={{
-              fontSize: "15pt",
+              fontSize: "20pt",
               lineHeight: 2,
               color: "#1a0e00",
               textAlign: "center",
@@ -448,7 +463,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
               <p
                 {...elProps("jabatanMudir", editorMode, selectedElement, onSelectElement, "Jabatan Mudir")}
                 style={{
-                  fontSize: "15pt",
+                  fontSize: "18pt",
                   color: "#1a0e00",
                   marginBottom: "2mm",
                   marginTop: -50,
@@ -498,7 +513,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
               <p
                 {...elProps("namaMudir", editorMode, selectedElement, onSelectElement, "Nama Mudir")}
                 style={{
-                  fontSize: "15pt",
+                  fontSize: "18pt",
                   fontWeight: "400",
                   color: "#1a0e00",
                   paddingTop: "1mm",
@@ -527,7 +542,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
             ...(editorMode ? { cursor: "pointer" } : {}),
           }}
         >
-          <p style={{ fontSize: "13pt", color: "#1a0e00", margin: 0, whiteSpace: "nowrap" }}>
+          <p style={{ fontSize: "18pt", color: "#1a0e00", margin: 0, whiteSpace: "nowrap" }}>
             {data.template.tgl_cetak_arab} م
           </p>
         </div>

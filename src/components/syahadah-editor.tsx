@@ -180,6 +180,30 @@ export function SyahadahEditor({
     });
   };
 
+  // Table Width control
+  const handleTableWidthChange = (delta: number) => {
+    if (selectedElement !== "tabelNilai") return;
+    setLayout(prev => {
+      const el = { ...prev.tabelNilai };
+      el.tableWidth = Math.max(30, Math.min(100, (el.tableWidth ?? 80) + delta));
+      const newLayout = { ...prev, tabelNilai: el };
+      pushHistory(newLayout);
+      return newLayout;
+    });
+  };
+
+  // Column Darajah (Score) Width control
+  const handleColWidthDarajahChange = (delta: number) => {
+    if (selectedElement !== "tabelNilai") return;
+    setLayout(prev => {
+      const el = { ...prev.tabelNilai };
+      el.colWidthDarajah = Math.max(15, Math.min(60, (el.colWidthDarajah ?? 35) + delta));
+      const newLayout = { ...prev, tabelNilai: el };
+      pushHistory(newLayout);
+      return newLayout;
+    });
+  };
+
   // Reset layout
   const handleReset = () => {
     const defaultLayout = getDefaultLayout();
@@ -307,12 +331,30 @@ export function SyahadahEditor({
                     )}
                     {selectedElement === "tabelNilai" && (
                       <div className="mt-4 border-t border-neutral-700 pt-4">
-                        <p className="mb-2 text-xs font-semibold text-slate-400">Kolom Tabel: {layout.tabelNilai.columns || 1}</p>
-                        <div className="flex gap-2">
-                          <button onClick={() => handleColumnsChange(-1)} className="flex-1 rounded-md bg-neutral-700 py-1.5 text-sm text-white hover:bg-neutral-600">-</button>
-                          <button onClick={() => handleColumnsChange(1)} className="flex-1 rounded-md bg-neutral-700 py-1.5 text-sm text-white hover:bg-neutral-600">+</button>
+                        <div className="flex gap-4">
+                          <div className="flex-1">
+                            <p className="mb-2 text-xs font-semibold text-slate-400">Kolom Tabel: {layout.tabelNilai.columns || 1}</p>
+                            <div className="flex gap-2">
+                              <button onClick={() => handleColumnsChange(-1)} className="flex-1 rounded-md bg-neutral-700 py-1 text-sm text-white hover:bg-neutral-600">-</button>
+                              <button onClick={() => handleColumnsChange(1)} className="flex-1 rounded-md bg-neutral-700 py-1 text-sm text-white hover:bg-neutral-600">+</button>
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <p className="mb-2 text-xs font-semibold text-slate-400">Lebar Tabel (%): {layout.tabelNilai.tableWidth ?? 80}</p>
+                            <div className="flex gap-2">
+                              <button onClick={() => handleTableWidthChange(-5)} className="flex-1 rounded-md bg-neutral-700 py-1 text-sm text-white hover:bg-neutral-600">-5</button>
+                              <button onClick={() => handleTableWidthChange(5)} className="flex-1 rounded-md bg-neutral-700 py-1 text-sm text-white hover:bg-neutral-600">+5</button>
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <p className="mb-2 text-xs font-semibold text-slate-400">Lebar Kolom Nilai (mm): {layout.tabelNilai.colWidthDarajah ?? 35}</p>
+                            <div className="flex gap-2">
+                              <button onClick={() => handleColWidthDarajahChange(-2)} className="flex-1 rounded-md bg-neutral-700 py-1 text-sm text-white hover:bg-neutral-600">-2</button>
+                              <button onClick={() => handleColWidthDarajahChange(2)} className="flex-1 rounded-md bg-neutral-700 py-1 text-sm text-white hover:bg-neutral-600">+2</button>
+                            </div>
+                          </div>
                         </div>
-                        <p className="mt-2 text-[10px] text-slate-500 leading-tight">Ubah ke 2 atau 3 kolom jika jumlah mapel terlalu banyak agar tabel memanjang ke samping.</p>
+                        <p className="mt-2 text-[10px] text-slate-500 leading-tight">Sesuaikan jika nama mapel terpotong atau tabel terlalu sempit.</p>
                       </div>
                     )}
                   </div>
