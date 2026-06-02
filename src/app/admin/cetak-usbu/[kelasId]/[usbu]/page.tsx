@@ -33,60 +33,58 @@ export default async function CetakUsbuPrintPage(props: { params: Promise<{ kela
   const masterList = await getMasterSantriList();
   const masterMap = new Map(masterList.map(m => [m.id, m]));
 
-  // Find students CURRENTLY active in this class
-  const currentClassRiwayats = await prisma.riwayatSantri.findMany({
+  const activeRiwayatList = await prisma.riwayatSantri.findMany({
     where: { kelasId },
-    select: { santriId: true, dufahNama: true }
+    select: { id: true, santriId: true, dufahNama: true }
   });
 
-  const activeStudentIdsInClass = currentClassRiwayats
-    .filter(r => {
-      const ms = masterMap.get(r.santriId);
-      return ms?.isAktif && ms.dufahNama === r.dufahNama;
-    })
-    .map(r => r.santriId);
+  const validActiveRiwayats = activeRiwayatList.filter(r => {
+    const ms = masterMap.get(r.santriId);
+    return ms?.isAktif && ms.dufahNama === r.dufahNama;
+  });
 
   const isAkbarnas = kelas.program.nama_indo.toLowerCase().includes("akbarnas");
   const isMonth2 = isAkbarnas && bulan === "2";
-
-  let riwayatList: any[] = [];
+  
+  let targetRiwayatIds: string[] = [];
 
   if (isAkbarnas) {
-    const allAkbarnasRiwayats = await prisma.riwayatSantri.findMany({
-      where: {
-        santriId: { in: activeStudentIdsInClass },
-        program: { nama_indo: { contains: "akbarnas", mode: "insensitive" } }
-      },
-      orderBy: { id: "asc" },
-      include: { santri: true, nilaiList: true }
-    });
-
-    const riwayatBulanMap = new Map<string, { bulan1: any, bulan2: any }>();
-    for (const r of allAkbarnasRiwayats) {
-      if (!riwayatBulanMap.has(r.santriId)) {
-        riwayatBulanMap.set(r.santriId, { bulan1: r, bulan2: null });
-      } else {
-        riwayatBulanMap.get(r.santriId)!.bulan2 = r;
+    const reqMonth = bulan === "2" ? "2" : "1";
+    if (reqMonth === "2" && !kelas.is_akbarnas_b2) {
+      targetRiwayatIds = [];
+    } else if (reqMonth === "2" && kelas.is_akbarnas_b2) {
+      targetRiwayatIds = validActiveRiwayats.map(r => r.id);
+    } else if (reqMonth === "1" && !kelas.is_akbarnas_b2) {
+      targetRiwayatIds = validActiveRiwayats.map(r => r.id);
+    } else if (reqMonth === "1" && kelas.is_akbarnas_b2) {
+      const santriIds = validActiveRiwayats.map(r => r.santriId);
+      const previousRiwayats = await prisma.riwayatSantri.findMany({
+        where: {
+          santriId: { in: santriIds },
+          program: { nama_indo: { contains: "akbarnas", mode: "insensitive" } },
+          id: { notIn: validActiveRiwayats.map(r => r.id) }
+        },
+        orderBy: { id: 'desc' }
+      });
+      const santriToHistorical = new Map();
+      for (const r of previousRiwayats) {
+        if (!santriToHistorical.has(r.santriId)) {
+          santriToHistorical.set(r.santriId, r);
+        }
       }
+      targetRiwayatIds = validActiveRiwayats.map(active => {
+        const hist = santriToHistorical.get(active.santriId);
+        return hist ? hist.id : null;
+      }).filter(Boolean) as string[];
     }
-
-    activeStudentIdsInClass.forEach(santriId => {
-      const map = riwayatBulanMap.get(santriId);
-      if (map) {
-        const targetR = isMonth2 ? map.bulan2 : map.bulan1;
-        if (targetR) riwayatList.push(targetR);
-      }
-    });
   } else {
-    // For non-Akbarnas, just get their latest/current riwayat
-    riwayatList = await prisma.riwayatSantri.findMany({
-      where: {
-        santriId: { in: activeStudentIdsInClass },
-      },
-      include: { santri: true, nilaiList: true }
-    });
-    riwayatList = riwayatList.filter(r => masterMap.get(r.santriId)?.dufahNama === r.dufahNama);
+    targetRiwayatIds = validActiveRiwayats.map(r => r.id);
   }
+
+  const riwayatList = await prisma.riwayatSantri.findMany({
+    where: { id: { in: targetRiwayatIds } },
+    include: { santri: true, nilaiList: true }
+  });
 
   const activeMapels = kelas.program.programMapels.filter(pm => {
     if (!isAkbarnas) return true;
@@ -117,9 +115,9 @@ export default async function CetakUsbuPrintPage(props: { params: Promise<{ kela
 
       let score: number | null = null;
       if (match) {
-        if (targetUsbu === 1) score = match.nilaiUsbu1;
-        if (targetUsbu === 2) score = match.nilaiUsbu2;
-        if (targetUsbu === 3) score = match.nilaiNihai;
+        if (targetUsbu === 1) score = match.nilaiUsbu1 ?? match.nilaiAkhir;
+        if (targetUsbu === 2) score = match.nilaiUsbu2 ?? match.nilaiAkhir;
+        if (targetUsbu === 3) score = match.nilaiNihai ?? match.nilaiAkhir;
         if (targetUsbu === 4) {
           if (match.nilaiAkhir !== null && match.nilaiAkhir !== undefined) {
             score = match.nilaiAkhir;
