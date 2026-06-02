@@ -363,7 +363,7 @@ export function InputNilaiBulkClient({
                                       type="number" min={0} max={100} 
                                       value={u1 === null ? "" : u1}
                                       onChange={(e) => handleNilaiChange(row.riwayatId, m.id, "u1", e.target.value === "" ? null : Number(e.target.value))}
-                                      className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 focus:bg-emerald-50/30 hover:border-slate-300" 
+                                      className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 focus:bg-emerald-50/30 hover:border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                     />
                                   ) : (
                                     <div className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1.5 text-center font-bold text-slate-400">{u1 === null ? "-" : u1}</div>
@@ -375,7 +375,7 @@ export function InputNilaiBulkClient({
                                       type="number" min={0} max={100} 
                                       value={u2 === null ? "" : u2}
                                       onChange={(e) => handleNilaiChange(row.riwayatId, m.id, "u2", e.target.value === "" ? null : Number(e.target.value))}
-                                      className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 focus:bg-emerald-50/30 hover:border-slate-300" 
+                                      className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 focus:bg-emerald-50/30 hover:border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                     />
                                   ) : (
                                     <div className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1.5 text-center font-bold text-slate-400">{u2 === null ? "-" : u2}</div>
@@ -387,7 +387,7 @@ export function InputNilaiBulkClient({
                                       type="number" min={0} max={100} 
                                       value={n === null ? "" : n}
                                       onChange={(e) => handleNilaiChange(row.riwayatId, m.id, "n", e.target.value === "" ? null : Number(e.target.value))}
-                                      className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 focus:bg-emerald-50/30 hover:border-slate-300" 
+                                      className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 focus:bg-emerald-50/30 hover:border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                     />
                                   ) : (
                                     <div className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1.5 text-center font-bold text-slate-400">{n === null ? "-" : n}</div>
@@ -403,7 +403,7 @@ export function InputNilaiBulkClient({
                                   type="number" min={0} max={100} 
                                   value={a === null ? "" : a}
                                   onChange={(e) => handleNilaiChange(row.riwayatId, m.id, "a", e.target.value === "" ? null : Number(e.target.value))}
-                                  className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 focus:bg-emerald-50/30 hover:border-slate-300" 
+                                  className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 focus:bg-emerald-50/30 hover:border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                 />
                               </td>
                             );

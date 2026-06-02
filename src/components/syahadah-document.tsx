@@ -375,7 +375,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
             }}
           >
             وذلك لإكماله/لإكمالها الدراسات والامتحانات التي أقيمت
-            {data.program.nama_indo.toLowerCase().includes("akbarnas") && data.template.teks_dufah_akbarnas_arab ? (
+            {data.program?.nama_indo?.toLowerCase().includes("akbarnas") && data.template.teks_dufah_akbarnas_arab ? (
               <>
                 <br />
                 في <strong style={{ color: "#8B1A1A" }}>{data.template.teks_dufah_akbarnas_arab}</strong>
