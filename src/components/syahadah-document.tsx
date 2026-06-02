@@ -422,22 +422,40 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
             <strong style={{ color: "#8B1A1A" }}>{tanggalSampai}</strong>
           </p>
 
-          {/* Rata-rata & Predikat */}
+          {/* Rata-rata */}
           {!isMusyarokah && (
-            <div
-              {...elProps("rataRata", editorMode, selectedElement, onSelectElement, "Rata-rata & Predikat")}
+            <p
+              {...elProps("rataRata", editorMode, selectedElement, onSelectElement, "Rata-rata")}
               style={{
+                fontSize: "20pt",
+                lineHeight: 2,
+                color: "#1a0e00",
+                textAlign: "center",
+                margin: 0,
                 transform: `translate(${lo.rataRata.offsetX}mm, ${lo.rataRata.offsetY}mm)`,
                 position: "relative",
               }}
             >
-              <p style={{ fontSize: "20pt", lineHeight: 2, color: "#1a0e00", textAlign: "center", margin: 0 }}>
-                بمعدل تراكمي عام (<strong>{averageValue}</strong>)
-              </p>
-              <p style={{ fontSize: "20pt", lineHeight: 2, color: "#1a0e00", textAlign: "center", margin: 0 }}>
-                وبتقدير <strong style={{ color: "#8B1A1A" }}>{averagePredikat}</strong>
-              </p>
-            </div>
+              بمعدل تراكمي عام (<strong>{averageValue}</strong>)
+            </p>
+          )}
+
+          {/* Predikat */}
+          {!isMusyarokah && (
+            <p
+              {...elProps("predikat", editorMode, selectedElement, onSelectElement, "Predikat")}
+              style={{
+                fontSize: "20pt",
+                lineHeight: 2,
+                color: "#1a0e00",
+                textAlign: "center",
+                margin: 0,
+                transform: `translate(${lo.predikat?.offsetX ?? 0}mm, ${lo.predikat?.offsetY ?? 0}mm)`,
+                position: "relative",
+              }}
+            >
+              وبتقدير <strong style={{ color: "#8B1A1A" }}>{averagePredikat}</strong>
+            </p>
           )}
 
           {/* Doa Penutup */}
