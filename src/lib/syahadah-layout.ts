@@ -103,6 +103,14 @@ export async function getLayoutForRiwayat(riwayatId: string, programId: string):
   return getDefaultLayout();
 }
 
+/** Fetch the global layout template (riwayatId=null, programId=null) */
+export async function getGlobalLayout(): Promise<LayoutData> {
+  const global = await prisma.syahadahLayout.findFirst({
+    where: { riwayatId: null, programId: null },
+  });
+  return mergeLayout(global ? (global.layoutData as Partial<LayoutData>) : null);
+}
+
 /** Fetch layout for a specific program, falling back to global */
 export async function getProgramLayout(programId: string): Promise<LayoutData> {
   const perProgram = await prisma.syahadahLayout.findUnique({
@@ -112,10 +120,7 @@ export async function getProgramLayout(programId: string): Promise<LayoutData> {
     return mergeLayout(perProgram.layoutData as Partial<LayoutData>);
   }
 
-  const global = await prisma.syahadahLayout.findFirst({
-    where: { riwayatId: null, programId: null },
-  });
-  return mergeLayout(global ? (global.layoutData as Partial<LayoutData>) : null);
+  return getGlobalLayout();
 }
 
 /** Save layout (global, per-program, or per-santri) */

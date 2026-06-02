@@ -1,6 +1,6 @@
 import { getCertificateData, getDashboardSantriRows } from "@/lib/app-data";
 import { getBaseUrl } from "@/lib/base-url";
-import { getProgramLayout } from "@/lib/syahadah-layout";
+import { getProgramLayout, getGlobalLayout } from "@/lib/syahadah-layout";
 import { ProgramLayoutEditorClient } from "@/components/admin/program-layout-editor";
 import { Metadata } from "next";
 import prisma from "@/lib/prisma";
@@ -30,7 +30,7 @@ export default async function ProgramLayoutEditorPage({
   }
 
   const baseUrl = await getBaseUrl();
-  const layout = isGlobal ? await getProgramLayout("global") /* fallback string won't match any real ID so it returns global */ : await getProgramLayout(programId);
+  const layout = isGlobal ? await getGlobalLayout() : await getProgramLayout(programId);
   
   // If editing global, pass null as programId to save function.
   const actualProgramId = isGlobal ? null : programId;

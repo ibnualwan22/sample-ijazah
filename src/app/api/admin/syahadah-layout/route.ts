@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getProgramLayout, getLayoutForRiwayat, saveLayout, deleteLayoutOverride } from "@/lib/syahadah-layout";
+import { getProgramLayout, getGlobalLayout, getLayoutForRiwayat, saveLayout, deleteLayoutOverride } from "@/lib/syahadah-layout";
 import { checkPermission } from "@/lib/permission";
 import { getSession } from "@/lib/auth";
 
@@ -9,11 +9,14 @@ export async function GET(req: NextRequest) {
   const programId = searchParams.get("programId");
 
   try {
-    const layout = riwayatId && programId
-      ? await getLayoutForRiwayat(riwayatId, programId)
-      : programId 
-        ? await getProgramLayout(programId)
-        : await getProgramLayout("dummy-fallback"); // Should usually provide programId
+    let layout;
+    if (riwayatId && programId) {
+      layout = await getLayoutForRiwayat(riwayatId, programId);
+    } else if (programId) {
+      layout = await getProgramLayout(programId);
+    } else {
+      layout = await getGlobalLayout();
+    }
 
     return NextResponse.json({ layout });
   } catch (error) {

@@ -2,7 +2,7 @@ import { SyahadahDocument } from "@/components/syahadah-document";
 import { PrintToolbar } from "@/components/print-toolbar";
 import { getBaseUrl } from "@/lib/base-url";
 import { getDashboardSantriRows, getCertificateData } from "@/lib/app-data";
-import { getLayoutForRiwayat, getProgramLayout } from "@/lib/syahadah-layout";
+import { getLayoutForRiwayat, getProgramLayout, getGlobalLayout } from "@/lib/syahadah-layout";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +33,7 @@ export default async function CetakBulkPage({
   }
 
   // Fetch global layout as fallback
-  const globalLayout = await getProgramLayout("global");
+  const globalLayout = await getGlobalLayout();
 
   // Pre-fetch layouts for known programs to avoid N+1 queries
   const programLayouts = new Map<string, any>();

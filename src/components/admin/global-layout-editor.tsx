@@ -20,6 +20,7 @@ export function GlobalLayoutEditorClient({
       data={sampleData}
       initialLayout={initialLayout}
       riwayatId={null}
+      programId={null}
       mode="global"
       backHref="/admin/syahadah"
       backLabel="← Kembali ke Data Syahadah"

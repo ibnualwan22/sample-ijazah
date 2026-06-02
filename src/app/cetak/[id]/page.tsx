@@ -2,7 +2,7 @@ import { getCertificateData } from "@/lib/app-data";
 import { getBaseUrl } from "@/lib/base-url";
 import { notFound } from "next/navigation";
 import { SyahadahEditor } from "@/components/syahadah-editor";
-import { getLayoutForRiwayat } from "@/lib/syahadah-layout";
+import { getLayoutForRiwayat, getProgramLayout, getGlobalLayout } from "@/lib/syahadah-layout";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -56,11 +56,11 @@ export default async function CetakPage({
   // Fetch layout: per-santri override → per-program → global → default
   let layout;
   if (riwayatId && programId) {
-    layout = await (await import("@/lib/syahadah-layout")).getLayoutForRiwayat(riwayatId, programId);
+    layout = await getLayoutForRiwayat(riwayatId, programId);
   } else if (programId) {
-    layout = await (await import("@/lib/syahadah-layout")).getProgramLayout(programId);
+    layout = await getProgramLayout(programId);
   } else {
-    layout = await (await import("@/lib/syahadah-layout")).getProgramLayout("global");
+    layout = await getGlobalLayout();
   }
 
   return (

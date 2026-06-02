@@ -383,7 +383,15 @@ export function SyahadahEditor({
                       onClick={handleDeleteOverride}
                       className="rounded-lg px-3 py-1.5 text-[11px] font-bold text-rose-400/80 transition hover:bg-neutral-700 hover:text-rose-300"
                     >
-                      ✕ Hapus Override
+                      ✕ Hapus Override Santri
+                    </button>
+                  )}
+                  {mode === "per-program" && programId && (
+                    <button
+                      onClick={handleDeleteOverride}
+                      className="rounded-lg px-3 py-1.5 text-[11px] font-bold text-rose-400/80 transition hover:bg-neutral-700 hover:text-rose-300"
+                    >
+                      ✕ Hapus Override Program
                     </button>
                   )}
                   <div className="h-5 w-px bg-neutral-700/60 mx-1" />
@@ -396,7 +404,7 @@ export function SyahadahEditor({
                         : "bg-blue-600 text-white hover:bg-blue-500"
                     }`}
                   >
-                    {saving ? "Menyimpan..." : saved ? "✓ Tersimpan!" : mode === "per-santri" ? "💾 Simpan Per-Santri" : "💾 Simpan Global"}
+                    {saving ? "Menyimpan..." : saved ? "✓ Tersimpan!" : mode === "per-santri" ? "💾 Simpan Per-Santri" : mode === "per-program" ? "💾 Simpan Per-Program" : "💾 Simpan Global"}
                   </button>
                 </div>
               </div>
