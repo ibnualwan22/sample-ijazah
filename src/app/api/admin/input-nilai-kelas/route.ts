@@ -159,6 +159,44 @@ export async function POST(request: Request) {
                   ...dataToUpdate
                 }
               });
+
+              // Auto-calculate nilaiAkhir jika U1, U2, dan Nihai sudah lengkap
+              // Hanya untuk mapel dengan jumlah_tes === 3 (bukan mapel input langsung)
+              if (grades.a === undefined) {
+                const mapel = await tx.mapel.findUnique({ where: { id: mapelId } });
+                if (mapel && mapel.jumlah_tes === 3) {
+                  const currentNilai = await tx.nilai.findUnique({
+                    where: { riwayatId_mapelId: { riwayatId: update.riwayatId, mapelId } }
+                  });
+
+                  if (currentNilai && 
+                      currentNilai.nilaiUsbu1 !== null && 
+                      currentNilai.nilaiUsbu2 !== null && 
+                      currentNilai.nilaiNihai !== null) {
+                    
+                    // Cek apakah program ini Akbarnas
+                    const riwayat = await tx.riwayatSantri.findUnique({
+                      where: { id: update.riwayatId },
+                      include: { program: true }
+                    });
+                    const isAkbarnas = riwayat?.program?.nama_indo?.toLowerCase().includes("akbarnas") ?? false;
+
+                    let nilaiAkhir: number;
+                    if (isAkbarnas) {
+                      // Akbarnas: rata-rata sederhana (U1 + U2 + Nihai) / 3
+                      nilaiAkhir = Number(((currentNilai.nilaiUsbu1 + currentNilai.nilaiUsbu2 + currentNilai.nilaiNihai) / 3).toFixed(2));
+                    } else {
+                      // Non-Akbarnas: U1(30%) + U2(30%) + Nihai(40%)
+                      nilaiAkhir = Number((currentNilai.nilaiUsbu1 * 0.3 + currentNilai.nilaiUsbu2 * 0.3 + currentNilai.nilaiNihai * 0.4).toFixed(2));
+                    }
+
+                    await tx.nilai.update({
+                      where: { riwayatId_mapelId: { riwayatId: update.riwayatId, mapelId } },
+                      data: { nilaiAkhir }
+                    });
+                  }
+                }
+              }
             }
           }
         }

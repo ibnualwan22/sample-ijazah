@@ -118,19 +118,7 @@ export default async function CetakUsbuPrintPage(props: { params: Promise<{ kela
         if (targetUsbu === 1) score = match.nilaiUsbu1 ?? match.nilaiAkhir;
         if (targetUsbu === 2) score = match.nilaiUsbu2 ?? match.nilaiAkhir;
         if (targetUsbu === 3) score = match.nilaiNihai ?? match.nilaiAkhir;
-        if (targetUsbu === 4) {
-          if (match.nilaiAkhir !== null && match.nilaiAkhir !== undefined) {
-            score = match.nilaiAkhir;
-          } else {
-            const parts = [];
-            if (match.nilaiUsbu1 !== null && match.nilaiUsbu1 !== undefined) parts.push(match.nilaiUsbu1);
-            if (match.nilaiUsbu2 !== null && match.nilaiUsbu2 !== undefined) parts.push(match.nilaiUsbu2);
-            if (match.nilaiNihai !== null && match.nilaiNihai !== undefined) parts.push(match.nilaiNihai);
-            if (parts.length > 0) {
-              score = Number((parts.reduce((a, b) => a + b, 0) / parts.length).toFixed(2));
-            }
-          }
-        }
+        if (targetUsbu === 4) score = match.nilaiAkhir;
       }
 
       if (score !== null && score !== undefined) {
