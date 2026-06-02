@@ -36,19 +36,34 @@ export default async function ProgramLayoutEditorPage({
   const actualProgramId = isGlobal ? null : programId;
 
   // Find a sample santri to use as preview.
-  // If it's a specific program, find a santri from that program.
   const allRows = await getDashboardSantriRows();
-  const sampleSantri = allRows.find((s: any) => 
-    s.isAktif && 
-    s.canPrintSyahadah && 
-    (isGlobal || s.programId === programId)
-  );
+  let sampleSantri = null;
+
+  if (isGlobal) {
+    // For global template, specifically use I'dad Awal as the preview sample
+    sampleSantri = allRows.find((s: any) => 
+      s.isAktif && 
+      s.canPrintSyahadah && 
+      s.programNama === "I'dad Awal"
+    );
+  } else {
+    sampleSantri = allRows.find((s: any) => 
+      s.isAktif && 
+      s.canPrintSyahadah && 
+      s.programId === programId
+    );
+  }
+
+  const realTemplate = await prisma.syahadahTemplate.findFirst();
 
   let sampleData = null;
   let sampleQrUrl = "";
 
   if (sampleSantri) {
     sampleData = await getCertificateData(sampleSantri.id);
+    if (sampleData && sampleData.masterSantri) {
+      sampleData.masterSantri.nama = "Ahmad Ibnu Alwan"; // Override for preview
+    }
     sampleQrUrl = `${baseUrl}/ijazah/${sampleSantri.id}`;
   }
 
@@ -62,7 +77,22 @@ export default async function ProgramLayoutEditorPage({
     ];
     let progArabName = "برنامج التعليم";
 
-    if (!isGlobal) {
+    if (isGlobal) {
+      const prog = await prisma.program.findFirst({
+        where: { nama_indo: "I'dad Awal" },
+        include: { programMapels: { include: { mapel: true }, orderBy: { urutan: "asc" } } }
+      });
+      if (prog) {
+        progArabName = prog.nama_arab;
+        if (prog.programMapels.length > 0) {
+          dummyMapel = prog.programMapels.map(pm => ({
+            mapelId: pm.mapelId,
+            nama_arab: pm.mapel.nama_arab,
+            skor: 90
+          }));
+        }
+      }
+    } else {
       const prog = await prisma.program.findUnique({
         where: { id: programId },
         include: { programMapels: { include: { mapel: true }, orderBy: { urutan: "asc" } } }
@@ -84,18 +114,20 @@ export default async function ProgramLayoutEditorPage({
       average: 85.5,
       averagePredikat: { indo: "Jayyid Jiddan", arab: "جيد جدا" },
       masterSantri: {
-        nama: "Ahmad Fauzan",
+        nama: "Ahmad Ibnu Alwan",
         dufahNama: "Dufah 1",
       },
       program: {
         nama_arab: progArabName,
       },
       template: {
-        tgl_cetak_arab: "١ يناير ٢٠٢٦",
-        tgl_mulai_arab: "١ يناير ٢٠٢٦",
-        tgl_selesai_arab: "١ فبراير ٢٠٢٦",
-        jabatan_mudir_arab: "مدير مركز العربية",
-        nama_mudir_arab: "اسم المدير",
+        tgl_cetak_arab: realTemplate?.tgl_cetak_arab || "١ يناير ٢٠٢٦",
+        tgl_mulai_arab: realTemplate?.tgl_mulai_arab || "١ يناير ٢٠٢٦",
+        tgl_selesai_arab: realTemplate?.tgl_selesai_arab || "١ فبراير ٢٠٢٦",
+        jabatan_mudir_arab: realTemplate?.jabatan_mudir_arab || "مدير مركز العربية",
+        nama_mudir_arab: realTemplate?.nama_mudir_arab || "اسم المدير",
+        teks_dufah_akbarnas_arab: realTemplate?.teks_dufah_akbarnas_arab || "الدفعة الثامنة والثمنين إلى الدفعة التاسعة والثمنين",
+        teks_dufah_arab: realTemplate?.teks_dufah_arab || "الدفعة التاسعة والثمنين",
       },
       nilaiRows: dummyMapel,
     };
