@@ -20,6 +20,12 @@ const navigationGroups = [
     ]
   },
   {
+    title: "Divisi Data Santri",
+    items: [
+      { href: "/admin/data-santri", label: "Data Santri Duf'ah", icon: Users, permissionId: "data_santri_dufah" },
+    ]
+  },
+  {
     title: "Divisi Absensi",
     items: [
       { href: "/admin/absensi/sakan", label: "Absen Sakan", icon: Bed, permissionId: "absen_sakan" },

@@ -13,6 +13,9 @@ export type MasterSantri = {
   tempatLahir?: string | null;
   tanggalLahir?: string | null;
   alamat?: string | null;
+  noWaSantri: string;
+  kabupaten: string;
+  bulanKe: number;
 };
 
 type ApiSantriResponse = {
@@ -23,8 +26,11 @@ type ApiSantriResponse = {
   tempatLahir?: string | null;
   tanggalLahir?: string | null;
   detailAlamat?: string | null;
+  noWaSantri?: string | null;
+  kabupaten?: string | null;
   riwayat?: Array<{
     status?: string;
+    bulanKe?: number;
     dufah?: {
       nama?: string;
       tanggalBuka?: string;
@@ -64,6 +70,9 @@ function normalizeSantri(santri: ApiSantriResponse): MasterSantri {
     tempatLahir: santri.tempatLahir ?? "",
     tanggalLahir: santri.tanggalLahir ?? null,
     alamat: santri.detailAlamat ?? "",
+    noWaSantri: santri.noWaSantri ?? "-",
+    kabupaten: santri.kabupaten ?? "-",
+    bulanKe: assignedRiwayat?.bulanKe ?? 0,
   };
 }
 
