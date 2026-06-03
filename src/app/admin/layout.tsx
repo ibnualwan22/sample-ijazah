@@ -9,7 +9,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await getSession();
-  
+
   // Ambil permission sesuai role
   let permissions: string[] = [];
   if (session) {
@@ -25,7 +25,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
+    <div className="min-h-screen flex flex-col lg:flex-row" style={{ background: "var(--bg-app)" }}>
       <Sidebar user={session} permissions={permissions} />
       <main className="flex-1 min-w-0 flex flex-col">
         <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 pb-24 lg:pb-8">
@@ -33,8 +33,21 @@ export default async function AdminLayout({
             {children}
           </div>
         </div>
+        {/* Footer */}
+        <footer className="app-footer hidden lg:block border-t" style={{ borderColor: "var(--color-surface-dark)" }}>
+          Developed by <span className="font-bold" style={{ color: "var(--color-primary)" }}>Aksara X</span> KSU Batch 10
+        </footer>
       </main>
-      <Toaster position="bottom-center" toastOptions={{ style: { fontWeight: "600", fontSize: "14px" } }} />
+      <Toaster position="bottom-center" toastOptions={{
+        style: {
+          fontWeight: "600",
+          fontSize: "14px",
+          borderRadius: "var(--radius-lg)",
+          boxShadow: "var(--shadow-raised)",
+          background: "var(--bg-card)",
+          color: "var(--color-text)"
+        }
+      }} />
     </div>
   );
 }

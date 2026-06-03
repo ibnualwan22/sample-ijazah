@@ -65,9 +65,9 @@ export function DufahManager({ initialData, activeDufahName }: { initialData: Du
   return (
     <div className="space-y-6">
       {data.length === 0 ? (
-        <div className="text-center py-10 bg-white rounded-xl border border-dashed border-slate-300">
-          <Calendar className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500 text-sm">Belum ada data angkatan dari API Pusat.</p>
+        <div className="text-center py-10 bg-white rounded-xl border border-dashed border-[var(--color-surface-dark)]">
+          <Calendar className="h-10 w-10 text-[var(--color-text-subtle)] mx-auto mb-3" />
+          <p className="text-[var(--color-text-muted)] text-sm">Belum ada data angkatan dari API Pusat.</p>
         </div>
       ) : (
         data.map((dufah) => {
@@ -75,36 +75,36 @@ export function DufahManager({ initialData, activeDufahName }: { initialData: Du
           const loading = loadingMap[dufah.nama] || false;
           
           return (
-            <div key={dufah.nama} className={`rounded-xl shadow-sm border overflow-hidden transition-all ${isActive ? "bg-white border-emerald-200 ring-2 ring-emerald-50" : "bg-slate-50 border-slate-200"}`}>
-              <div className="px-6 py-4 border-b bg-slate-50/50 flex justify-between items-center">
+            <div key={dufah.nama} className={`rounded-xl shadow-sm border overflow-hidden transition-all ${isActive ? "bg-white border-[var(--color-primary-100)] ring-2 ring-[var(--color-primary-50)]" : "bg-[var(--color-secondary)] border-[var(--color-surface-dark)]"}`}>
+              <div className="px-6 py-4 border-b bg-[var(--color-surface-light)] flex justify-between items-center">
                 <div>
                   <div className="flex items-center gap-3">
-                    <h3 className={`text-lg font-bold ${isActive ? "text-emerald-900" : "text-slate-600"}`}>{dufah.nama}</h3>
+                    <h3 className={`text-lg font-bold ${isActive ? "text-[var(--color-primary-dark)]" : "text-[var(--color-text-muted)]"}`}>{dufah.nama}</h3>
                     {isActive ? (
-                      <span className="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-emerald-100 text-emerald-700 uppercase tracking-widest">Dufah Berjalan</span>
+                      <span className="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-[var(--color-primary-100)] text-[var(--color-primary)] uppercase tracking-widest">Dufah Berjalan</span>
                     ) : (
-                      <span className="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-slate-200 text-slate-500 uppercase tracking-widest">Selesai / Non-Aktif</span>
+                      <span className="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-[var(--color-surface-dark)] text-[var(--color-text-muted)] uppercase tracking-widest">Selesai / Non-Aktif</span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-500 mt-1 font-medium flex items-center gap-1">
+                  <p className="text-xs text-[var(--color-text-muted)] mt-1 font-medium flex items-center gap-1">
                     Total Santri: {dufah._count?.riwayatRecords || 0}
                   </p>
                   <div className="mt-2 flex items-center gap-2">
-                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Arab:</label>
+                    <label className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Nama Arab:</label>
                     <input
                       type="text"
                       dir="rtl"
                       placeholder="Contoh: الدفعة التسعون"
                       value={dufah.namaArab || ""}
                       onChange={(e) => handleChange(dufah.nama, "namaArab", e.target.value)}
-                      className="text-sm rounded border-slate-300 px-2 py-1 bg-white focus:ring-emerald-500 focus:border-emerald-500 w-48"
+                      className="text-sm rounded border-[var(--color-surface-dark)] px-2 py-1 bg-white focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] w-48"
                     />
                   </div>
                 </div>
                 <button
                   onClick={() => handleUpdate(dufah.nama)}
                   disabled={loading}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2"
+                  className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2"
                 >
                   <Save className="h-4 w-4" />
                   Simpan Perubahan
@@ -122,12 +122,12 @@ export function DufahManager({ initialData, activeDufahName }: { initialData: Du
                   const sEnd = dufah[`${prefix}EndDate`];
 
                   return (
-                    <div key={num} className={`rounded-xl border p-4 transition duration-200 ${sActive ? "bg-emerald-50 border-emerald-200" : "bg-white border-slate-200"}`}>
+                    <div key={num} className={`rounded-xl border p-4 transition duration-200 ${sActive ? "bg-[var(--color-primary-50)] border-[var(--color-primary-100)]" : "bg-white border-[var(--color-surface-dark)]"}`}>
                       <div className="flex justify-between items-center border-b pb-3 mb-4">
-                        <h4 className={`font-bold ${sActive ? "text-emerald-800" : "text-slate-500"}`}>{label}</h4>
+                        <h4 className={`font-bold ${sActive ? "text-[var(--color-primary-dark)]" : "text-[var(--color-text-muted)]"}`}>{label}</h4>
                         <button
                           onClick={() => handleChange(dufah.nama, `${prefix}Active`, !sActive)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${sActive ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-slate-200 hover:bg-slate-300 text-slate-600"}`}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${sActive ? "bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white" : "bg-[var(--color-surface-dark)] hover:bg-[var(--color-surface-dark)] text-[var(--color-text-muted)]"}`}
                         >
                           {sActive ? <Power className="h-3.5 w-3.5" /> : <PowerOff className="h-3.5 w-3.5" />}
                           {sActive ? "Status Aktif" : "Tidak Aktif"}
@@ -136,21 +136,21 @@ export function DufahManager({ initialData, activeDufahName }: { initialData: Du
 
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Mulai Tanggal</label>
+                          <label className="block text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5">Mulai Tanggal</label>
                           <input 
                             type="date"
                             value={toYMD(sStart)}
                             onChange={(e) => handleChange(dufah.nama, `${prefix}StartDate`, e.target.value ? new Date(e.target.value).toISOString() : null)}
-                            className="w-full text-sm rounded-lg border-slate-300 px-3 py-2 bg-white disabled:bg-slate-100 disabled:text-slate-400 focus:ring-emerald-500 focus:border-emerald-500"
+                            className="w-full text-sm rounded-lg border-[var(--color-surface-dark)] px-3 py-2 bg-white disabled:bg-[var(--color-surface)] disabled:text-[var(--color-text-subtle)] focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Sampai Tanggal</label>
+                          <label className="block text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5">Sampai Tanggal</label>
                           <input 
                             type="date"
                             value={toYMD(sEnd)}
                             onChange={(e) => handleChange(dufah.nama, `${prefix}EndDate`, e.target.value ? new Date(e.target.value).toISOString() : null)}
-                            className="w-full text-sm rounded-lg border-slate-300 px-3 py-2 bg-white disabled:bg-slate-100 disabled:text-slate-400 focus:ring-emerald-500 focus:border-emerald-500"
+                            className="w-full text-sm rounded-lg border-[var(--color-surface-dark)] px-3 py-2 bg-white disabled:bg-[var(--color-surface)] disabled:text-[var(--color-text-subtle)] focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
                           />
                         </div>
                       </div>

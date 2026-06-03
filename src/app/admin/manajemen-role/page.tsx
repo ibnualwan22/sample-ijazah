@@ -145,31 +145,31 @@ export default function ManajemenRolePage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <ShieldCheck className="h-6 w-6 text-emerald-600" />
+          <h1 className="text-2xl font-bold text-[var(--color-text)] flex items-center gap-2">
+            <ShieldCheck className="h-6 w-6 text-[var(--color-primary)]" />
             Manajemen Role & Permission
           </h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-[var(--color-text-muted)] text-sm mt-1">
             Atur modul apa saja yang bisa diakses oleh masing-masing Role pengguna (Dinamis).
           </p>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[500px]">
+      <div className="bg-white rounded-2xl shadow-sm border border-[var(--color-surface-dark)] overflow-hidden flex flex-col md:flex-row min-h-[500px]">
         {/* Sidebar Roles */}
-        <div className="w-full md:w-64 bg-slate-50 border-r border-slate-200 p-4 flex flex-col">
+        <div className="w-full md:w-64 bg-[var(--color-secondary)] border-r border-[var(--color-surface-dark)] p-4 flex flex-col">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Pilih Role</p>
+            <p className="text-xs font-bold text-[var(--color-text-subtle)] uppercase tracking-wider">Pilih Role</p>
             <button 
               onClick={() => setIsAddingRole(!isAddingRole)}
-              className="text-xs flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-bold"
+              className="text-xs flex items-center gap-1 text-[var(--color-primary)] hover:text-[var(--color-primary)] font-bold"
             >
               <Plus size={14} /> Baru
             </button>
           </div>
 
           {isAddingRole && (
-            <form onSubmit={handleAddRole} className="mb-4 bg-white p-3 rounded-xl border border-slate-200 space-y-2">
+            <form onSubmit={handleAddRole} className="mb-4 bg-white p-3 rounded-xl border border-[var(--color-surface-dark)] space-y-2">
               <input
                 type="text"
                 required
@@ -182,13 +182,13 @@ export default function ManajemenRolePage() {
                 <button 
                   type="button" 
                   onClick={() => setIsAddingRole(false)} 
-                  className="px-2 py-1 text-slate-500 font-semibold"
+                  className="px-2 py-1 text-[var(--color-text-muted)] font-semibold"
                 >
                   Batal
                 </button>
                 <button 
                   type="submit" 
-                  className="px-2 py-1 bg-emerald-600 text-white rounded font-semibold hover:bg-emerald-700"
+                  className="px-2 py-1 bg-[var(--color-primary)] text-white rounded font-semibold hover:bg-[var(--color-primary-dark)]"
                 >
                   Tambah
                 </button>
@@ -203,8 +203,8 @@ export default function ManajemenRolePage() {
                 onClick={() => setActiveRole(role)}
                 className={`text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all flex-shrink-0 ${
                   activeRole === role 
-                    ? "bg-emerald-100 text-emerald-700 shadow-sm border border-emerald-200" 
-                    : "text-slate-600 hover:bg-slate-200/50"
+                    ? "bg-[var(--color-primary-100)] text-[var(--color-primary)] shadow-sm border border-[var(--color-primary-100)]" 
+                    : "text-[var(--color-text-muted)] hover:bg-slate-200/50"
                 }`}
               >
                 {role.replace("_", " ")}
@@ -221,17 +221,17 @@ export default function ManajemenRolePage() {
             </div>
           ) : (
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center justify-between pb-4 border-b border-[var(--color-surface)]">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-800">
+                  <h2 className="text-lg font-bold text-[var(--color-text)]">
                     Hak Akses: {activeRole.replace("_", " ")}
                   </h2>
-                  <p className="text-sm text-slate-500">Centang modul yang diizinkan untuk diakses.</p>
+                  <p className="text-sm text-[var(--color-text-muted)]">Centang modul yang diizinkan untuk diakses.</p>
                 </div>
                 <button
                   onClick={handleSave}
                   disabled={isSubmitting || activeRole === "ADMIN"}
-                  className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+                  className="flex items-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] disabled:opacity-50 disabled:hover:bg-[var(--color-primary)] text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
                 >
                   {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={18} />}
                   Simpan Perubahan
@@ -250,8 +250,8 @@ export default function ManajemenRolePage() {
                     key={perm.id} 
                     className={`flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer ${
                       permissionsMap[activeRole]?.has(perm.id) 
-                        ? "bg-emerald-50 border-emerald-200 shadow-sm" 
-                        : "bg-white border-slate-200 hover:border-slate-300"
+                        ? "bg-[var(--color-primary-50)] border-[var(--color-primary-100)] shadow-sm" 
+                        : "bg-white border-[var(--color-surface-dark)] hover:border-slate-300"
                     } ${activeRole === "ADMIN" ? "opacity-70 pointer-events-none cursor-not-allowed" : ""}`}
                   >
                     <div className="pt-0.5">
@@ -260,14 +260,14 @@ export default function ManajemenRolePage() {
                         checked={permissionsMap[activeRole]?.has(perm.id) || false}
                         onChange={() => handleToggle(perm.id)}
                         disabled={activeRole === "ADMIN"}
-                        className="w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        className="w-5 h-5 rounded border-slate-300 text-[var(--color-primary)] focus:ring-emerald-500"
                       />
                     </div>
                     <div>
-                      <p className={`text-sm font-bold ${permissionsMap[activeRole]?.has(perm.id) ? "text-emerald-800" : "text-slate-700"}`}>
+                      <p className={`text-sm font-bold ${permissionsMap[activeRole]?.has(perm.id) ? "text-[var(--color-primary-dark)]" : "text-[var(--color-text)]"}`}>
                         {perm.label}
                       </p>
-                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      <p className="text-xs text-[var(--color-text-muted)] mt-1 leading-relaxed">
                         {perm.desc}
                       </p>
                     </div>

@@ -53,17 +53,17 @@ export function MartabahUlaClient({
   }, [santriRows]);
 
   return (
-    <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm mt-6">
+    <div className="neu-card-white p-6 mt-6">
       <div className="mb-6 flex flex-col gap-2">
-        <h2 className="text-2xl font-bold text-slate-900">Peraih Martabah Ula</h2>
-        <p className="text-sm text-slate-500 max-w-2xl">
+        <h2 className="text-2xl font-bold text-[var(--color-text)]">Peraih Martabah Ula</h2>
+        <p className="text-sm text-[var(--color-text-muted)] max-w-2xl">
           Daftar santri dengan nilai tertinggi di setiap program. Data ini hanya akan muncul jika seluruh nilai santri di program tersebut telah lengkap (terisi sampai Nihai).
         </p>
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-slate-500">
+          <thead className="bg-[var(--color-secondary)] text-[var(--color-text-muted)]">
             <tr>
               <th className="px-6 py-4 font-semibold rounded-tl-2xl">Program</th>
               <th className="px-6 py-4 font-semibold">Nama Santri</th>
@@ -72,10 +72,10 @@ export function MartabahUlaClient({
               <th className="px-6 py-4 font-semibold text-right rounded-tr-2xl">Aksi</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200">
+          <tbody className="divide-y divide-[var(--color-surface-dark)]">
             {martabahUlaList.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-12 text-center text-slate-500">
+                <td colSpan={5} className="py-12 text-center text-[var(--color-text-muted)]">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <span className="text-2xl">🏆</span>
                     <p>Belum ada santri peraih Martabah Ula.</p>
@@ -85,27 +85,27 @@ export function MartabahUlaClient({
               </tr>
             ) : (
               martabahUlaList.map((santri) => (
-                <tr key={santri.programId} className="hover:bg-slate-50 transition">
+                <tr key={santri.programId} className="hover:bg-[var(--color-secondary)] transition">
                   <td className="px-6 py-4">
-                    <span className="font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full text-xs">
+                    <span className="font-semibold text-[var(--color-primary)] bg-[var(--color-primary-50)] px-3 py-1 rounded-full text-xs">
                       {santri.programNama}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="font-bold text-slate-900">{santri.nama}</div>
-                    <div className="text-xs text-slate-500">{santri.lokasi}</div>
+                    <div className="font-bold text-[var(--color-text)]">{santri.nama}</div>
+                    <div className="text-xs text-[var(--color-text-muted)]">{santri.lokasi}</div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="font-black text-slate-900 text-lg">
+                    <span className="font-black text-[var(--color-text)] text-lg">
                       {santri.average.toFixed(2)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex flex-col items-center gap-1">
-                      <span className="font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full text-[10px] uppercase tracking-wider">
+                      <span className="font-bold text-[var(--color-warning)] bg-[var(--color-warning-light)] px-3 py-1 rounded-full text-[10px] uppercase tracking-wider">
                         Martabah Ula
                       </span>
-                      <span className="text-xs text-slate-500 font-arabic" dir="rtl">
+                      <span className="text-xs text-[var(--color-text-muted)] font-arabic" dir="rtl">
                         الامتياز مع مرتبة الشرف الأولى
                       </span>
                     </div>
@@ -113,7 +113,7 @@ export function MartabahUlaClient({
                   <td className="px-6 py-4 text-right">
                     <Link
                       href={`/admin/syahadah/${santri.id}/transkrip`}
-                      className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+                      className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 text-xs font-semibold text-[var(--color-info)] transition hover:bg-blue-100"
                     >
                       Lihat Syahadah
                     </Link>

@@ -150,34 +150,34 @@ export function AbsensiKegiatanClient({
   return (
     <div className="space-y-6">
       {activeKegiatanList.length === 0 ? (
-        <div className="rounded-[2rem] border border-amber-200 bg-amber-50 p-6 text-sm font-medium text-amber-800">
+        <div className="rounded-[var(--radius-2xl)] border border-[var(--color-warning)] bg-[var(--color-warning-light)] p-6 text-sm font-medium text-[var(--color-warning)]">
           Belum ada kategori kegiatan yang aktif. Pergi ke{" "}
           <a href="/admin/absensi/pengaturan" className="underline font-bold">Pengaturan Kegiatan</a>{" "}
           untuk menambahkan kegiatan terlebih dahulu.
         </div>
       ) : (
-        <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-4 border-b border-slate-200 p-6 md:flex-row md:items-end md:justify-between bg-slate-50/50">
+        <section className="overflow-hidden neu-card-white">
+          <div className="flex flex-col gap-4 border-b border-[var(--color-surface-dark)] p-6 md:flex-row md:items-end md:justify-between bg-[var(--color-surface-light)]">
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:gap-4 flex-wrap">
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                   Tanggal
                 </label>
                 <input
                   type="date"
                   value={tanggal}
                   onChange={(e) => setTanggal(e.target.value)}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-amber-500"
+                  className="rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-amber-500"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                   Kategori Kegiatan
                 </label>
                 <select
                   value={kategoriId}
                   onChange={(e) => setKategoriId(e.target.value)}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-amber-500"
+                  className="rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-amber-500"
                 >
                   {activeKegiatanList.map((k) => (
                     <option key={k.id} value={k.id}>{k.nama}</option>
@@ -185,13 +185,13 @@ export function AbsensiKegiatanClient({
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                   Filter Sakan
                 </label>
                 <select
                   value={sakan}
                   onChange={(e) => setSakan(e.target.value)}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-amber-500"
+                  className="rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-amber-500"
                 >
                   {allOptions.map((opt) => (
                     <option key={opt.id} value={opt.id}>
@@ -201,7 +201,7 @@ export function AbsensiKegiatanClient({
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                   Filter Kelas
                 </label>
                 <select
@@ -210,7 +210,7 @@ export function AbsensiKegiatanClient({
                     setKelasId(e.target.value);
                     if (e.target.value !== "ALL") setSakan("ALL");
                   }}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-amber-500"
+                  className="rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-amber-500"
                 >
                   <option value="ALL">Semua Kelas</option>
                   {kelasList.map((k) => (
@@ -222,14 +222,14 @@ export function AbsensiKegiatanClient({
             <div className="flex gap-2">
               <button
                 onClick={() => setAllStatus("HADIR")}
-                className="rounded-full bg-slate-200 px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-300"
+                className="rounded-full bg-[var(--color-surface-dark)] px-4 py-2 text-xs font-bold text-[var(--color-text)] transition hover:bg-[var(--color-surface-dark)]"
               >
                 Hadirkan Semua
               </button>
               <button
                 onClick={handleSave}
                 disabled={isSaving || isLoading || !tanggal || !kategoriId}
-                className="rounded-full bg-amber-600 px-6 py-2 text-sm font-bold text-white transition hover:bg-amber-700 disabled:opacity-50"
+                className="rounded-full bg-[var(--color-warning)] px-6 py-2 text-sm font-bold text-white transition hover:bg-[var(--color-warning)] disabled:opacity-50"
               >
                 {isSaving ? "Menyimpan..." : "Simpan Absensi"}
               </button>
@@ -237,34 +237,34 @@ export function AbsensiKegiatanClient({
           </div>
 
           {/* Stats */}
-          <div className="flex flex-wrap gap-4 border-b border-slate-200 px-6 py-4 bg-white">
+          <div className="flex flex-wrap gap-4 border-b border-[var(--color-surface-dark)] px-6 py-4 bg-white">
             <div className="flex items-center gap-2 text-sm font-bold">
-              <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-              <span className="text-slate-700">Hadir: {statHadir}</span>
+              <span className="h-2 w-2 rounded-full bg-[var(--color-primary-50)]0"></span>
+              <span className="text-[var(--color-text)]">Hadir: {statHadir}</span>
             </div>
             <div className="flex items-center gap-2 text-sm font-bold">
               <span className="h-2 w-2 rounded-full bg-indigo-500"></span>
-              <span className="text-slate-700">Izin: {statIzin}</span>
+              <span className="text-[var(--color-text)]">Izin: {statIzin}</span>
             </div>
             <div className="flex items-center gap-2 text-sm font-bold">
-              <span className="h-2 w-2 rounded-full bg-amber-500"></span>
-              <span className="text-slate-700">Sakit: {statSakit}</span>
+              <span className="h-2 w-2 rounded-full bg-[var(--color-warning-light)]0"></span>
+              <span className="text-[var(--color-text)]">Sakit: {statSakit}</span>
             </div>
             <div className="flex items-center gap-2 text-sm font-bold">
-              <span className="h-2 w-2 rounded-full bg-rose-500"></span>
-              <span className="text-slate-700">Alpha: {statAlpha}</span>
+              <span className="h-2 w-2 rounded-full bg-[var(--color-danger-light)]0"></span>
+              <span className="text-[var(--color-text)]">Alpha: {statAlpha}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm font-bold pl-4 border-l border-slate-200">
-              <span className="text-slate-400">Belum Diabsen: {belumDiabsen}</span>
+            <div className="flex items-center gap-2 text-sm font-bold pl-4 border-l border-[var(--color-surface-dark)]">
+              <span className="text-[var(--color-text-subtle)]">Belum Diabsen: {belumDiabsen}</span>
             </div>
           </div>
 
           <div className="overflow-x-auto">
             {isLoading ? (
-              <div className="p-8 text-center text-sm font-semibold text-slate-500">Memuat data santri...</div>
+              <div className="p-8 text-center text-sm font-semibold text-[var(--color-text-muted)]">Memuat data santri...</div>
             ) : (
-              <table className="min-w-full divide-y divide-slate-200 text-left">
-                <thead className="bg-slate-50 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+              <table className="min-w-full divide-y divide-[var(--color-surface-dark)] text-left">
+                <thead className="bg-[var(--color-secondary)] text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                   <tr>
                     <th className="px-4 py-4 text-center w-16">#</th>
                     <th className="px-6 py-4">Santri</th>
@@ -272,34 +272,34 @@ export function AbsensiKegiatanClient({
                     <th className="px-6 py-4">Keterangan</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
+                <tbody className="divide-y divide-[var(--color-surface)] text-sm text-[var(--color-text-muted)]">
                   {santriList.map((santri, index) => {
                     const currentStatus = absenMap[santri.riwayatId]?.status;
                     const currentKet = absenMap[santri.riwayatId]?.keterangan || "";
                     return (
-                      <tr key={santri.riwayatId} className="hover:bg-slate-50/50">
-                        <td className="px-4 py-4 text-center font-bold text-slate-400">{index + 1}</td>
+                      <tr key={santri.riwayatId} className="hover:bg-[var(--color-surface-light)]">
+                        <td className="px-4 py-4 text-center font-bold text-[var(--color-text-subtle)]">{index + 1}</td>
                         <td className="px-6 py-4">
-                          <p className="font-bold text-slate-900">{santri.nama}</p>
+                          <p className="font-bold text-[var(--color-text)]">{santri.nama}</p>
                           <div className="mt-1 flex flex-wrap items-center gap-2">
-                            <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                            <span className="inline-flex items-center rounded-md bg-[var(--color-surface)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-muted)]">
                               {santri.sakan ?? "-"}
                             </span>
                             {santri.gender === "BANIN" ? (
-                              <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">BANIN</span>
+                              <span className="inline-flex items-center rounded-md bg-[var(--color-primary-50)] px-2 py-0.5 text-xs font-medium text-[var(--color-primary)]">BANIN</span>
                             ) : santri.gender === "BANAT" ? (
-                              <span className="inline-flex items-center rounded-md bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700">BANAT</span>
+                              <span className="inline-flex items-center rounded-md bg-[var(--color-danger-light)] px-2 py-0.5 text-xs font-medium text-[var(--color-danger)]">BANAT</span>
                             ) : (
-                              <span className="inline-flex items-center rounded-md bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-700">{santri.gender}</span>
+                              <span className="inline-flex items-center rounded-md bg-[var(--color-secondary)] px-2 py-0.5 text-xs font-medium text-[var(--color-text)]">{santri.gender}</span>
                             )}
                             {santri.kategori === "BARU" ? (
-                              <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 capitalize">Baru</span>
+                              <span className="inline-flex items-center rounded-md bg-[var(--color-primary-50)] px-2 py-0.5 text-xs font-medium text-[var(--color-primary)] capitalize">Baru</span>
                             ) : santri.kategori === "LAMA" ? (
-                              <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 capitalize">Lama</span>
+                              <span className="inline-flex items-center rounded-md bg-[var(--color-warning-light)] px-2 py-0.5 text-xs font-medium text-[var(--color-warning)] capitalize">Lama</span>
                             ) : santri.kategori === "KSU" ? (
                               <span className="inline-flex items-center rounded-md bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 uppercase">KSU</span>
                             ) : (
-                              <span className="inline-flex items-center rounded-md bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-700 capitalize">{santri.kategori ?? "-"}</span>
+                              <span className="inline-flex items-center rounded-md bg-[var(--color-secondary)] px-2 py-0.5 text-xs font-medium text-[var(--color-text)] capitalize">{santri.kategori ?? "-"}</span>
                             )}
                           </div>
                         </td>
@@ -312,13 +312,13 @@ export function AbsensiKegiatanClient({
                                 className={`rounded-full px-3 py-1.5 text-xs font-bold transition-all ${
                                   currentStatus === st
                                     ? st === "HADIR"
-                                      ? "bg-emerald-500 text-white"
+                                      ? "bg-[var(--color-primary-50)]0 text-white"
                                       : st === "IZIN"
                                       ? "bg-indigo-500 text-white"
                                       : st === "SAKIT"
-                                      ? "bg-amber-500 text-white"
-                                      : "bg-rose-500 text-white"
-                                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                                      ? "bg-[var(--color-warning-light)]0 text-white"
+                                      : "bg-[var(--color-danger-light)]0 text-white"
+                                    : "bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-dark)]"
                                 }`}
                               >
                                 {st}
@@ -332,7 +332,7 @@ export function AbsensiKegiatanClient({
                             placeholder="Catatan..."
                             value={currentKet}
                             onChange={(e) => handleKeteranganChange(santri.riwayatId, e.target.value)}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm outline-none transition focus:border-amber-500"
+                            className="w-full rounded-xl border border-[var(--color-surface-dark)] bg-white px-3 py-1.5 text-sm outline-none transition focus:border-amber-500"
                           />
                         </td>
                       </tr>
@@ -340,7 +340,7 @@ export function AbsensiKegiatanClient({
                   })}
                   {santriList.length === 0 && !isLoading && (
                     <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-slate-500 font-medium">
+                      <td colSpan={4} className="px-6 py-8 text-center text-[var(--color-text-muted)] font-medium">
                         Tidak ada santri yang ditemukan.
                       </td>
                     </tr>

@@ -129,7 +129,7 @@ export default async function CetakBulkUsbuPage({ params }: { params: Promise<{ 
   if (allClassData.length === 0) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-200">
-        <p className="text-xl font-bold text-slate-700">Tidak ada data kelas yang dapat dicetak.</p>
+        <p className="text-xl font-bold text-[var(--color-text)]">Tidak ada data kelas yang dapat dicetak.</p>
       </div>
     );
   }

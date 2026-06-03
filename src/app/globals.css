@@ -1,16 +1,87 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────────────────
+   NEUMORPHISM DESIGN SYSTEM — Markaz Arabiyah SIAKAD
+   Based on SKILL.md (typeui.sh)
+   ───────────────────────────────────────────────────────── */
+
 :root {
   color-scheme: light;
-  --background: #f8fafc;
-  --foreground: #0f172a;
+
+  /* ── Color Tokens ── */
+  --color-primary: #006666;
+  --color-primary-light: #008585;
+  --color-primary-dark: #004D4D;
+  --color-primary-50: #e6f2f2;
+  --color-primary-100: #b3d9d9;
+
+  --color-secondary: #F8F9FA;
+  --color-success: #00A63D;
+  --color-success-light: #e6f7ed;
+  --color-warning: #FE9900;
+  --color-warning-light: #fff5e6;
+  --color-danger: #FF2157;
+  --color-danger-light: #ffe8ed;
+  --color-info: #3b82f6;
+
+  --color-surface: #F1F3F5;
+  --color-surface-light: #F8F9FA;
+  --color-surface-dark: #E2E8F0;
+  --color-text: #1E2938;
+  --color-text-muted: #64748b;
+  --color-text-subtle: #94a3b8;
+
+  /* ── Neumorphic Shadows (tuned for ultra-bright background) ── */
+  --shadow-raised: 6px 6px 14px #e2e8f0, -6px -6px 14px #ffffff;
+  --shadow-raised-sm: 4px 4px 8px #e2e8f0, -4px -4px 8px #ffffff;
+  --shadow-raised-lg: 10px 10px 20px #e2e8f0, -10px -10px 20px #ffffff;
+  --shadow-inset: inset 4px 4px 8px #e2e8f0, inset -4px -4px 8px #ffffff;
+  --shadow-inset-sm: inset 2px 2px 4px #e2e8f0, inset -2px -2px 4px #ffffff;
+  --shadow-flat: 2px 2px 4px #e2e8f0, -2px -2px 4px #ffffff;
+  --shadow-pressed: inset 2px 2px 5px #e2e8f0, inset -2px -2px 5px #ffffff;
+
+  /* ── Card Shadows (for white cards on neutral bg) ── */
+  --shadow-card: 4px 4px 10px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8);
+  --shadow-card-hover: 6px 6px 14px rgba(0,0,0,0.08), -3px -3px 10px rgba(255,255,255,0.9);
+
+  /* ── Spacing (compact density) ── */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* ── Border Radius ── */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ── App Surfaces (ultra-bright white) ── */
+  --bg-app: #F8F9FA;
+  --bg-sidebar: #F8F9FA;
+  --bg-card: #F8F9FA;
+  --bg-card-white: #ffffff;
+
+  /* ── Transitions ── */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms ease;
+
+  /* ── Legacy compat ── */
+  --background: #F8F9FA;
+  --foreground: #1E2938;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-display: var(--font-inter);
 }
 
 * {
@@ -25,15 +96,193 @@ body {
 
 body {
   min-height: 100vh;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  background: var(--bg-app);
+  color: var(--color-text);
+  font-family: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a {
   color: inherit;
   text-decoration: none;
 }
+
+/* ─────────────────────────────────────────────────────────
+   NEUMORPHIC UTILITY CLASSES
+   ───────────────────────────────────────────────────────── */
+
+/* Raised card — appears to float above the surface */
+.neu-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-raised);
+  border: none;
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+.neu-card:hover {
+  box-shadow: var(--shadow-raised-lg);
+}
+
+/* White card variant — for content cards on neumorphic bg */
+.neu-card-white {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(0,0,0,0.04);
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+.neu-card-white:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Inset / depressed — appears embedded into the surface */
+.neu-inset {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-inset);
+  border: none;
+}
+
+/* Raised button */
+.neu-button {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-raised-sm);
+  border: none;
+  cursor: pointer;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+.neu-button:hover {
+  box-shadow: var(--shadow-raised);
+  transform: translateY(-1px);
+}
+.neu-button:active {
+  box-shadow: var(--shadow-pressed);
+  transform: translateY(0);
+}
+
+/* Primary colored button */
+.neu-button-primary {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: 3px 3px 8px rgba(0,102,102,0.3), -2px -2px 6px rgba(0,133,133,0.15);
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast), background var(--transition-fast);
+}
+.neu-button-primary:hover {
+  background: var(--color-primary-light);
+  box-shadow: 4px 4px 12px rgba(0,102,102,0.35), -3px -3px 8px rgba(0,133,133,0.2);
+  transform: translateY(-1px);
+}
+.neu-button-primary:active {
+  background: var(--color-primary-dark);
+  box-shadow: inset 2px 2px 5px rgba(0,77,77,0.3), inset -2px -2px 5px rgba(0,133,133,0.15);
+  transform: translateY(0);
+}
+.neu-button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Input fields — inset style */
+.neu-input {
+  background: var(--color-surface-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-inset-sm);
+  border: 1px solid transparent;
+  outline: none;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--color-text);
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+}
+.neu-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-inset-sm), 0 0 0 3px var(--color-primary-50);
+  background: #ffffff;
+}
+.neu-input::placeholder {
+  color: var(--color-text-subtle);
+}
+
+/* Select fields */
+.neu-select {
+  background: var(--color-surface-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-inset-sm);
+  border: 1px solid transparent;
+  outline: none;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+.neu-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-inset-sm), 0 0 0 3px var(--color-primary-50);
+}
+
+/* Badge / pill */
+.neu-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: var(--shadow-flat);
+  background: var(--bg-card);
+}
+
+/* Sidebar-specific neumorphism */
+.neu-sidebar {
+  background: var(--bg-sidebar);
+  box-shadow: 4px 0 12px rgba(0,0,0,0.04);
+}
+
+.neu-nav-item {
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-weight: 600;
+  transition: box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+}
+.neu-nav-item:hover {
+  box-shadow: var(--shadow-flat);
+  background: rgba(255,255,255,0.3);
+}
+.neu-nav-item.active {
+  box-shadow: var(--shadow-raised-sm);
+  background: #ffffff;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* Footer */
+.app-footer {
+  text-align: center;
+  padding: 16px;
+  font-size: 11px;
+  color: var(--color-text-subtle);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* ─────────────────────────────────────────────────────────
+   HEADING FONT (Display)
+   ───────────────────────────────────────────────────────── */
+.font-display {
+  font-family: var(--font-space-mono), "Space Mono", monospace;
+}
+
+/* ─────────────────────────────────────────────────────────
+   PRINT STYLES — Syahadah (do not modify)
+   ───────────────────────────────────────────────────────── */
 
 @media screen {
   /* Syahadah cetak = 330mm x 215mm @ 96dpi landscape */

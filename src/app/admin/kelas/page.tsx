@@ -17,10 +17,10 @@ export default async function NamaKelasPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 md:text-4xl">
+          <h1 className="text-3xl font-black md:text-4xl ">
             Manajemen Nama Kelas
           </h1>
-          <p className="mt-2 text-base text-slate-500">
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">
             Kelola nama ruangan atau sub-kelas (contoh: Shifr A, Shifr B) yang menginduk ke Kelas utama.
           </p>
         </div>

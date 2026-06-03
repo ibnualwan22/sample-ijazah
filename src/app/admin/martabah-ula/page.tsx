@@ -17,10 +17,10 @@ export default async function MartabahUlaPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-slate-900 md:text-4xl">
+        <h1 className="text-3xl font-black md:text-4xl ">
           Martabah Ula
         </h1>
-        <p className="text-base text-slate-500 max-w-2xl">
+        <p className="text-sm text-[var(--color-text-muted)] max-w-2xl">
           Pusat informasi kelulusan dengan predikat penghargaan Lulusan Terbaik (Martabah Ula) untuk setiap program pada Duf'ah berjalan.
         </p>
       </div>

@@ -32,10 +32,10 @@ type SantriDetail = {
 };
 
 const STATUS_CONFIG = [
-  { key: "HADIR", label: "Hadir", color: "#10b981", light: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  { key: "HADIR", label: "Hadir", color: "#10b981", light: "bg-[var(--color-primary-50)] text-[var(--color-primary)] border-[var(--color-primary-100)]" },
   { key: "IZIN", label: "Izin", color: "#6366f1", light: "bg-indigo-50 text-indigo-700 border-indigo-200" },
-  { key: "SAKIT", label: "Sakit", color: "#f59e0b", light: "bg-amber-50 text-amber-700 border-amber-200" },
-  { key: "ALPHA", label: "Alpha", color: "#f43f5e", light: "bg-rose-50 text-rose-700 border-rose-200" },
+  { key: "SAKIT", label: "Sakit", color: "#f59e0b", light: "bg-[var(--color-warning-light)] text-[var(--color-warning)] border-[var(--color-warning)]" },
+  { key: "ALPHA", label: "Alpha", color: "#f43f5e", light: "bg-[var(--color-danger-light)] text-[var(--color-danger)] border-[var(--color-danger)]" },
 ];
 
 export function AbsensiRekapDetailClient() {
@@ -225,8 +225,8 @@ export function AbsensiRekapDetailClient() {
 
   if (!type || !dari || !sampai) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-slate-200">
-        <p className="font-bold text-slate-800">Parameter tidak lengkap</p>
+      <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-[var(--color-surface-dark)]">
+        <p className="font-bold text-[var(--color-text)]">Parameter tidak lengkap</p>
         <button onClick={() => router.back()} className="mt-4 text-violet-600 font-bold">Kembali</button>
       </div>
     );
@@ -235,17 +235,17 @@ export function AbsensiRekapDetailClient() {
   return (
     <div className="space-y-6">
       {/* Top Header Navigation */}
-      <div className="flex items-center gap-4 bg-white p-4 rounded-3xl border border-slate-200 shadow-sm">
+      <div className="flex items-center gap-4 bg-white p-4 rounded-3xl border border-[var(--color-surface-dark)] shadow-sm">
         <button
           onClick={() => router.back()}
-          className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--color-surface)] hover:bg-[var(--color-surface-dark)] text-[var(--color-text-muted)] transition"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
         <div>
-          <h2 className="text-lg font-bold text-slate-900">{title}</h2>
-          <p className="text-xs font-semibold text-slate-500">
-            {dari} <span className="mx-1 font-normal text-slate-300">s/d</span> {sampai}
+          <h2 className="text-lg font-bold text-[var(--color-text)]">{title}</h2>
+          <p className="text-xs font-semibold text-[var(--color-text-muted)]">
+            {dari} <span className="mx-1 font-normal text-[var(--color-text-subtle)]">s/d</span> {sampai}
           </p>
         </div>
       </div>
@@ -255,18 +255,18 @@ export function AbsensiRekapDetailClient() {
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600"></div>
         </div>
       ) : data.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-16 text-center bg-white rounded-3xl border border-slate-200 border-dashed">
-          <FileText className="h-10 w-10 text-slate-300 mb-4" />
-          <p className="text-base font-bold text-slate-700">Tidak ada data kehadiran</p>
-          <p className="text-sm text-slate-500 mt-2">Belum ada absen pada periode yang dipilih.</p>
+        <div className="flex flex-col items-center justify-center p-16 text-center bg-white rounded-3xl border border-[var(--color-surface-dark)] border-dashed">
+          <FileText className="h-10 w-10 text-[var(--color-text-subtle)] mb-4" />
+          <p className="text-base font-bold text-[var(--color-text)]">Tidak ada data kehadiran</p>
+          <p className="text-sm text-[var(--color-text-muted)] mt-2">Belum ada absen pada periode yang dipilih.</p>
         </div>
       ) : (
         <>
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Bar Chart Card */}
-            <div className="p-6 bg-white rounded-[2rem] border border-slate-200 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-800 mb-6">Distribusi Kehadiran</h3>
+            <div className="p-6 neu-card-white">
+              <h3 className="text-sm font-bold text-[var(--color-text)] mb-6">Distribusi Kehadiran</h3>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={stats.barData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
@@ -289,16 +289,16 @@ export function AbsensiRekapDetailClient() {
             </div>
 
             {/* Summary Card + Stacked Bar */}
-            <div className="p-6 bg-white rounded-[2rem] border border-slate-200 shadow-sm">
+            <div className="p-6 neu-card-white">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
                 {STATUS_CONFIG.map((s) => {
                   const val = stats.counts[s.key as keyof typeof stats.counts];
                   return (
-                    <div key={s.key} className="rounded-2xl border border-slate-100 p-4 text-center bg-slate-50/50">
-                      <p className="text-2xl font-black text-slate-900">{val.toLocaleString("id-ID")}</p>
+                    <div key={s.key} className="rounded-2xl border border-[var(--color-surface)] p-4 text-center bg-[var(--color-surface-light)]">
+                      <p className="text-2xl font-black text-[var(--color-text)]">{val.toLocaleString("id-ID")}</p>
                       <div className="flex items-center justify-center gap-1.5 mt-1">
                         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
-                        <span className="text-xs font-bold text-slate-500">{s.label}</span>
+                        <span className="text-xs font-bold text-[var(--color-text-muted)]">{s.label}</span>
                       </div>
                     </div>
                   );
@@ -312,8 +312,8 @@ export function AbsensiRekapDetailClient() {
                 height="h-4"
               />
               <div className="flex items-center justify-between mt-3">
-                <p className="text-xs font-semibold text-slate-400">Total: {stats.total.toLocaleString("id-ID")} catatan</p>
-                <p className="text-sm font-black text-emerald-600">
+                <p className="text-xs font-semibold text-[var(--color-text-subtle)]">Total: {stats.total.toLocaleString("id-ID")} catatan</p>
+                <p className="text-sm font-black text-[var(--color-primary)]">
                   {stats.total > 0 ? Math.round((stats.counts.HADIR / stats.total) * 100) : 0}% Hadir
                 </p>
               </div>
@@ -322,21 +322,21 @@ export function AbsensiRekapDetailClient() {
 
           {/* === AKSI CEPAT: COPY BUTTONS === */}
           {type === "kegiatan" && stats.counts.ALPHA > 0 && (
-            <div className="rounded-[2rem] border border-amber-200 bg-amber-50 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="rounded-[var(--radius-2xl)] border border-[var(--color-warning)] bg-[var(--color-warning-light)] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                <AlertTriangle className="h-5 w-5 text-[var(--color-warning)] shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-bold text-amber-800">
+                  <p className="text-sm font-bold text-[var(--color-warning)]">
                     {stats.counts.ALPHA} santri tercatat Alfa pada kegiatan ini
                   </p>
-                  <p className="text-xs text-amber-600 font-medium mt-0.5">
+                  <p className="text-xs text-[var(--color-warning)] font-medium mt-0.5">
                     Salin laporan pemanggilan untuk dikirim ke grup WhatsApp
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => copyToClipboard(generateLaporanPemanggilan(), "pemanggilan")}
-                className="flex items-center gap-2 rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-amber-700 shrink-0"
+                className="flex items-center gap-2 rounded-xl bg-[var(--color-warning)] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--color-warning)] shrink-0"
               >
                 {copiedKey === "pemanggilan" ? <ClipboardCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 {copiedKey === "pemanggilan" ? "Tersalin!" : "📋 Salin Laporan Pemanggilan"}
@@ -348,7 +348,7 @@ export function AbsensiRekapDetailClient() {
             <div className="space-y-4">
               {/* Tombol Copy Rekap Alfa Mingguan */}
               {stats.counts.ALPHA > 0 && (
-                <div className="rounded-[2rem] border border-violet-200 bg-violet-50 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="rounded-[var(--radius-2xl)] border border-violet-200 bg-violet-50 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <p className="text-sm font-bold text-violet-800">📋 Rekap Alfa Mingguan</p>
                     <p className="text-xs text-violet-600 font-medium mt-0.5">
@@ -367,15 +367,15 @@ export function AbsensiRekapDetailClient() {
 
               {/* Panel Santri SP (>= 12x ketidakhadiran) */}
               {santriSP.length > 0 && (
-                <div className="rounded-[2rem] border border-rose-200 bg-rose-50 p-5">
+                <div className="rounded-[var(--radius-2xl)] border border-[var(--color-danger)] bg-[var(--color-danger-light)] p-5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                     <div className="flex items-start gap-3">
-                      <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+                      <AlertTriangle className="h-5 w-5 text-[var(--color-danger)] shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-bold text-rose-800">
                           🚨 {santriSP.length} Santri dengan Ketidakhadiran ≥ 12 Kali
                         </p>
-                        <p className="text-xs text-rose-600 font-medium mt-0.5">
+                        <p className="text-xs text-[var(--color-danger)] font-medium mt-0.5">
                           Salin data ini untuk proses Surat Peringatan (SP)
                         </p>
                       </div>
@@ -390,12 +390,12 @@ export function AbsensiRekapDetailClient() {
                   </div>
                   <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {santriSP.map((s) => (
-                      <div key={s.nama} className="flex items-center justify-between bg-white rounded-xl border border-rose-100 px-3 py-2">
+                      <div key={s.nama} className="flex items-center justify-between bg-white rounded-xl border border-[var(--color-danger-light)] px-3 py-2">
                         <div>
-                          <p className="text-sm font-bold text-slate-800">{s.nama}</p>
-                          <p className="text-[11px] font-semibold text-slate-500">{s.kelas}</p>
+                          <p className="text-sm font-bold text-[var(--color-text)]">{s.nama}</p>
+                          <p className="text-[11px] font-semibold text-[var(--color-text-muted)]">{s.kelas}</p>
                         </div>
-                        <span className="text-lg font-black text-rose-600">{s.total}×</span>
+                        <span className="text-lg font-black text-[var(--color-danger)]">{s.total}×</span>
                       </div>
                     ))}
                   </div>
@@ -405,11 +405,11 @@ export function AbsensiRekapDetailClient() {
           )}
 
           {/* Grouped Data Wrapper */}
-          <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="neu-card-white overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-[var(--color-surface)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Data Terperinci</h3>
-                <p className="text-xs text-slate-500 font-medium">
+                <h3 className="text-lg font-bold text-[var(--color-text)]">Data Terperinci</h3>
+                <p className="text-xs text-[var(--color-text-muted)] font-medium">
                   {type === "kelas" ? "Berdasarkan Kelas" : "Berdasarkan Sakan / Lokasi"}
                 </p>
               </div>
@@ -417,27 +417,27 @@ export function AbsensiRekapDetailClient() {
               <div className="flex items-center gap-3">
                 {/* Search */}
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-subtle)]" />
                   <input
                     type="text"
                     placeholder="Cari santri..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all font-semibold"
+                    className="pl-9 pr-4 py-2 text-sm bg-[var(--color-secondary)] border border-[var(--color-surface-dark)] rounded-xl outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all font-semibold"
                   />
                 </div>
 
                 {/* Expand / Collapse Controls */}
-                <div className="hidden sm:flex bg-slate-100 p-1 rounded-xl">
-                  <button onClick={expandAll} className="px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-white hover:shadow-sm rounded-lg transition">Buka Semua</button>
-                  <button onClick={collapseAll} className="px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-white hover:shadow-sm rounded-lg transition">Tutup</button>
+                <div className="hidden sm:flex bg-[var(--color-surface)] p-1 rounded-xl">
+                  <button onClick={expandAll} className="px-3 py-1.5 text-xs font-bold text-[var(--color-text-muted)] hover:bg-white hover:shadow-sm rounded-lg transition">Buka Semua</button>
+                  <button onClick={collapseAll} className="px-3 py-1.5 text-xs font-bold text-[var(--color-text-muted)] hover:bg-white hover:shadow-sm rounded-lg transition">Tutup</button>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 sm:p-6 bg-slate-50/50 space-y-4">
+            <div className="p-4 sm:p-6 bg-[var(--color-surface-light)] space-y-4">
               {groupedData.length === 0 ? (
-                <p className="text-center font-semibold text-slate-400 py-10">Pencarian tidak ditemukan</p>
+                <p className="text-center font-semibold text-[var(--color-text-subtle)] py-10">Pencarian tidak ditemukan</p>
               ) : (
                 groupedData.map((group) => {
                   const isExpanded = !!expandedGroups[group.groupName];
@@ -452,22 +452,22 @@ export function AbsensiRekapDetailClient() {
                   const gHadirPct = gTotal > 0 ? Math.round((gCounts.HADIR / gTotal) * 100) : 0;
 
                   return (
-                    <div key={group.groupName} className="bg-white border border-slate-200 rounded-2xl overflow-hidden transition-all shadow-sm">
+                    <div key={group.groupName} className="bg-white border border-[var(--color-surface-dark)] rounded-2xl overflow-hidden transition-all shadow-sm">
                       {/* Accordion Header */}
                       <button
                         onClick={() => toggleGroup(group.groupName)}
-                        className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition text-left"
+                        className="w-full flex items-center justify-between p-4 hover:bg-[var(--color-secondary)] transition text-left"
                       >
                         <div className="flex items-center gap-4">
                           <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-700 transition-transform ${isExpanded ? "rotate-90" : ""}`}>
                             <ChevronRight className="h-5 w-5" />
                           </div>
                           <div>
-                            <h4 className="font-bold text-slate-800 text-base">{group.groupName}</h4>
-                            <div className="flex items-center gap-3 mt-1 text-xs text-slate-500 font-semibold">
+                            <h4 className="font-bold text-[var(--color-text)] text-base">{group.groupName}</h4>
+                            <div className="flex items-center gap-3 mt-1 text-xs text-[var(--color-text-muted)] font-semibold">
                               <span>{gTotal} Siswa</span>
                               <span className="w-1 h-1 rounded-full bg-slate-300" />
-                              <span className="text-emerald-600">{gHadirPct}% Hadir</span>
+                              <span className="text-[var(--color-primary)]">{gHadirPct}% Hadir</span>
                             </div>
                           </div>
                         </div>
@@ -487,7 +487,7 @@ export function AbsensiRekapDetailClient() {
 
                       {/* Accordion Body */}
                       {isExpanded && (
-                        <div className="border-t border-slate-100 bg-slate-50/50 p-4 flow-root overflow-hidden">
+                        <div className="border-t border-[var(--color-surface)] bg-[var(--color-surface-light)] p-4 flow-root overflow-hidden">
                           {type === "kelas" ? (
                             // MATRIX RENDERER
                             (() => {
@@ -509,24 +509,24 @@ export function AbsensiRekapDetailClient() {
                               group.records.forEach(r => recordMap.set(`${r.namaSantri}_${r.tanggal}_${r.sesi}`, r));
 
                               return (
-                                <div className="overflow-x-auto w-full rounded-xl border border-slate-200 bg-white shadow-sm relative">
+                                <div className="overflow-x-auto w-full rounded-xl border border-[var(--color-surface-dark)] bg-white shadow-sm relative">
                                   <table className="w-full text-left text-sm whitespace-nowrap border-collapse">
-                                    <thead className="bg-slate-50">
+                                    <thead className="bg-[var(--color-secondary)]">
                                       <tr>
-                                        <th rowSpan={2} className="px-4 py-3 border-b border-r-2 border-slate-300 font-bold text-slate-700 sticky left-0 bg-slate-50 z-20 min-w-[200px]">NAMA SANTRI</th>
+                                        <th rowSpan={2} className="px-4 py-3 border-b border-r-2 border-[var(--color-surface-dark)] font-bold text-[var(--color-text)] sticky left-0 bg-[var(--color-secondary)] z-20 min-w-[200px]">NAMA SANTRI</th>
                                         {weeks.map((week, wIdx) => (
                                           <React.Fragment key={`wh1-${week.wk}`}>
                                             {week.dates.map(date => (
-                                              <th key={`dh1-${date}`} colSpan={7} className="px-4 py-2 text-center border-b border-r-2 border-slate-300 font-bold text-slate-700">
+                                              <th key={`dh1-${date}`} colSpan={7} className="px-4 py-2 text-center border-b border-r-2 border-[var(--color-surface-dark)] font-bold text-[var(--color-text)]">
                                                 {format(new Date(date), "EEEE, d MMM yyyy", { locale: id })}
                                               </th>
                                             ))}
-                                            <th key={`wh1-sum-${week.wk}`} colSpan={4} className="px-4 py-2 text-center border-b border-r-4 border-slate-400 font-bold text-slate-800 bg-slate-100">
+                                            <th key={`wh1-sum-${week.wk}`} colSpan={4} className="px-4 py-2 text-center border-b border-r-4 border-slate-400 font-bold text-[var(--color-text)] bg-[var(--color-surface)]">
                                               {week.wk}
                                             </th>
                                           </React.Fragment>
                                         ))}
-                                        <th colSpan={4} className="px-4 py-2 text-center border-b border-l-4 border-slate-400 font-black text-slate-900 bg-emerald-50">
+                                        <th colSpan={4} className="px-4 py-2 text-center border-b border-l-4 border-slate-400 font-black text-[var(--color-text)] bg-[var(--color-primary-50)]">
                                           TOTAL
                                         </th>
                                       </tr>
@@ -536,34 +536,34 @@ export function AbsensiRekapDetailClient() {
                                             {week.dates.map(date => (
                                               <React.Fragment key={`dh2-${date}`}>
                                                 {sessionKeys.map((s, i) => (
-                                                  <th key={`${date}-${s}`} className="px-2 py-2 text-center border-b border-r border-slate-200 text-xs font-semibold text-slate-500 min-w-[32px]">
+                                                  <th key={`${date}-${s}`} className="px-2 py-2 text-center border-b border-r border-[var(--color-surface-dark)] text-xs font-semibold text-[var(--color-text-muted)] min-w-[32px]">
                                                     {i + 1}
                                                   </th>
                                                 ))}
-                                                <th className="px-2 py-2 text-center border-b border-r-2 border-slate-300 text-[10px] font-bold text-slate-600 bg-slate-50/50 min-w-[40px]">
+                                                <th className="px-2 py-2 text-center border-b border-r-2 border-[var(--color-surface-dark)] text-[10px] font-bold text-[var(--color-text-muted)] bg-[var(--color-surface-light)] min-w-[40px]">
                                                   JML
                                                 </th>
                                               </React.Fragment>
                                             ))}
-                                            <th className="px-2 py-2 text-center text-xs font-bold text-emerald-600 bg-slate-100 border-b border-r border-slate-300">H</th>
-                                            <th className="px-2 py-2 text-center text-xs font-bold text-indigo-600 bg-slate-100 border-b border-r border-slate-300">I</th>
-                                            <th className="px-2 py-2 text-center text-xs font-bold text-amber-600 bg-slate-100 border-b border-r border-slate-300">S</th>
-                                            <th className="px-2 py-2 text-center text-xs font-bold text-rose-600 bg-slate-100 border-b border-r-4 border-slate-400">A</th>
+                                            <th className="px-2 py-2 text-center text-xs font-bold text-[var(--color-primary)] bg-[var(--color-surface)] border-b border-r border-[var(--color-surface-dark)]">H</th>
+                                            <th className="px-2 py-2 text-center text-xs font-bold text-indigo-600 bg-[var(--color-surface)] border-b border-r border-[var(--color-surface-dark)]">I</th>
+                                            <th className="px-2 py-2 text-center text-xs font-bold text-[var(--color-warning)] bg-[var(--color-surface)] border-b border-r border-[var(--color-surface-dark)]">S</th>
+                                            <th className="px-2 py-2 text-center text-xs font-bold text-[var(--color-danger)] bg-[var(--color-surface)] border-b border-r-4 border-slate-400">A</th>
                                           </React.Fragment>
                                         ))}
-                                        <th className="px-2 py-2 text-center text-xs font-black text-emerald-700 bg-emerald-50 border-b border-r border-slate-300">H</th>
-                                        <th className="px-2 py-2 text-center text-xs font-black text-indigo-700 bg-emerald-50 border-b border-r border-slate-300">I</th>
-                                        <th className="px-2 py-2 text-center text-xs font-black text-amber-700 bg-emerald-50 border-b border-r border-slate-300">S</th>
-                                        <th className="px-2 py-2 text-center text-xs font-black text-rose-700 bg-emerald-50 border-b">A</th>
+                                        <th className="px-2 py-2 text-center text-xs font-black text-[var(--color-primary)] bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">H</th>
+                                        <th className="px-2 py-2 text-center text-xs font-black text-indigo-700 bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">I</th>
+                                        <th className="px-2 py-2 text-center text-xs font-black text-[var(--color-warning)] bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">S</th>
+                                        <th className="px-2 py-2 text-center text-xs font-black text-[var(--color-danger)] bg-[var(--color-primary-50)] border-b">A</th>
                                       </tr>
                                     </thead>
                                     <tbody>
                                       {santris.map((santri, idx) => {
                                         let totalH = 0, totalI = 0, totalS = 0, totalA = 0;
                                         return (
-                                          <tr key={santri} className="hover:bg-slate-50/50 group">
-                                            <td className="px-4 py-2 text-sm font-semibold text-slate-800 border-b border-r-2 border-slate-300 sticky left-0 bg-white group-hover:bg-slate-50 z-10">
-                                              <span className="text-slate-400 mr-2 text-xs w-4 inline-block">{idx + 1}</span>
+                                          <tr key={santri} className="hover:bg-[var(--color-surface-light)] group">
+                                            <td className="px-4 py-2 text-sm font-semibold text-[var(--color-text)] border-b border-r-2 border-[var(--color-surface-dark)] sticky left-0 bg-white group-hover:bg-[var(--color-secondary)] z-10">
+                                              <span className="text-[var(--color-text-subtle)] mr-2 text-xs w-4 inline-block">{idx + 1}</span>
                                               {santri}
                                             </td>
                                             {weeks.map((week) => {
@@ -581,43 +581,43 @@ export function AbsensiRekapDetailClient() {
                                                             if (rec.status === "HADIR") { cellContent = <span className="font-bold text-emerald-500">✓</span>; dayH++; weekH++; totalH++; }
                                                             else if (rec.status === "IZIN") { cellContent = <span className="font-bold text-indigo-500">I</span>; dayI++; weekI++; totalI++; }
                                                             else if (rec.status === "SAKIT") { cellContent = <span className="font-bold text-amber-500">S</span>; dayS++; weekS++; totalS++; }
-                                                            else if (rec.status === "ALPHA") { cellContent = <span className="font-bold text-rose-500">X</span>; dayA++; weekA++; totalA++; }
+                                                            else if (rec.status === "ALPHA") { cellContent = <span className="font-bold text-[var(--color-danger)]">X</span>; dayA++; weekA++; totalA++; }
                                                           }
                                                           return (
-                                                            <td key={`${santri}-${date}-${sesi}`} className="px-2 py-2 text-center border-b border-r border-slate-200">
+                                                            <td key={`${santri}-${date}-${sesi}`} className="px-2 py-2 text-center border-b border-r border-[var(--color-surface-dark)]">
                                                               {cellContent}
                                                             </td>
                                                           );
                                                         })}
-                                                        <td className="px-1 py-1 text-center border-b border-r-2 border-slate-300 bg-slate-50/50 align-top content-center">
+                                                        <td className="px-1 py-1 text-center border-b border-r-2 border-[var(--color-surface-dark)] bg-[var(--color-surface-light)] align-top content-center">
                                                           <div className="flex flex-col gap-[2px] text-[10px] items-center min-w-[28px]">
-                                                            {dayH > 0 && <span className="text-emerald-700 font-bold bg-emerald-100/50 w-full rounded">H:{dayH}</span>}
+                                                            {dayH > 0 && <span className="text-[var(--color-primary)] font-bold bg-[var(--color-primary-100)]/50 w-full rounded">H:{dayH}</span>}
                                                             {dayI > 0 && <span className="text-indigo-700 font-bold bg-indigo-100/50 w-full rounded">I:{dayI}</span>}
-                                                            {dayS > 0 && <span className="text-amber-700 font-bold bg-amber-100/50 w-full rounded">S:{dayS}</span>}
-                                                            {dayA > 0 && <span className="text-rose-700 font-bold bg-rose-100/50 w-full rounded">A:{dayA}</span>}
-                                                            {dayH === 0 && dayI === 0 && dayS === 0 && dayA === 0 && <span className="text-slate-300">-</span>}
+                                                            {dayS > 0 && <span className="text-[var(--color-warning)] font-bold bg-[var(--color-warning-light)]/50 w-full rounded">S:{dayS}</span>}
+                                                            {dayA > 0 && <span className="text-[var(--color-danger)] font-bold bg-[var(--color-danger-light)]/50 w-full rounded">A:{dayA}</span>}
+                                                            {dayH === 0 && dayI === 0 && dayS === 0 && dayA === 0 && <span className="text-[var(--color-text-subtle)]">-</span>}
                                                           </div>
                                                         </td>
                                                       </React.Fragment>
                                                     );
                                                   })}
-                                                  <td className="px-2 py-2 text-center text-xs font-bold text-emerald-700 bg-slate-100 border-b border-r border-slate-300">{weekH}</td>
-                                                  <td className="px-2 py-2 text-center text-xs font-bold text-indigo-700 bg-slate-100 border-b border-r border-slate-300">{weekI}</td>
-                                                  <td className="px-2 py-2 text-center text-xs font-bold text-amber-700 bg-slate-100 border-b border-r border-slate-300">{weekS}</td>
-                                                  <td className="px-2 py-2 text-center text-xs font-bold text-rose-700 bg-slate-100 border-b border-r-4 border-slate-400">{weekA}</td>
+                                                  <td className="px-2 py-2 text-center text-xs font-bold text-[var(--color-primary)] bg-[var(--color-surface)] border-b border-r border-[var(--color-surface-dark)]">{weekH}</td>
+                                                  <td className="px-2 py-2 text-center text-xs font-bold text-indigo-700 bg-[var(--color-surface)] border-b border-r border-[var(--color-surface-dark)]">{weekI}</td>
+                                                  <td className="px-2 py-2 text-center text-xs font-bold text-[var(--color-warning)] bg-[var(--color-surface)] border-b border-r border-[var(--color-surface-dark)]">{weekS}</td>
+                                                  <td className="px-2 py-2 text-center text-xs font-bold text-[var(--color-danger)] bg-[var(--color-surface)] border-b border-r-4 border-slate-400">{weekA}</td>
                                                 </React.Fragment>
                                               );
                                             })}
-                                            <td className="px-2 py-2 text-center text-sm font-black text-emerald-800 bg-emerald-50 border-b border-r border-slate-300">{totalH}</td>
-                                            <td className="px-2 py-2 text-center text-sm font-black text-indigo-800 bg-emerald-50 border-b border-r border-slate-300">{totalI}</td>
-                                            <td className="px-2 py-2 text-center text-sm font-black text-amber-800 bg-emerald-50 border-b border-r border-slate-300">{totalS}</td>
-                                            <td className="px-2 py-2 text-center text-sm font-black text-rose-800 bg-emerald-50 border-b">{totalA}</td>
+                                            <td className="px-2 py-2 text-center text-sm font-black text-[var(--color-primary-dark)] bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">{totalH}</td>
+                                            <td className="px-2 py-2 text-center text-sm font-black text-indigo-800 bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">{totalI}</td>
+                                            <td className="px-2 py-2 text-center text-sm font-black text-[var(--color-warning)] bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">{totalS}</td>
+                                            <td className="px-2 py-2 text-center text-sm font-black text-rose-800 bg-[var(--color-primary-50)] border-b">{totalA}</td>
                                           </tr>
                                         );
                                       })}
                                       {santris.length === 0 && (
                                         <tr>
-                                          <td className="px-4 py-8 text-center text-slate-500" colSpan={100}>Tidak ada data yang tersedia</td>
+                                          <td className="px-4 py-8 text-center text-[var(--color-text-muted)]" colSpan={100}>Tidak ada data yang tersedia</td>
                                         </tr>
                                       )}
                                     </tbody>
@@ -635,37 +635,37 @@ export function AbsensiRekapDetailClient() {
                               group.records.forEach(r => recordMap.set(`${r.namaSantri}_${r.tanggal}`, r));
 
                               return (
-                                <div className="overflow-x-auto w-full rounded-xl border border-slate-200 bg-white shadow-sm relative">
+                                <div className="overflow-x-auto w-full rounded-xl border border-[var(--color-surface-dark)] bg-white shadow-sm relative">
                                   <table className="w-full text-left text-sm whitespace-nowrap border-collapse">
-                                    <thead className="bg-slate-50">
+                                    <thead className="bg-[var(--color-secondary)]">
                                       <tr>
-                                        <th rowSpan={2} className="px-4 py-3 border-b border-r-2 border-slate-300 font-bold text-slate-700 sticky left-0 bg-slate-50 z-20 min-w-[200px] uppercase text-xs tracking-wider">NAMA SANTRI</th>
+                                        <th rowSpan={2} className="px-4 py-3 border-b border-r-2 border-[var(--color-surface-dark)] font-bold text-[var(--color-text)] sticky left-0 bg-[var(--color-secondary)] z-20 min-w-[200px] uppercase text-xs tracking-wider">NAMA SANTRI</th>
                                         {datesInGroup.map(date => (
-                                          <th key={`dh1-${date}`} rowSpan={2} className="px-1.5 py-2 text-center border-b border-r border-slate-200 font-semibold text-slate-600 min-w-[36px] text-xs">
+                                          <th key={`dh1-${date}`} rowSpan={2} className="px-1.5 py-2 text-center border-b border-r border-[var(--color-surface-dark)] font-semibold text-[var(--color-text-muted)] min-w-[36px] text-xs">
                                             <div className="flex flex-col items-center">
-                                              <span className="text-[10px] text-slate-400">{format(new Date(date), "E", { locale: id })}</span>
+                                              <span className="text-[10px] text-[var(--color-text-subtle)]">{format(new Date(date), "E", { locale: id })}</span>
                                               <span>{format(new Date(date), "d", { locale: id })}</span>
                                             </div>
                                           </th>
                                         ))}
-                                        <th colSpan={4} className="px-3 py-2 text-center border-b border-l-4 border-slate-400 font-black text-slate-900 bg-emerald-50 text-xs">
+                                        <th colSpan={4} className="px-3 py-2 text-center border-b border-l-4 border-slate-400 font-black text-[var(--color-text)] bg-[var(--color-primary-50)] text-xs">
                                           TOTAL
                                         </th>
                                       </tr>
                                       <tr>
-                                        <th className="px-2 py-1.5 text-center text-xs font-black text-emerald-700 bg-emerald-50 border-b border-l-4 border-slate-400 border-r border-slate-300">H</th>
-                                        <th className="px-2 py-1.5 text-center text-xs font-black text-indigo-700 bg-emerald-50 border-b border-r border-slate-300">I</th>
-                                        <th className="px-2 py-1.5 text-center text-xs font-black text-amber-700 bg-emerald-50 border-b border-r border-slate-300">S</th>
-                                        <th className="px-2 py-1.5 text-center text-xs font-black text-rose-700 bg-emerald-50 border-b">A</th>
+                                        <th className="px-2 py-1.5 text-center text-xs font-black text-[var(--color-primary)] bg-[var(--color-primary-50)] border-b border-l-4 border-slate-400 border-r border-[var(--color-surface-dark)]">H</th>
+                                        <th className="px-2 py-1.5 text-center text-xs font-black text-indigo-700 bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">I</th>
+                                        <th className="px-2 py-1.5 text-center text-xs font-black text-[var(--color-warning)] bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">S</th>
+                                        <th className="px-2 py-1.5 text-center text-xs font-black text-[var(--color-danger)] bg-[var(--color-primary-50)] border-b">A</th>
                                       </tr>
                                     </thead>
                                     <tbody>
                                       {santris.map((santri, idx) => {
                                         let totalH = 0, totalI = 0, totalS = 0, totalA = 0;
                                         return (
-                                          <tr key={santri} className="hover:bg-slate-50/50 group">
-                                            <td className="px-4 py-2 text-[13px] font-semibold text-slate-800 border-b border-r-2 border-slate-300 sticky left-0 bg-white group-hover:bg-slate-50 z-10 transition-colors">
-                                              <span className="text-slate-400 mr-2 text-[11px] w-4 inline-block">{idx + 1}</span>
+                                          <tr key={santri} className="hover:bg-[var(--color-surface-light)] group">
+                                            <td className="px-4 py-2 text-[13px] font-semibold text-[var(--color-text)] border-b border-r-2 border-[var(--color-surface-dark)] sticky left-0 bg-white group-hover:bg-[var(--color-secondary)] z-10 transition-colors">
+                                              <span className="text-[var(--color-text-subtle)] mr-2 text-[11px] w-4 inline-block">{idx + 1}</span>
                                               {santri}
                                             </td>
                                             {datesInGroup.map(date => {
@@ -675,26 +675,26 @@ export function AbsensiRekapDetailClient() {
                                                 if (rec.status === "HADIR") { cellContent = <span className="font-bold text-emerald-500 text-base">✓</span>; totalH++; }
                                                 else if (rec.status === "IZIN") { cellContent = <span className="font-bold text-indigo-500 text-sm">I</span>; totalI++; }
                                                 else if (rec.status === "SAKIT") { cellContent = <span className="font-bold text-amber-500 text-sm">S</span>; totalS++; }
-                                                else if (rec.status === "ALPHA") { cellContent = <span className="font-bold text-rose-500 text-sm">X</span>; totalA++; }
+                                                else if (rec.status === "ALPHA") { cellContent = <span className="font-bold text-[var(--color-danger)] text-sm">X</span>; totalA++; }
                                               }
                                               return (
-                                                <td key={`${santri}-${date}`} className="p-0 border-b border-r border-slate-100 align-middle">
-                                                  <div className="flex items-center justify-center w-full h-full min-h-[32px] hover:bg-slate-50">
+                                                <td key={`${santri}-${date}`} className="p-0 border-b border-r border-[var(--color-surface)] align-middle">
+                                                  <div className="flex items-center justify-center w-full h-full min-h-[32px] hover:bg-[var(--color-secondary)]">
                                                     {cellContent}
                                                   </div>
                                                 </td>
                                               );
                                             })}
-                                            <td className="px-2 py-2 text-center text-sm font-black text-emerald-800 bg-emerald-50 border-b border-r border-slate-300 border-l-4">{totalH}</td>
-                                            <td className="px-2 py-2 text-center text-sm font-black text-indigo-800 bg-emerald-50 border-b border-r border-slate-300">{totalI}</td>
-                                            <td className="px-2 py-2 text-center text-sm font-black text-amber-800 bg-emerald-50 border-b border-r border-slate-300">{totalS}</td>
-                                            <td className="px-2 py-2 text-center text-sm font-black text-rose-800 bg-emerald-50 border-b">{totalA}</td>
+                                            <td className="px-2 py-2 text-center text-sm font-black text-[var(--color-primary-dark)] bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)] border-l-4">{totalH}</td>
+                                            <td className="px-2 py-2 text-center text-sm font-black text-indigo-800 bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">{totalI}</td>
+                                            <td className="px-2 py-2 text-center text-sm font-black text-[var(--color-warning)] bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">{totalS}</td>
+                                            <td className="px-2 py-2 text-center text-sm font-black text-rose-800 bg-[var(--color-primary-50)] border-b">{totalA}</td>
                                           </tr>
                                         );
                                       })}
                                       {santris.length === 0 && (
                                         <tr>
-                                          <td className="px-4 py-8 text-center text-slate-500" colSpan={100}>Tidak ada data yang tersedia</td>
+                                          <td className="px-4 py-8 text-center text-[var(--color-text-muted)]" colSpan={100}>Tidak ada data yang tersedia</td>
                                         </tr>
                                       )}
                                     </tbody>
@@ -717,42 +717,42 @@ export function AbsensiRekapDetailClient() {
                               group.records.forEach(r => recordMap.set(`${r.namaSantri}_${r.kegiatanNama}_${r.tanggal}`, r));
 
                               return (
-                                <div className="overflow-x-auto w-full rounded-xl border border-slate-200 bg-white shadow-sm relative">
+                                <div className="overflow-x-auto w-full rounded-xl border border-[var(--color-surface-dark)] bg-white shadow-sm relative">
                                   <table className="w-full text-left text-sm whitespace-nowrap border-collapse">
-                                    <thead className="bg-slate-50">
+                                    <thead className="bg-[var(--color-secondary)]">
                                       <tr>
-                                        <th rowSpan={2} className="px-4 py-3 border-b border-r-2 border-slate-300 font-bold text-slate-700 sticky left-0 bg-slate-50 z-20 min-w-[200px] uppercase text-xs tracking-wider">NAMA SANTRI</th>
+                                        <th rowSpan={2} className="px-4 py-3 border-b border-r-2 border-[var(--color-surface-dark)] font-bold text-[var(--color-text)] sticky left-0 bg-[var(--color-secondary)] z-20 min-w-[200px] uppercase text-xs tracking-wider">NAMA SANTRI</th>
                                         {uniqueEvents.map((ev, i) => (
-                                          <th key={`keg-${i}`} className="px-1 py-2 text-center border-b border-x border-slate-300 font-bold text-slate-800 bg-amber-50/50 text-[10px] leading-tight whitespace-normal break-words max-w-[80px]" title={ev.kegName || ""}>
+                                          <th key={`keg-${i}`} className="px-1 py-2 text-center border-b border-x border-[var(--color-surface-dark)] font-bold text-[var(--color-text)] bg-[var(--color-warning-light)]/50 text-[10px] leading-tight whitespace-normal break-words max-w-[80px]" title={ev.kegName || ""}>
                                             {ev.kegName || "-"}
                                           </th>
                                         ))}
-                                        <th colSpan={4} className="px-3 py-2 text-center border-b border-l-4 border-slate-400 font-black text-slate-900 bg-emerald-50 text-xs">
+                                        <th colSpan={4} className="px-3 py-2 text-center border-b border-l-4 border-slate-400 font-black text-[var(--color-text)] bg-[var(--color-primary-50)] text-xs">
                                           TOTAL
                                         </th>
                                       </tr>
                                       <tr>
                                         {uniqueEvents.map((ev, i) => (
-                                          <th key={`date-${i}`} className="px-1.5 py-1.5 text-center border-b border-slate-200 border-x font-bold text-slate-600 min-w-[36px] text-xs">
+                                          <th key={`date-${i}`} className="px-1.5 py-1.5 text-center border-b border-[var(--color-surface-dark)] border-x font-bold text-[var(--color-text-muted)] min-w-[36px] text-xs">
                                             <div className="flex flex-col items-center">
-                                              <span className="text-[10px] text-slate-400">{format(new Date(ev.tanggal), "E", { locale: id })}</span>
+                                              <span className="text-[10px] text-[var(--color-text-subtle)]">{format(new Date(ev.tanggal), "E", { locale: id })}</span>
                                               <span>{format(new Date(ev.tanggal), "d", { locale: id })}</span>
                                             </div>
                                           </th>
                                         ))}
-                                        <th className="px-2 py-1.5 text-center text-xs font-black text-emerald-700 bg-emerald-50 border-b border-r border-slate-300">H</th>
-                                        <th className="px-2 py-1.5 text-center text-xs font-black text-indigo-700 bg-emerald-50 border-b border-r border-slate-300">I</th>
-                                        <th className="px-2 py-1.5 text-center text-xs font-black text-amber-700 bg-emerald-50 border-b border-r border-slate-300">S</th>
-                                        <th className="px-2 py-1.5 text-center text-xs font-black text-rose-700 bg-emerald-50 border-b">A</th>
+                                        <th className="px-2 py-1.5 text-center text-xs font-black text-[var(--color-primary)] bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">H</th>
+                                        <th className="px-2 py-1.5 text-center text-xs font-black text-indigo-700 bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">I</th>
+                                        <th className="px-2 py-1.5 text-center text-xs font-black text-[var(--color-warning)] bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">S</th>
+                                        <th className="px-2 py-1.5 text-center text-xs font-black text-[var(--color-danger)] bg-[var(--color-primary-50)] border-b">A</th>
                                       </tr>
                                     </thead>
                                     <tbody>
                                       {santris.map((santri, idx) => {
                                         let totalH = 0, totalI = 0, totalS = 0, totalA = 0;
                                         return (
-                                          <tr key={santri} className="hover:bg-slate-50/50 group">
-                                            <td className="px-4 py-2 text-[13px] font-semibold text-slate-800 border-b border-r-2 border-slate-300 sticky left-0 bg-white group-hover:bg-slate-50 z-10 transition-colors">
-                                              <span className="text-slate-400 mr-2 text-[11px] w-4 inline-block">{idx + 1}</span>
+                                          <tr key={santri} className="hover:bg-[var(--color-surface-light)] group">
+                                            <td className="px-4 py-2 text-[13px] font-semibold text-[var(--color-text)] border-b border-r-2 border-[var(--color-surface-dark)] sticky left-0 bg-white group-hover:bg-[var(--color-secondary)] z-10 transition-colors">
+                                              <span className="text-[var(--color-text-subtle)] mr-2 text-[11px] w-4 inline-block">{idx + 1}</span>
                                               {santri}
                                             </td>
                                             {uniqueEvents.map((ev, i) => {
@@ -762,26 +762,26 @@ export function AbsensiRekapDetailClient() {
                                                 if (rec.status === "HADIR") { cellContent = <span className="font-bold text-emerald-500 text-base">✓</span>; totalH++; }
                                                 else if (rec.status === "IZIN") { cellContent = <span className="font-bold text-indigo-500 text-sm">I</span>; totalI++; }
                                                 else if (rec.status === "SAKIT") { cellContent = <span className="font-bold text-amber-500 text-sm">S</span>; totalS++; }
-                                                else if (rec.status === "ALPHA") { cellContent = <span className="font-bold text-rose-500 text-sm">X</span>; totalA++; }
+                                                else if (rec.status === "ALPHA") { cellContent = <span className="font-bold text-[var(--color-danger)] text-sm">X</span>; totalA++; }
                                               }
                                               return (
-                                                <td key={`cell-${i}`} className="p-0 border-b border-x border-slate-100 align-middle">
-                                                  <div className="flex items-center justify-center w-full h-full min-h-[32px] hover:bg-slate-50">
+                                                <td key={`cell-${i}`} className="p-0 border-b border-x border-[var(--color-surface)] align-middle">
+                                                  <div className="flex items-center justify-center w-full h-full min-h-[32px] hover:bg-[var(--color-secondary)]">
                                                     {cellContent}
                                                   </div>
                                                 </td>
                                               );
                                             })}
-                                            <td className="px-2 py-2 text-center text-sm font-black text-emerald-800 bg-emerald-50 border-b border-r border-slate-300 border-l-2">{totalH}</td>
-                                            <td className="px-2 py-2 text-center text-sm font-black text-indigo-800 bg-emerald-50 border-b border-r border-slate-300">{totalI}</td>
-                                            <td className="px-2 py-2 text-center text-sm font-black text-amber-800 bg-emerald-50 border-b border-r border-slate-300">{totalS}</td>
-                                            <td className="px-2 py-2 text-center text-sm font-black text-rose-800 bg-emerald-50 border-b">{totalA}</td>
+                                            <td className="px-2 py-2 text-center text-sm font-black text-[var(--color-primary-dark)] bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)] border-l-2">{totalH}</td>
+                                            <td className="px-2 py-2 text-center text-sm font-black text-indigo-800 bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">{totalI}</td>
+                                            <td className="px-2 py-2 text-center text-sm font-black text-[var(--color-warning)] bg-[var(--color-primary-50)] border-b border-r border-[var(--color-surface-dark)]">{totalS}</td>
+                                            <td className="px-2 py-2 text-center text-sm font-black text-rose-800 bg-[var(--color-primary-50)] border-b">{totalA}</td>
                                           </tr>
                                         );
                                       })}
                                       {santris.length === 0 && (
                                         <tr>
-                                          <td className="px-4 py-8 text-center text-slate-500" colSpan={100}>Tidak ada data yang tersedia</td>
+                                          <td className="px-4 py-8 text-center text-[var(--color-text-muted)]" colSpan={100}>Tidak ada data yang tersedia</td>
                                         </tr>
                                       )}
                                     </tbody>

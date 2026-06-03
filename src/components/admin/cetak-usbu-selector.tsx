@@ -30,15 +30,15 @@ export function CetakUsbuSelector({ kelasList }: { kelasList: { id: string, nama
 
   return (
     <form onSubmit={handlePrint} className="flex flex-col gap-6">
-      <label className="space-y-2 text-sm font-semibold text-slate-700">
+      <label className="space-y-2 text-sm font-semibold text-[var(--color-text)]">
         <span>Ruangan Kelas</span>
         <select
           value={kelasId}
           onChange={(e) => setKelasId(e.target.value)}
-          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+          className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-3 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:bg-white"
         >
           <option value="" disabled>Pilih Ruangan Kelas...</option>
-          <option value="ALL" className="font-bold text-amber-700">-- Semua Ruangan Kelas (Cetak Bulk) --</option>
+          <option value="ALL" className="font-bold text-[var(--color-warning)]">-- Semua Ruangan Kelas (Cetak Bulk) --</option>
           {kelasList.map(k => (
             <option key={k.id} value={k.id}>
               {k.nama} ({k.programNama})
@@ -47,12 +47,12 @@ export function CetakUsbuSelector({ kelasList }: { kelasList: { id: string, nama
         </select>
       </label>
 
-      <label className="space-y-2 text-sm font-semibold text-slate-700">
+      <label className="space-y-2 text-sm font-semibold text-[var(--color-text)]">
         <span>Fase Evaluasi (Pekan)</span>
         <select
           value={usbu}
           onChange={(e) => setUsbu(e.target.value)}
-          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+          className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-3 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:bg-white"
         >
           <option value="1">Ujian Usbu' 1</option>
           <option value="2">Ujian Usbu' 2</option>
@@ -62,12 +62,12 @@ export function CetakUsbuSelector({ kelasList }: { kelasList: { id: string, nama
       </label>
 
       {isAkbarnas && (
-        <label className="space-y-2 text-sm font-semibold text-slate-700">
+        <label className="space-y-2 text-sm font-semibold text-[var(--color-text)]">
           <span>Bulan (Khusus Akbarnas)</span>
           <select
             value={bulan}
             onChange={(e) => setBulan(e.target.value)}
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+            className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-3 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:bg-white"
           >
             <option value="1">Bulan 1</option>
             <option value="2">Bulan 2</option>
@@ -77,7 +77,7 @@ export function CetakUsbuSelector({ kelasList }: { kelasList: { id: string, nama
 
       <button
         type="submit"
-        className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-emerald-600 px-6 py-4 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-500 hover:-translate-y-0.5"
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[var(--color-primary)] px-6 py-4 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-[var(--color-primary-50)]0 hover:-translate-y-0.5"
       >
         <Printer className="h-4 w-4" />
         Buka Lembar Pencetakan

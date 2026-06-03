@@ -31,9 +31,9 @@ type ProgramItem = {
 };
 
 function statusClass(status: string) {
-  if (status === "LULUS") return "bg-emerald-100 text-emerald-700";
-  if (status === "MUSYAROKAH") return "bg-amber-100 text-amber-700";
-  return "bg-rose-100 text-rose-700";
+  if (status === "LULUS") return "bg-[var(--color-primary-100)] text-[var(--color-primary)]";
+  if (status === "MUSYAROKAH") return "bg-[var(--color-warning-light)] text-[var(--color-warning)]";
+  return "bg-[var(--color-danger-light)] text-[var(--color-danger)]";
 }
 
 export function SyahadahClient({
@@ -73,18 +73,18 @@ export function SyahadahClient({
   return (
     <div className="space-y-6">
       {/* Filter + Summary Row */}
-      <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 md:flex-row md:items-end md:justify-between">
+      <section className="overflow-hidden neu-card-white">
+        <div className="flex flex-col gap-4 border-b border-[var(--color-surface-dark)] px-6 py-5 md:flex-row md:items-end md:justify-between">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:gap-4">
             {/* Dropdown Filter */}
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                 Filter Kelas / Ruangan
               </label>
               <select
                 value={filterKelasId}
                 onChange={(e) => setFilterKelasId(e.target.value)}
-                className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+                className="rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:bg-white"
               >
                 {allOptions.map((opt) => (
                   <option key={opt.id} value={opt.id}>
@@ -96,13 +96,13 @@ export function SyahadahClient({
 
             {/* Summary Stats */}
             <div className="flex flex-wrap items-center gap-3 text-sm">
-              <span className="rounded-2xl bg-slate-100 px-3 py-1.5 font-semibold text-slate-700">
+              <span className="rounded-2xl bg-[var(--color-surface)] px-3 py-1.5 font-semibold text-[var(--color-text)]">
                 {selectedCount} santri
               </span>
-              <span className="rounded-2xl bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700">
+              <span className="rounded-2xl bg-[var(--color-primary-50)] px-3 py-1.5 font-semibold text-[var(--color-primary)]">
                 {totalTasmi} Tasmi&apos;
               </span>
-              <span className="rounded-2xl bg-amber-50 px-3 py-1.5 font-semibold text-amber-700">
+              <span className="rounded-2xl bg-[var(--color-warning-light)] px-3 py-1.5 font-semibold text-[var(--color-warning)]">
                 {totalSiapCetak} Siap Cetak
               </span>
             </div>
@@ -112,25 +112,25 @@ export function SyahadahClient({
           <div className="flex flex-wrap gap-2">
             <Link
               href="/admin/input-nilai-kelas"
-              className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 shadow-sm"
+              className="rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-dark)] shadow-sm"
             >
               Input Nilai Masal
             </Link>
             <Link
               href="/admin/manajemen-kelas"
-              className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-white hover:text-emerald-700"
+              className="rounded-full border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition hover:border-[var(--color-primary-100)] hover:bg-white hover:text-[var(--color-primary)]"
             >
               Atur Penempatan Kelas
             </Link>
             <Link
               href="/admin/master-data"
-              className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-white hover:text-emerald-700"
+              className="rounded-full border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition hover:border-[var(--color-primary-100)] hover:bg-white hover:text-[var(--color-primary)]"
             >
               Atur KKM &amp; Template
             </Link>
             <Link
               href="/layout-editor"
-              className="rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100"
+              className="rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-[var(--color-info)] transition hover:border-blue-300 hover:bg-blue-100"
             >
               🎨 Atur Layout Syahadah
             </Link>
@@ -139,7 +139,7 @@ export function SyahadahClient({
                 href={`/cetak-bulk/${filterKelasId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full bg-amber-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-700 shadow-sm"
+                className="rounded-full bg-[var(--color-warning)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-warning)] shadow-sm"
               >
                 Cetak Syahadah (Ruangan)
               </a>
@@ -149,8 +149,8 @@ export function SyahadahClient({
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-left">
-            <thead className="bg-slate-50 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+          <table className="min-w-full divide-y divide-[var(--color-surface-dark)] text-left">
+            <thead className="bg-[var(--color-secondary)] text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
               <tr>
                 <th className="px-4 py-4 text-center">#</th>
                 <th className="px-6 py-4">Santri</th>
@@ -161,46 +161,46 @@ export function SyahadahClient({
                 <th className="px-6 py-4 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
+            <tbody className="divide-y divide-[var(--color-surface)] text-sm text-[var(--color-text-muted)]">
               {filteredSantri.map((santri, index) => (
-                <tr key={santri.id} className="align-top hover:bg-slate-50/80">
+                <tr key={santri.id} className="align-top hover:bg-[var(--color-secondary)]/80">
                   {/* No urut */}
                   <td className="px-4 py-4 text-center">
-                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-surface)] text-xs font-bold text-[var(--color-text-muted)]">
                       {index + 1}
                     </span>
                   </td>
                   {/* Nama */}
                   <td className="px-6 py-4">
-                    <p className="font-bold text-slate-900">{santri.nama}</p>
-                    <p className="mt-1 text-xs font-medium uppercase tracking-[0.2em] text-slate-400">{santri.gender}</p>
+                    <p className="font-bold text-[var(--color-text)]">{santri.nama}</p>
+                    <p className="mt-1 text-xs font-medium uppercase tracking-[0.2em] text-[var(--color-text-subtle)]">{santri.gender}</p>
                   </td>
                   {/* Lokasi */}
-                  <td className="px-6 py-4 text-slate-500">{santri.lokasi}</td>
+                  <td className="px-6 py-4 text-[var(--color-text-muted)]">{santri.lokasi}</td>
                   {/* Kelas */}
                   <td className="px-6 py-4">
                     {santri.kelasId ? (
                       <div>
-                        <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                        <span className="inline-flex rounded-full bg-[var(--color-surface)] px-3 py-1 text-xs font-bold text-[var(--color-text)]">
                           {santri.kelasNama}
                         </span>
                         {santri.programId && (
-                          <p className="mt-1 text-xs text-slate-400">{santri.programNama}</p>
+                          <p className="mt-1 text-xs text-[var(--color-text-subtle)]">{santri.programNama}</p>
                         )}
                       </div>
                     ) : santri.programId !== null ? (
-                      <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                      <span className="inline-flex rounded-full bg-[var(--color-surface)] px-3 py-1 text-xs font-bold text-[var(--color-text)]">
                         {santri.programNama}
                       </span>
                     ) : (
-                      <span className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-600">
+                      <span className="inline-flex rounded-full bg-[var(--color-danger-light)] px-3 py-1 text-xs font-bold text-[var(--color-danger)]">
                         Tanpa Kelas
                       </span>
                     )}
                   </td>
                   {/* Tasmi */}
                   <td className="px-6 py-4">
-                    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${santri.isTasmi ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
+                    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${santri.isTasmi ? "bg-[var(--color-primary-100)] text-[var(--color-primary)]" : "bg-[var(--color-danger-light)] text-[var(--color-danger)]"}`}>
                       {santri.isTasmi ? "Sudah" : "Belum"}
                     </span>
                   </td>
@@ -215,7 +215,7 @@ export function SyahadahClient({
                     <div className="flex flex-wrap justify-end gap-2">
                       <Link
                         href={`/admin/input-nilai/${santri.id}`}
-                        className="rounded-full border border-slate-200 px-4 py-2 text-xs font-bold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+                        className="rounded-full border border-[var(--color-surface-dark)] px-4 py-2 text-xs font-bold text-[var(--color-text)] transition hover:border-[var(--color-primary-100)] hover:bg-[var(--color-primary-50)] hover:text-[var(--color-primary)]"
                       >
                         Input Nilai
                       </Link>
@@ -223,31 +223,31 @@ export function SyahadahClient({
                         <>
                           <Link
                             href={`/admin/syahadah/${santri.id}/transkrip`}
-                            className="rounded-full bg-blue-100 px-4 py-2 text-xs font-bold text-blue-700 transition hover:bg-blue-200"
+                            className="rounded-full bg-blue-100 px-4 py-2 text-xs font-bold text-[var(--color-info)] transition hover:bg-blue-200"
                           >
                             Transkrip Detail
                           </Link>
                           <Link
                             href={`/ijazah/${santri.id}`}
-                            className="rounded-full bg-slate-900 px-4 py-2 text-xs font-bold text-white transition hover:bg-slate-700"
+                            className="rounded-full bg-[var(--color-text)] px-4 py-2 text-xs font-bold text-white transition hover:bg-[var(--color-text)]"
                           >
                             Ijazah Online
                           </Link>
                         </>
                       ) : (
-                        <span className="rounded-full bg-slate-200 px-4 py-2 text-xs font-bold text-slate-500">
+                        <span className="rounded-full bg-[var(--color-surface-dark)] px-4 py-2 text-xs font-bold text-[var(--color-text-muted)]">
                           Ijazah Terkunci
                         </span>
                       )}
                       {santri.canPrintSyahadah ? (
                         <Link
                           href={`/cetak/${santri.id}`}
-                          className="rounded-full bg-amber-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-amber-700"
+                          className="rounded-full bg-[var(--color-warning)] px-4 py-2 text-xs font-bold text-white transition hover:bg-[var(--color-warning)]"
                         >
                           Cetak Syahadah
                         </Link>
                       ) : (
-                        <span className="rounded-full bg-slate-200 px-4 py-2 text-xs font-bold text-slate-500">
+                        <span className="rounded-full bg-[var(--color-surface-dark)] px-4 py-2 text-xs font-bold text-[var(--color-text-muted)]">
                           Cetak Terkunci
                         </span>
                       )}
@@ -257,7 +257,7 @@ export function SyahadahClient({
               ))}
               {filteredSantri.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-slate-500">
+                  <td colSpan={7} className="px-6 py-8 text-center text-[var(--color-text-muted)]">
                     Tidak ada santri di kelas ini.
                   </td>
                 </tr>

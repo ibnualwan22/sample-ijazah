@@ -140,7 +140,7 @@ function SortableMapelRow({
     <div
       ref={setNodeRef}
       style={style}
-      className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden"
+      className="rounded-xl border border-[var(--color-surface-dark)] bg-white shadow-sm overflow-hidden"
     >
       {/* Row utama */}
       <div className="flex items-center gap-2 px-3 py-2.5">
@@ -149,21 +149,21 @@ function SortableMapelRow({
           <button
             {...attributes}
             {...listeners}
-            className="cursor-grab touch-none text-slate-300 hover:text-slate-500 active:cursor-grabbing"
+            className="cursor-grab touch-none text-[var(--color-text-subtle)] hover:text-[var(--color-text-muted)] active:cursor-grabbing"
           >
             <GripVertical className="h-4 w-4" />
           </button>
         )}
 
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-slate-800 truncate">{editIndo}</p>
-          <p className="text-xs text-slate-400 truncate" dir="rtl">{editArab}</p>
+          <p className="text-sm font-semibold text-[var(--color-text)] truncate">{editIndo}</p>
+          <p className="text-xs text-[var(--color-text-subtle)] truncate" dir="rtl">{editArab}</p>
           <div className="flex flex-wrap gap-1 mt-1">
-            {editJumlahTes === 1 && <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-medium">1x Tes</span>}
-            {!editMasukAkumulasi && <span className="text-[10px] bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded font-medium">Non-Akumulasi</span>}
-            {!editTampilSyahadah && <span className="text-[10px] bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded font-medium">Non-Syahadah</span>}
-            <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded font-medium">Bobot Usbu' {editBobotUsbu}%</span>
-            <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded font-medium">Bobot Syahadah {editBobot}%</span>
+            {editJumlahTes === 1 && <span className="text-[10px] bg-[var(--color-surface)] text-[var(--color-text-muted)] px-1.5 py-0.5 rounded font-medium">1x Tes</span>}
+            {!editMasukAkumulasi && <span className="text-[10px] bg-[var(--color-warning-light)] text-[var(--color-warning)] px-1.5 py-0.5 rounded font-medium">Non-Akumulasi</span>}
+            {!editTampilSyahadah && <span className="text-[10px] bg-[var(--color-danger-light)] text-[var(--color-danger)] px-1.5 py-0.5 rounded font-medium">Non-Syahadah</span>}
+            <span className="text-[10px] bg-[var(--color-primary-50)] text-[var(--color-primary)] px-1.5 py-0.5 rounded font-medium">Bobot Usbu' {editBobotUsbu}%</span>
+            <span className="text-[10px] bg-[var(--color-primary-50)] text-[var(--color-primary)] px-1.5 py-0.5 rounded font-medium">Bobot Syahadah {editBobot}%</span>
             {isAkbarnas && editBulanAktif === 1 && <span className="text-[10px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-medium">Hanya Bulan 1</span>}
             {isAkbarnas && editBulanAktif === 2 && <span className="text-[10px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-medium">Hanya Bulan 2</span>}
             {isAkbarnas && editJumlahTesB2 !== "" && <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded font-medium">Bulan 2: {editJumlahTesB2}x Tes</span>}
@@ -173,14 +173,14 @@ function SortableMapelRow({
         {/* Tombol edit */}
         <button
           onClick={() => setEditing((v) => !v)}
-          className={`shrink-0 rounded-lg p-1.5 transition ${editing ? "bg-amber-100 text-amber-600" : "text-slate-400 hover:bg-amber-50 hover:text-amber-500"}`}
+          className={`shrink-0 rounded-lg p-1.5 transition ${editing ? "bg-[var(--color-warning-light)] text-[var(--color-warning)]" : "text-[var(--color-text-subtle)] hover:bg-[var(--color-warning-light)] hover:text-amber-500"}`}
           title="Edit mapel"
         >
           <Pencil className="h-3.5 w-3.5" />
         </button>
         <button
           onClick={() => onDelete(item.mapelId)}
-          className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition"
+          className="shrink-0 rounded-lg p-1.5 text-[var(--color-text-subtle)] hover:bg-[var(--color-danger-light)] hover:text-[var(--color-danger)] transition"
           title="Hapus mapel"
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -189,13 +189,13 @@ function SortableMapelRow({
 
       {/* Form edit inline */}
       {editing && (
-        <div className="border-t border-amber-100 bg-amber-50 px-3 py-3 space-y-2">
+        <div className="border-t border-amber-100 bg-[var(--color-warning-light)] px-3 py-3 space-y-2">
           <input
             type="text"
             value={editIndo}
             onChange={(e) => setEditIndo(e.target.value)}
             placeholder="Nama Mapel (Indonesia)"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-amber-400"
+            className="w-full rounded-xl border border-[var(--color-surface-dark)] bg-white px-3 py-1.5 text-sm outline-none focus:border-amber-400"
           />
           <input
             type="text"
@@ -203,15 +203,15 @@ function SortableMapelRow({
             value={editArab}
             onChange={(e) => setEditArab(e.target.value)}
             placeholder="اسم المادة (عربي)"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-amber-400"
+            className="w-full rounded-xl border border-[var(--color-surface-dark)] bg-white px-3 py-1.5 text-sm outline-none focus:border-amber-400"
           />
-          <div className="flex flex-col gap-2 rounded-xl bg-white p-2 border border-slate-200 text-xs">
+          <div className="flex flex-col gap-2 rounded-xl bg-white p-2 border border-[var(--color-surface-dark)] text-xs">
             <label className="flex items-center gap-2">
-              <span className="w-32 font-semibold text-slate-600">Jml. Tes</span>
+              <span className="w-32 font-semibold text-[var(--color-text-muted)]">Jml. Tes</span>
               <select 
                 value={editJumlahTes} 
                 onChange={(e) => setEditJumlahTes(Number(e.target.value))}
-                className="rounded border-slate-200 p-1 flex-1 outline-none"
+                className="rounded border-[var(--color-surface-dark)] p-1 flex-1 outline-none"
               >
                 <option value={3}>3x Tes (Usbu 1, Usbu 2, Nihai)</option>
                 <option value={1}>1x Tes (Langsung Nilai Akhir)</option>
@@ -219,28 +219,28 @@ function SortableMapelRow({
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={editMasukAkumulasi} onChange={(e) => setEditMasukAkumulasi(e.target.checked)} className="rounded text-amber-500 w-3.5 h-3.5" />
-              <span className="text-slate-600">Masuk Akumulasi Rata-rata</span>
+              <span className="text-[var(--color-text-muted)]">Masuk Akumulasi Rata-rata</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={editTampilSyahadah} onChange={(e) => setEditTampilSyahadah(e.target.checked)} className="rounded text-amber-500 w-3.5 h-3.5" />
-              <span className="text-slate-600">Tampil di Syahadah</span>
+              <span className="text-[var(--color-text-muted)]">Tampil di Syahadah</span>
             </label>
             <label className="flex items-center gap-2">
-              <span className="w-32 font-semibold text-slate-600">Bobot Rapor Usbu' (%)</span>
-              <input type="number" min={0} max={100} value={editBobotUsbu} onChange={(e) => setEditBobotUsbu(Number(e.target.value))} className="rounded border-slate-200 p-1 flex-1 outline-none" />
+              <span className="w-32 font-semibold text-[var(--color-text-muted)]">Bobot Rapor Usbu' (%)</span>
+              <input type="number" min={0} max={100} value={editBobotUsbu} onChange={(e) => setEditBobotUsbu(Number(e.target.value))} className="rounded border-[var(--color-surface-dark)] p-1 flex-1 outline-none" />
             </label>
             <label className="flex items-center gap-2">
-              <span className="w-32 font-semibold text-slate-600">Bobot Syahadah Akhir (%)</span>
-              <input type="number" min={0} max={100} value={editBobot} onChange={(e) => setEditBobot(Number(e.target.value))} className="rounded border-slate-200 p-1 flex-1 outline-none" />
+              <span className="w-32 font-semibold text-[var(--color-text-muted)]">Bobot Syahadah Akhir (%)</span>
+              <input type="number" min={0} max={100} value={editBobot} onChange={(e) => setEditBobot(Number(e.target.value))} className="rounded border-[var(--color-surface-dark)] p-1 flex-1 outline-none" />
             </label>
             {isAkbarnas && (
               <>
                 <label className="flex items-center gap-2">
-                  <span className="w-32 font-semibold text-slate-600">Muncul di Bulan</span>
+                  <span className="w-32 font-semibold text-[var(--color-text-muted)]">Muncul di Bulan</span>
                   <select 
                     value={editBulanAktif} 
                     onChange={(e) => setEditBulanAktif(Number(e.target.value))}
-                    className="rounded border-slate-200 p-1 flex-1 outline-none"
+                    className="rounded border-[var(--color-surface-dark)] p-1 flex-1 outline-none"
                   >
                     <option value={0}>Semua Bulan (Bulan 1 & 2)</option>
                     <option value={1}>Hanya Bulan 1</option>
@@ -248,11 +248,11 @@ function SortableMapelRow({
                   </select>
                 </label>
                 <label className="flex items-center gap-2">
-                  <span className="w-32 font-semibold text-slate-600">Jml. Tes (Bulan 2)</span>
+                  <span className="w-32 font-semibold text-[var(--color-text-muted)]">Jml. Tes (Bulan 2)</span>
                   <select 
                     value={editJumlahTesB2} 
                     onChange={(e) => setEditJumlahTesB2(e.target.value === "" ? "" : Number(e.target.value))}
-                    className="rounded border-slate-200 p-1 flex-1 outline-none"
+                    className="rounded border-[var(--color-surface-dark)] p-1 flex-1 outline-none"
                   >
                     <option value="">Sama seperti bulan 1</option>
                     <option value={3}>3x Tes</option>
@@ -266,7 +266,7 @@ function SortableMapelRow({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-amber-500 py-1.5 text-xs font-bold text-white hover:bg-amber-600 disabled:opacity-60 transition"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[var(--color-warning-light)]0 py-1.5 text-xs font-bold text-white hover:bg-[var(--color-warning)] disabled:opacity-60 transition"
             >
               {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
               Simpan
@@ -284,7 +284,7 @@ function SortableMapelRow({
                 setEditBulanAktif(item.mapel.bulan_aktif ?? 0);
                 setEditJumlahTesB2(item.mapel.jumlah_tes_b2 ?? "");
               }}
-              className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 transition"
+              className="rounded-xl border border-[var(--color-surface-dark)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] transition"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -474,28 +474,28 @@ function ProgramCard({
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    <div className="rounded-2xl border border-[var(--color-surface-dark)] bg-white shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-        <BookOpen className="h-5 w-5 text-emerald-600 shrink-0" />
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-[var(--color-surface)] bg-[var(--color-surface-light)]">
+        <BookOpen className="h-5 w-5 text-[var(--color-primary)] shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-slate-800 truncate">{programNama}</p>
-          <p className="text-xs text-slate-400 truncate" dir="rtl">{programNamaArab}</p>
+          <p className="font-bold text-[var(--color-text)] truncate">{programNama}</p>
+          <p className="text-xs text-[var(--color-text-subtle)] truncate" dir="rtl">{programNamaArab}</p>
         </div>
-        <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500">
+        <span className="shrink-0 rounded-full bg-[var(--color-surface)] px-2.5 py-1 text-xs font-bold text-[var(--color-text-muted)]">
           {mapels.length} mapel
         </span>
         {/* Edit nama program */}
         <button
           onClick={() => { setEditingProgram((v) => !v); setExpanded(true); }}
-          className="shrink-0 rounded-xl p-2 text-slate-400 hover:bg-amber-50 hover:text-amber-500 transition"
+          className="shrink-0 rounded-xl p-2 text-[var(--color-text-subtle)] hover:bg-[var(--color-warning-light)] hover:text-amber-500 transition"
           title="Edit program"
         >
           <Pencil className="h-4 w-4" />
         </button>
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="shrink-0 rounded-xl p-2 text-slate-400 hover:bg-slate-200 transition"
+          className="shrink-0 rounded-xl p-2 text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-dark)] transition"
         >
           {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </button>
@@ -506,14 +506,14 @@ function ProgramCard({
 
           {/* Inline edit program */}
           {editingProgram && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3">
-              <p className="text-sm font-bold text-amber-700">Edit Program</p>
+            <div className="rounded-xl border border-[var(--color-warning)] bg-[var(--color-warning-light)] p-4 space-y-3">
+              <p className="text-sm font-bold text-[var(--color-warning)]">Edit Program</p>
               <input
                 type="text"
                 placeholder="Nama (Indonesia)"
                 value={editNamaIndo}
                 onChange={(e) => setEditNamaIndo(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-amber-400"
+                className="w-full rounded-xl border border-[var(--color-surface-dark)] bg-white px-3 py-2 text-sm outline-none focus:border-amber-400"
               />
               <input
                 type="text"
@@ -521,30 +521,30 @@ function ProgramCard({
                 placeholder="الاسم بالعربية"
                 value={editNamaArab}
                 onChange={(e) => setEditNamaArab(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-amber-400"
+                className="w-full rounded-xl border border-[var(--color-surface-dark)] bg-white px-3 py-2 text-sm outline-none focus:border-amber-400"
               />
               <div className="flex items-center gap-3">
-                <label className="text-sm font-semibold text-slate-600 whitespace-nowrap">KKM :</label>
+                <label className="text-sm font-semibold text-[var(--color-text-muted)] whitespace-nowrap">KKM :</label>
                 <input
                   type="number"
                   min={0} max={100}
                   value={editKkm}
                   onChange={(e) => setEditKkm(e.target.value)}
-                  className="w-20 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-center font-bold outline-none focus:border-amber-400"
+                  className="w-20 rounded-xl border border-[var(--color-surface-dark)] bg-white px-3 py-2 text-sm text-center font-bold outline-none focus:border-amber-400"
                 />
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={handleSaveProgram}
                   disabled={savingProgram}
-                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-amber-500 py-2 text-sm font-bold text-white hover:bg-amber-600 disabled:opacity-60 transition"
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[var(--color-warning-light)]0 py-2 text-sm font-bold text-white hover:bg-[var(--color-warning)] disabled:opacity-60 transition"
                 >
                   {savingProgram ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                   Simpan
                 </button>
                 <button
                   onClick={() => { setEditingProgram(false); setEditNamaIndo(programNama); setEditNamaArab(programNamaArab); }}
-                  className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 transition"
+                  className="rounded-xl border border-[var(--color-surface-dark)] px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] transition"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -556,7 +556,7 @@ function ProgramCard({
             <SortableContext items={mapels.map((m) => m.mapelId)} strategy={verticalListSortingStrategy}>
               <div className="space-y-2">
                 {mapels.length === 0 ? (
-                  <p className="text-sm italic text-slate-400 text-center py-2">Belum ada mapel</p>
+                  <p className="text-sm italic text-[var(--color-text-subtle)] text-center py-2">Belum ada mapel</p>
                 ) : (
                   mapels.map((item) => (
                     <SortableMapelRow
@@ -582,21 +582,21 @@ function ProgramCard({
           </DndContext>
 
           {savingOrder && (
-            <p className="flex items-center gap-2 text-xs text-slate-400">
+            <p className="flex items-center gap-2 text-xs text-[var(--color-text-subtle)]">
               <Loader2 className="h-3 w-3 animate-spin" /> Menyimpan urutan...
             </p>
           )}
 
           {/* Form tambah mapel inline */}
           {addingMapel ? (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 space-y-3">
-              <p className="text-sm font-bold text-emerald-700">Tambah Mapel Baru</p>
+            <div className="rounded-xl border border-[var(--color-primary-100)] bg-[var(--color-primary-50)] p-4 space-y-3">
+              <p className="text-sm font-bold text-[var(--color-primary)]">Tambah Mapel Baru</p>
               <input
                 type="text"
                 placeholder="Nama Mapel (Indonesia)"
                 value={newMapelIndo}
                 onChange={(e) => setNewMapelIndo(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                className="w-full rounded-xl border border-[var(--color-surface-dark)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
               />
               <input
                 type="text"
@@ -604,15 +604,15 @@ function ProgramCard({
                 placeholder="اسم المادة (عربي)"
                 value={newMapelArab}
                 onChange={(e) => setNewMapelArab(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                className="w-full rounded-xl border border-[var(--color-surface-dark)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
               />
-              <div className="flex flex-col gap-2 rounded-xl bg-white p-2 border border-slate-200 text-xs">
+              <div className="flex flex-col gap-2 rounded-xl bg-white p-2 border border-[var(--color-surface-dark)] text-xs">
                 <label className="flex items-center gap-2">
-                  <span className="w-32 font-semibold text-slate-600">Jml. Tes</span>
+                  <span className="w-32 font-semibold text-[var(--color-text-muted)]">Jml. Tes</span>
                   <select 
                     value={newJumlahTes} 
                     onChange={(e) => setNewJumlahTes(Number(e.target.value))}
-                    className="rounded border-slate-200 p-1 flex-1 outline-none bg-slate-50"
+                    className="rounded border-[var(--color-surface-dark)] p-1 flex-1 outline-none bg-[var(--color-secondary)]"
                   >
                     <option value={3}>3x Tes (Usbu 1, Usbu 2, Nihai)</option>
                     <option value={1}>1x Tes (Langsung Nilai Akhir)</option>
@@ -620,28 +620,28 @@ function ProgramCard({
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={newMasukAkumulasi} onChange={(e) => setNewMasukAkumulasi(e.target.checked)} className="rounded text-emerald-500 w-3.5 h-3.5" />
-                  <span className="text-slate-600">Masuk Akumulasi Rata-rata</span>
+                  <span className="text-[var(--color-text-muted)]">Masuk Akumulasi Rata-rata</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={newTampilSyahadah} onChange={(e) => setNewTampilSyahadah(e.target.checked)} className="rounded text-emerald-500 w-3.5 h-3.5" />
-                  <span className="text-slate-600">Tampil di Syahadah</span>
+                  <span className="text-[var(--color-text-muted)]">Tampil di Syahadah</span>
                 </label>
                 <label className="flex items-center gap-2">
-                  <span className="w-32 font-semibold text-slate-600">Bobot Rapor Usbu' (%)</span>
-                  <input type="number" min={0} max={100} value={newBobotUsbu} onChange={(e) => setNewBobotUsbu(Number(e.target.value))} className="rounded border-slate-200 p-1 flex-1 outline-none bg-slate-50" />
+                  <span className="w-32 font-semibold text-[var(--color-text-muted)]">Bobot Rapor Usbu' (%)</span>
+                  <input type="number" min={0} max={100} value={newBobotUsbu} onChange={(e) => setNewBobotUsbu(Number(e.target.value))} className="rounded border-[var(--color-surface-dark)] p-1 flex-1 outline-none bg-[var(--color-secondary)]" />
                 </label>
                 <label className="flex items-center gap-2">
-                  <span className="w-32 font-semibold text-slate-600">Bobot Syahadah Akhir (%)</span>
-                  <input type="number" min={0} max={100} value={newBobot} onChange={(e) => setNewBobot(Number(e.target.value))} className="rounded border-slate-200 p-1 flex-1 outline-none bg-slate-50" />
+                  <span className="w-32 font-semibold text-[var(--color-text-muted)]">Bobot Syahadah Akhir (%)</span>
+                  <input type="number" min={0} max={100} value={newBobot} onChange={(e) => setNewBobot(Number(e.target.value))} className="rounded border-[var(--color-surface-dark)] p-1 flex-1 outline-none bg-[var(--color-secondary)]" />
                 </label>
                 {isAkbarnas && (
                   <>
                     <label className="flex items-center gap-2">
-                      <span className="w-32 font-semibold text-slate-600">Muncul di Bulan</span>
+                      <span className="w-32 font-semibold text-[var(--color-text-muted)]">Muncul di Bulan</span>
                       <select 
                         value={newBulanAktif} 
                         onChange={(e) => setNewBulanAktif(Number(e.target.value))}
-                        className="rounded border-slate-200 p-1 flex-1 outline-none bg-slate-50"
+                        className="rounded border-[var(--color-surface-dark)] p-1 flex-1 outline-none bg-[var(--color-secondary)]"
                       >
                         <option value={0}>Semua Bulan</option>
                         <option value={1}>Hanya Bulan 1</option>
@@ -649,11 +649,11 @@ function ProgramCard({
                       </select>
                     </label>
                     <label className="flex items-center gap-2">
-                      <span className="w-32 font-semibold text-slate-600">Jml. Tes (Bulan 2)</span>
+                      <span className="w-32 font-semibold text-[var(--color-text-muted)]">Jml. Tes (Bulan 2)</span>
                       <select 
                         value={newJumlahTesB2} 
                         onChange={(e) => setNewJumlahTesB2(e.target.value === "" ? "" : Number(e.target.value))}
-                        className="rounded border-slate-200 p-1 flex-1 outline-none bg-slate-50"
+                        className="rounded border-[var(--color-surface-dark)] p-1 flex-1 outline-none bg-[var(--color-secondary)]"
                       >
                         <option value="">Sama seperti bulan 1</option>
                         <option value={3}>3x Tes</option>
@@ -666,7 +666,7 @@ function ProgramCard({
               <div className="flex gap-2">
                 <button
                   onClick={handleAddMapel}
-                  className="flex-1 rounded-xl bg-emerald-600 py-2 text-sm font-bold text-white hover:bg-emerald-700 transition"
+                  className="flex-1 rounded-xl bg-[var(--color-primary)] py-2 text-sm font-bold text-white hover:bg-[var(--color-primary-dark)] transition"
                 >
                   Simpan Mapel
                 </button>
@@ -683,7 +683,7 @@ function ProgramCard({
                     setNewBulanAktif(0);
                     setNewJumlahTesB2("");
                   }}
-                  className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 transition"
+                  className="rounded-xl border border-[var(--color-surface-dark)] px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] transition"
                 >
                   Batal
                 </button>
@@ -692,7 +692,7 @@ function ProgramCard({
           ) : (
             <button
               onClick={() => setAddingMapel(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-emerald-200 py-2.5 text-sm font-semibold text-emerald-600 hover:border-emerald-400 hover:bg-emerald-50 transition"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[var(--color-primary-100)] py-2.5 text-sm font-semibold text-[var(--color-primary)] hover:border-emerald-400 hover:bg-[var(--color-primary-50)] transition"
             >
               <Plus className="h-4 w-4" /> Tambah Mapel
             </button>
@@ -702,7 +702,7 @@ function ProgramCard({
           {canDelete ? (
             <button
               onClick={handleDeleteProgram}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-rose-100 py-2 text-xs font-semibold text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--color-danger-light)] py-2 text-xs font-semibold text-rose-400 hover:bg-[var(--color-danger-light)] hover:text-[var(--color-danger)] transition"
             >
               <XCircle className="h-3.5 w-3.5" /> Hapus Program Ini
             </button>
@@ -766,12 +766,12 @@ export function ProgramMapelManager({ initialPrograms }: { initialPrograms: Prog
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">
+        <p className="text-sm font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
           {programs.length} Program Aktif
         </p>
         <button
           onClick={() => setShowAddProgram((v) => !v)}
-          className="flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700 transition"
+          className="flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-bold text-white hover:bg-[var(--color-primary-dark)] transition"
         >
           <Plus className="h-4 w-4" />
           Tambah Program
@@ -780,15 +780,15 @@ export function ProgramMapelManager({ initialPrograms }: { initialPrograms: Prog
 
       {/* Form tambah program */}
       {showAddProgram && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 space-y-3">
-          <p className="font-bold text-emerald-700">Program Baru</p>
+        <div className="rounded-2xl border border-[var(--color-primary-100)] bg-[var(--color-primary-50)] p-5 space-y-3">
+          <p className="font-bold text-[var(--color-primary)]">Program Baru</p>
           <div className="grid gap-3 sm:grid-cols-2">
             <input
               type="text"
               placeholder="Nama (Indonesia) — contoh: Shifr"
               value={newNamaIndo}
               onChange={(e) => setNewNamaIndo(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500"
+              className="rounded-xl border border-[var(--color-surface-dark)] bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             />
             <input
               type="text"
@@ -796,16 +796,16 @@ export function ProgramMapelManager({ initialPrograms }: { initialPrograms: Prog
               placeholder="الاسم بالعربية — مثال: صفر"
               value={newNamaArab}
               onChange={(e) => setNewNamaArab(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500"
+              className="rounded-xl border border-[var(--color-surface-dark)] bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             />
             <div className="sm:col-span-2 flex items-center gap-3">
-              <label className="text-sm font-semibold text-slate-600 whitespace-nowrap">KKM :</label>
+              <label className="text-sm font-semibold text-[var(--color-text-muted)] whitespace-nowrap">KKM :</label>
               <input
                 type="number"
                 min={0} max={100}
                 value={newKkm}
                 onChange={(e) => setNewKkm(e.target.value)}
-                className="w-24 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-center font-bold outline-none focus:border-emerald-500"
+                className="w-24 rounded-xl border border-[var(--color-surface-dark)] bg-white px-3 py-2.5 text-sm text-center font-bold outline-none focus:border-[var(--color-primary)]"
               />
             </div>
           </div>
@@ -813,13 +813,13 @@ export function ProgramMapelManager({ initialPrograms }: { initialPrograms: Prog
             <button
               onClick={handleAddProgram}
               disabled={addingProgram}
-              className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-60 transition"
+              className="flex-1 rounded-xl bg-[var(--color-primary)] py-2.5 text-sm font-bold text-white hover:bg-[var(--color-primary-dark)] disabled:opacity-60 transition"
             >
               {addingProgram ? "Menyimpan..." : "Simpan Program"}
             </button>
             <button
               onClick={() => setShowAddProgram(false)}
-              className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-100 transition"
+              className="rounded-xl border border-[var(--color-surface-dark)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] transition"
             >
               Batal
             </button>

@@ -28,15 +28,15 @@ export default async function MasterDataPage() {
       <MasterDataForm programList={programList} template={template} />
 
       {/* Section: Manajemen Program & Mapel */}
-      <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-[var(--radius-2xl)] border border-[var(--color-surface-dark)] bg-white p-6 shadow-sm">
         <div className="mb-6">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-700">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[var(--color-primary)]">
             Manajemen Program & Mapel
           </p>
-          <h2 className="mt-2 text-3xl font-bold text-slate-900">
+          <h2 className="mt-2 text-3xl font-bold text-[var(--color-text)]">
             Struktur program dan mata pelajaran
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
             Tambah, hapus, atau atur ulang urutan mapel per program. Drag handle untuk mengubah urutan.
             Nilai yang sudah tersimpan tetap aman meski mapel dihapus.
           </p>

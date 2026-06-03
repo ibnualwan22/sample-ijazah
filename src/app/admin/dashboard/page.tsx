@@ -19,11 +19,11 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-slate-900 md:text-4xl">
+        <h1 className="text-3xl font-black md:text-4xl " style={{ color: "var(--color-text)" }}>
           Dashboard Utama
         </h1>
-        <p className="text-base text-slate-500 max-w-2xl">
-          Visualisasi ringkas dari distribusi data santri Markaz Arabiyah berdasarkan kelas utama dan rombongan belajar (ruangan).
+        <p className="text-sm max-w-2xl" style={{ color: "var(--color-text-muted)" }}>
+          Visualisasi ringkas dari distribusi data santri Markaz Arabiyah berdasarkan kelas utama dan rombongan belajar.
         </p>
       </div>
 

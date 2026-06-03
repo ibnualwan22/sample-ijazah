@@ -133,7 +133,7 @@ export default async function TranskripPage({ params }: { params: Promise<{ id: 
   return (
     <div className="min-h-screen bg-slate-200 p-4 md:p-8">
       <div className="mb-4 text-center">
-        <a href="/admin/syahadah" className="text-slate-500 hover:text-slate-700 underline text-sm font-semibold">
+        <a href="/admin/syahadah" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline text-sm font-semibold">
           &larr; Kembali ke Data Syahadah
         </a>
       </div>

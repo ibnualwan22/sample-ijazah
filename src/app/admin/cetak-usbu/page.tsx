@@ -19,14 +19,14 @@ export default async function CetakUsbuPage() {
     <div className="space-y-6">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-black text-slate-900">Cetak Rapor Usbu'</h1>
-          <p className="mt-2 text-slate-600">
+          <h1 className="text-3xl font-black ">Cetak Rapor Usbu'</h1>
+          <p className="mt-2 text-[var(--color-text-muted)]">
             Pilih kelas dan fase Usbu' untuk mencetak Daftar Nilai Ujian Akhir Pekan.
           </p>
         </div>
       </div>
 
-      <div className="rounded-[2.5rem] bg-white p-8 shadow-sm border border-slate-200/60 w-full max-w-2xl">
+      <div className="rounded-[2.5rem] bg-white p-8 shadow-sm border border-[var(--color-surface-dark)]/60 w-full max-w-2xl">
         <CetakUsbuSelector kelasList={kelasList.map(k => ({ id: k.id, nama: k.nama, programNama: k.program.nama_indo }))} />
       </div>
     </div>

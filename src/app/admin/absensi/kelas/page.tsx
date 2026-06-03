@@ -44,10 +44,10 @@ export default async function AbsensiKelasPage() {
   return (
     <div className="space-y-6 md:space-y-8">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-slate-900 md:text-4xl">
+        <h1 className="text-3xl font-black md:text-4xl ">
           Absen Kelas
         </h1>
-        <p className="text-base text-slate-500 max-w-2xl">
+        <p className="text-sm text-[var(--color-text-muted)] max-w-2xl">
           Pendataan kehadiran santri di kelas berdasarkan hissoh (sesi).
         </p>
       </div>

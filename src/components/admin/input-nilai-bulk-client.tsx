@@ -218,15 +218,15 @@ export function InputNilaiBulkClient({
   return (
     <div className="space-y-6">
       {/* Filter Section */}
-      <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="neu-card-white p-6">
         <div className="grid gap-6 md:grid-cols-2">
-          <label className="space-y-2 text-sm font-semibold text-slate-700">
+          <label className="space-y-2 text-sm font-semibold text-[var(--color-text)]">
             <span>Pilih Ruangan Kelas</span>
             <select
               value={selectedKelasId}
               onChange={(e) => setSelectedKelasId(e.target.value)}
               disabled={!isAdmin && !!allowedKelasId}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-bold outline-none transition focus:border-emerald-500 focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-3 text-base font-bold outline-none transition focus:border-[var(--color-primary)] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed"
             >
               <option value="">-- Pilih Kelas --</option>
               {availablePrograms.map((p) => (
@@ -242,7 +242,7 @@ export function InputNilaiBulkClient({
           </label>
 
           {isAkbarnas && (
-            <label className="space-y-2 text-sm font-semibold text-slate-700">
+            <label className="space-y-2 text-sm font-semibold text-[var(--color-text)]">
               <span>Bulan Pembelajaran (Khusus Akbarnas)</span>
               <select
                 value={akbarnasMonth}
@@ -258,35 +258,35 @@ export function InputNilaiBulkClient({
       </section>
 
       {/* Messages */}
-      {error && <div className="rounded-3xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">{error}</div>}
-      {success && <div className="rounded-3xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">{success}</div>}
+      {error && <div className="rounded-3xl border border-[var(--color-danger)] bg-[var(--color-danger-light)] px-4 py-3 text-sm font-medium text-[var(--color-danger)]">{error}</div>}
+      {success && <div className="rounded-3xl border border-[var(--color-primary-100)] bg-[var(--color-primary-50)] px-4 py-3 text-sm font-medium text-[var(--color-primary)]">{success}</div>}
 
       {/* Table Section */}
       {selectedKelasId && selectedProgram && (
-        <section className="rounded-[2rem] border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col">
-          <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+        <section className="neu-card-white overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-[var(--color-surface)] flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-bold text-slate-900">Master Sheet Penilaian Kelas</h3>
-              <p className="text-sm text-slate-500 mt-1">Gunakan tombol Tab untuk berpindah antar kolom secara cepat.</p>
+              <h3 className="text-xl font-bold text-[var(--color-text)]">Master Sheet Penilaian Kelas</h3>
+              <p className="text-sm text-[var(--color-text-muted)] mt-1">Gunakan tombol Tab untuk berpindah antar kolom secara cepat.</p>
             </div>
             <button
               onClick={handleSave}
               disabled={isSaving || Object.keys(changes).length === 0}
-              className="rounded-full bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
+              className="rounded-full bg-[var(--color-primary)] px-6 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-[var(--color-primary-dark)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
             >
               {isSaving ? "Menyimpan..." : "Simpan Semua Perubahan"}
             </button>
           </div>
 
           <div className="overflow-x-auto w-full custom-scrollbar">
-            <table className="w-full text-left text-sm text-slate-600 border-collapse min-w-max">
-              <thead className="bg-slate-50 text-xs uppercase tracking-[0.1em] text-slate-500">
+            <table className="w-full text-left text-sm text-[var(--color-text-muted)] border-collapse min-w-max">
+              <thead className="bg-[var(--color-secondary)] text-xs uppercase tracking-[0.1em] text-[var(--color-text-muted)]">
                 <tr>
-                  <th className="px-2 md:px-4 py-3 font-semibold text-center border-b border-slate-200 sticky left-0 bg-slate-50 z-20 border-r min-w-[40px] w-[40px] md:min-w-[50px] md:w-[50px]" rowSpan={2}>No</th>
-                  <th className="px-3 md:px-4 py-3 font-semibold border-b border-slate-200 sticky left-[40px] md:left-[50px] bg-slate-50 z-20 border-r min-w-[140px] w-[140px] md:min-w-[250px] md:w-[250px] text-xs md:text-sm" rowSpan={2}>Nama Peserta Didik</th>
-                  <th className="px-4 py-3 font-semibold text-center border-b border-r border-slate-200 md:sticky md:left-[300px] bg-slate-50 md:z-20 min-w-[80px] w-[80px]" rowSpan={2}>Tasmi'</th>
+                  <th className="px-2 md:px-4 py-3 font-semibold text-center border-b border-[var(--color-surface-dark)] sticky left-0 bg-[var(--color-secondary)] z-20 border-r min-w-[40px] w-[40px] md:min-w-[50px] md:w-[50px]" rowSpan={2}>No</th>
+                  <th className="px-3 md:px-4 py-3 font-semibold border-b border-[var(--color-surface-dark)] sticky left-[40px] md:left-[50px] bg-[var(--color-secondary)] z-20 border-r min-w-[140px] w-[140px] md:min-w-[250px] md:w-[250px] text-xs md:text-sm" rowSpan={2}>Nama Peserta Didik</th>
+                  <th className="px-4 py-3 font-semibold text-center border-b border-r border-[var(--color-surface-dark)] md:sticky md:left-[300px] bg-[var(--color-secondary)] md:z-20 min-w-[80px] w-[80px]" rowSpan={2}>Tasmi'</th>
                   {mapels.map(m => (
-                    <th key={m.id} className="px-2 py-2 font-bold text-center border-b border-r border-slate-200 bg-slate-100" colSpan={m.jumlah_tes === 3 ? 3 : 1}>
+                    <th key={m.id} className="px-2 py-2 font-bold text-center border-b border-r border-[var(--color-surface-dark)] bg-[var(--color-surface)]" colSpan={m.jumlah_tes === 3 ? 3 : 1}>
                       <div>{m.nama_indo}</div>
                     </th>
                   ))}
@@ -298,55 +298,55 @@ export function InputNilaiBulkClient({
                       const wNihai = m.bobot ?? 0;
                       return (
                         <Fragment key={`sub_${m.id}`}>
-                          <th className="px-2 py-2 font-semibold text-center border-b border-slate-200 bg-slate-50 w-20 text-[10px]">
+                          <th className="px-2 py-2 font-semibold text-center border-b border-[var(--color-surface-dark)] bg-[var(--color-secondary)] w-20 text-[10px]">
                             <div>U1</div>
-                            <div className="text-[9px] text-slate-400 font-medium">({wUsbu}%)</div>
+                            <div className="text-[9px] text-[var(--color-text-subtle)] font-medium">({wUsbu}%)</div>
                           </th>
-                          <th className="px-2 py-2 font-semibold text-center border-b border-slate-200 bg-slate-50 w-20 text-[10px]">
+                          <th className="px-2 py-2 font-semibold text-center border-b border-[var(--color-surface-dark)] bg-[var(--color-secondary)] w-20 text-[10px]">
                             <div>U2</div>
-                            <div className="text-[9px] text-slate-400 font-medium">({wUsbu}%)</div>
+                            <div className="text-[9px] text-[var(--color-text-subtle)] font-medium">({wUsbu}%)</div>
                           </th>
-                          <th className="px-2 py-2 font-semibold text-center border-b border-r border-slate-200 bg-slate-50 w-20 text-[10px]">
+                          <th className="px-2 py-2 font-semibold text-center border-b border-r border-[var(--color-surface-dark)] bg-[var(--color-secondary)] w-20 text-[10px]">
                             <div>Nihai</div>
-                            <div className="text-[9px] text-emerald-600 font-bold">({wNihai}%)</div>
+                            <div className="text-[9px] text-[var(--color-primary)] font-bold">({wNihai}%)</div>
                           </th>
                         </Fragment>
                       );
                     }
                     return (
-                      <th key={`sub_${m.id}`} className="px-2 py-2 font-semibold text-center border-b border-r border-slate-200 bg-slate-50 w-24 text-[10px]">
+                      <th key={`sub_${m.id}`} className="px-2 py-2 font-semibold text-center border-b border-r border-[var(--color-surface-dark)] bg-[var(--color-secondary)] w-24 text-[10px]">
                         Akhir
                       </th>
                     );
                   })}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[var(--color-surface)]">
                 {isLoading ? (
-                  <tr><td colSpan={3 + mapels.reduce((a, b) => a + (b.jumlah_tes === 3 ? 3 : 1), 0)} className="text-center py-12 text-slate-500">Memuat data santri...</td></tr>
+                  <tr><td colSpan={3 + mapels.reduce((a, b) => a + (b.jumlah_tes === 3 ? 3 : 1), 0)} className="text-center py-12 text-[var(--color-text-muted)]">Memuat data santri...</td></tr>
                 ) : santriList.length === 0 ? (
-                  <tr><td colSpan={3 + mapels.reduce((a, b) => a + (b.jumlah_tes === 3 ? 3 : 1), 0)} className="text-center py-12 text-slate-500">Tidak ada santri aktif di kelas ini.</td></tr>
+                  <tr><td colSpan={3 + mapels.reduce((a, b) => a + (b.jumlah_tes === 3 ? 3 : 1), 0)} className="text-center py-12 text-[var(--color-text-muted)]">Tidak ada santri aktif di kelas ini.</td></tr>
                 ) : (
                   santriList.map((row, index) => {
                     const tasmi = getTasmiVal(row);
                     const hasChange = !!changes[row.riwayatId];
 
                     return (
-                      <tr key={row.riwayatId} className={`transition hover:bg-slate-50/80 ${hasChange ? 'bg-amber-50/10' : ''}`}>
-                        <td className="px-2 md:px-4 py-2 text-center font-medium text-slate-400 sticky left-0 bg-white z-10 border-r border-slate-100 shadow-[1px_0_0_0_#f1f5f9] min-w-[40px] md:min-w-[50px]">{index + 1}</td>
-                        <td className="px-3 md:px-4 py-2 font-bold text-slate-800 sticky left-[40px] md:left-[50px] bg-white z-10 border-r border-slate-100 shadow-[1px_0_0_0_#f1f5f9] min-w-[140px] w-[140px] md:min-w-[250px] md:w-[250px] whitespace-normal leading-snug text-xs md:text-sm">{row.nama}</td>
-                        <td className="px-4 py-2 text-center md:sticky md:left-[300px] bg-white md:z-10 border-r border-slate-200 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] min-w-[80px]">
+                      <tr key={row.riwayatId} className={`transition hover:bg-[var(--color-secondary)]/80 ${hasChange ? 'bg-[var(--color-warning-light)]/10' : ''}`}>
+                        <td className="px-2 md:px-4 py-2 text-center font-medium text-[var(--color-text-subtle)] sticky left-0 bg-white z-10 border-r border-[var(--color-surface)] shadow-[1px_0_0_0_#f1f5f9] min-w-[40px] md:min-w-[50px]">{index + 1}</td>
+                        <td className="px-3 md:px-4 py-2 font-bold text-[var(--color-text)] sticky left-[40px] md:left-[50px] bg-white z-10 border-r border-[var(--color-surface)] shadow-[1px_0_0_0_#f1f5f9] min-w-[140px] w-[140px] md:min-w-[250px] md:w-[250px] whitespace-normal leading-snug text-xs md:text-sm">{row.nama}</td>
+                        <td className="px-4 py-2 text-center md:sticky md:left-[300px] bg-white md:z-10 border-r border-[var(--color-surface-dark)] md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] min-w-[80px]">
                           {activeFlags.u3 ? (
                             <label className="inline-flex cursor-pointer items-center justify-center w-full h-full">
                               <input 
                                 type="checkbox" 
                                 checked={tasmi}
                                 onChange={(e) => handleTasmiChange(row.riwayatId, e.target.checked)}
-                                className="h-5 w-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                                className="h-5 w-5 rounded border-[var(--color-surface-dark)] text-[var(--color-primary)] focus:ring-[var(--color-primary)] cursor-pointer"
                               />
                             </label>
                           ) : (
-                            <span className="text-[10px] text-slate-400 font-medium">Menunggu Nihai</span>
+                            <span className="text-[10px] text-[var(--color-text-subtle)] font-medium">Menunggu Nihai</span>
                           )}
                         </td>
                         
@@ -363,10 +363,10 @@ export function InputNilaiBulkClient({
                                       type="number" min={0} max={100} 
                                       value={u1 === null ? "" : u1}
                                       onChange={(e) => handleNilaiChange(row.riwayatId, m.id, "u1", e.target.value === "" ? null : Number(e.target.value))}
-                                      className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 focus:bg-emerald-50/30 hover:border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                      className="w-full rounded-lg border border-[var(--color-surface-dark)] bg-white px-2 py-1.5 text-center font-bold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-emerald-100 focus:bg-[var(--color-primary-50)]/30 hover:border-[var(--color-surface-dark)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                     />
                                   ) : (
-                                    <div className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1.5 text-center font-bold text-slate-400">{u1 === null ? "-" : u1}</div>
+                                    <div className="w-full rounded-lg border border-[var(--color-surface)] bg-[var(--color-secondary)] px-2 py-1.5 text-center font-bold text-[var(--color-text-subtle)]">{u1 === null ? "-" : u1}</div>
                                   )}
                                 </td>
                                 <td className="px-1 py-2">
@@ -375,22 +375,22 @@ export function InputNilaiBulkClient({
                                       type="number" min={0} max={100} 
                                       value={u2 === null ? "" : u2}
                                       onChange={(e) => handleNilaiChange(row.riwayatId, m.id, "u2", e.target.value === "" ? null : Number(e.target.value))}
-                                      className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 focus:bg-emerald-50/30 hover:border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                      className="w-full rounded-lg border border-[var(--color-surface-dark)] bg-white px-2 py-1.5 text-center font-bold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-emerald-100 focus:bg-[var(--color-primary-50)]/30 hover:border-[var(--color-surface-dark)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                     />
                                   ) : (
-                                    <div className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1.5 text-center font-bold text-slate-400">{u2 === null ? "-" : u2}</div>
+                                    <div className="w-full rounded-lg border border-[var(--color-surface)] bg-[var(--color-secondary)] px-2 py-1.5 text-center font-bold text-[var(--color-text-subtle)]">{u2 === null ? "-" : u2}</div>
                                   )}
                                 </td>
-                                <td className="px-1 py-2 border-r border-slate-200">
+                                <td className="px-1 py-2 border-r border-[var(--color-surface-dark)]">
                                   {activeFlags.u3 ? (
                                     <input 
                                       type="number" min={0} max={100} 
                                       value={n === null ? "" : n}
                                       onChange={(e) => handleNilaiChange(row.riwayatId, m.id, "n", e.target.value === "" ? null : Number(e.target.value))}
-                                      className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 focus:bg-emerald-50/30 hover:border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                      className="w-full rounded-lg border border-[var(--color-surface-dark)] bg-white px-2 py-1.5 text-center font-bold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-emerald-100 focus:bg-[var(--color-primary-50)]/30 hover:border-[var(--color-surface-dark)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                     />
                                   ) : (
-                                    <div className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1.5 text-center font-bold text-slate-400">{n === null ? "-" : n}</div>
+                                    <div className="w-full rounded-lg border border-[var(--color-surface)] bg-[var(--color-secondary)] px-2 py-1.5 text-center font-bold text-[var(--color-text-subtle)]">{n === null ? "-" : n}</div>
                                   )}
                                 </td>
                               </Fragment>
@@ -398,12 +398,12 @@ export function InputNilaiBulkClient({
                           } else {
                             const a = getNilaiVal(row, m.id, "a");
                             return (
-                              <td key={`td_${m.id}`} className="px-1 py-2 border-r border-slate-200">
+                              <td key={`td_${m.id}`} className="px-1 py-2 border-r border-[var(--color-surface-dark)]">
                                 <input 
                                   type="number" min={0} max={100} 
                                   value={a === null ? "" : a}
                                   onChange={(e) => handleNilaiChange(row.riwayatId, m.id, "a", e.target.value === "" ? null : Number(e.target.value))}
-                                  className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 focus:bg-emerald-50/30 hover:border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                  className="w-full rounded-lg border border-[var(--color-surface-dark)] bg-white px-2 py-1.5 text-center font-bold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-emerald-100 focus:bg-[var(--color-primary-50)]/30 hover:border-[var(--color-surface-dark)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                 />
                               </td>
                             );
@@ -417,11 +417,11 @@ export function InputNilaiBulkClient({
             </table>
           </div>
           
-          <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+          <div className="p-4 bg-[var(--color-secondary)] border-t border-[var(--color-surface)] flex justify-end">
              <button
               onClick={handleSave}
               disabled={isSaving || Object.keys(changes).length === 0}
-              className="rounded-full bg-emerald-600 px-8 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-full bg-[var(--color-primary)] px-8 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[var(--color-primary-dark)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? "Menyimpan..." : "Simpan Semua Perubahan"}
             </button>

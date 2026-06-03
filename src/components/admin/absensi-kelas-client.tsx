@@ -410,26 +410,26 @@ export function AbsensiKelasClient({
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-slate-200 p-6 md:flex-row md:items-end md:justify-between bg-slate-50/50">
+      <section className="overflow-hidden neu-card-white">
+        <div className="flex flex-col gap-4 border-b border-[var(--color-surface-dark)] p-6 md:flex-row md:items-end md:justify-between bg-[var(--color-surface-light)]">
           {isTeacher ? (
             <div className="flex flex-col gap-2 w-full md:w-auto">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 w-24">Tanggal</span>
-                <span className="text-sm font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">
+                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)] w-24">Tanggal</span>
+                <span className="text-sm font-bold text-[var(--color-primary)] bg-[var(--color-primary-50)] px-3 py-1 rounded-lg border border-[var(--color-primary-50)]">
                   {tanggal ? tanggal.split('-').reverse().join('-') : ""}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 w-24">Sesi Aktif</span>
-                <span className={`text-sm font-bold px-3 py-1 rounded-lg border ${activeSession ? 'text-emerald-700 bg-emerald-50 border-emerald-100' : 'text-rose-700 bg-rose-50 border-rose-100'}`}>
+                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)] w-24">Sesi Aktif</span>
+                <span className={`text-sm font-bold px-3 py-1 rounded-lg border ${activeSession ? 'text-[var(--color-primary)] bg-[var(--color-primary-50)] border-[var(--color-primary-50)]' : 'text-[var(--color-danger)] bg-[var(--color-danger-light)] border-[var(--color-danger-light)]'}`}>
                   {activeSession ? activeSession.replace('_', ' ') : "Tidak ada"}
                 </span>
               </div>
               {activeSession && jadwalSesiList.find(j => j.sesi === activeSession) && (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 w-24">Waktu</span>
-                  <span className="text-sm font-medium text-slate-600 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)] w-24">Waktu</span>
+                  <span className="text-sm font-medium text-[var(--color-text-muted)] bg-[var(--color-secondary)] px-3 py-1 rounded-lg border border-[var(--color-surface)]">
                     {(() => {
                       const j = jadwalSesiList.find(x => x.sesi === activeSession);
                       return `${j.jamBuka} - ${j.jamTutup} (Dispensasi: ${j.toleransiMenit} mnt)`;
@@ -439,8 +439,8 @@ export function AbsensiKelasClient({
               )}
               {activeClassId && (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 w-24">Kelas</span>
-                  <span className={`text-sm font-bold px-3 py-1 rounded-lg border ${isBadalMode ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-indigo-700 bg-indigo-50 border-indigo-100'}`}>
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)] w-24">Kelas</span>
+                  <span className={`text-sm font-bold px-3 py-1 rounded-lg border ${isBadalMode ? 'text-[var(--color-warning)] bg-[var(--color-warning-light)] border-[var(--color-warning)]' : 'text-indigo-700 bg-indigo-50 border-indigo-100'}`}>
                     {allClassesOptions.find(o => o.id === activeClassId)?.label || activeClassId}
                     {isBadalMode && " (Badal)"}
                   </span>
@@ -449,9 +449,9 @@ export function AbsensiKelasClient({
               {activeSession && (
                 <div className="mt-2 flex">
                   {isBadalMode ? (
-                     <button onClick={() => { setIsBadalMode(false); setActiveClassId(teacherSessions.find(ts => ts.sesi === activeSession)?.kelasId || null); setKelasId(teacherSessions.find(ts => ts.sesi === activeSession)?.kelasId || allowedClassIds?.[0] || ""); }} className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-3 py-1.5 transition-colors">Batal Badal</button>
+                     <button onClick={() => { setIsBadalMode(false); setActiveClassId(teacherSessions.find(ts => ts.sesi === activeSession)?.kelasId || null); setKelasId(teacherSessions.find(ts => ts.sesi === activeSession)?.kelasId || allowedClassIds?.[0] || ""); }} className="flex items-center gap-2 text-xs font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text)] border border-[var(--color-surface-dark)] rounded-lg px-3 py-1.5 transition-colors">Batal Badal</button>
                   ) : (
-                    <button onClick={() => setShowBadalModal(true)} className="flex items-center gap-2 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg px-3 py-1.5 transition-colors">
+                    <button onClick={() => setShowBadalModal(true)} className="flex items-center gap-2 text-xs font-bold text-[var(--color-warning)] bg-[var(--color-warning-light)] hover:bg-[var(--color-warning-light)] border border-[var(--color-warning)] rounded-lg px-3 py-1.5 transition-colors">
                       <UserPlus className="w-4 h-4" />
                       Jadi Guru Badal
                     </button>
@@ -462,25 +462,25 @@ export function AbsensiKelasClient({
           ) : (
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:gap-4 flex-wrap w-full md:w-auto">
               <div className="w-full md:w-auto">
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                   Tanggal
                 </label>
                 <input
                   type="date"
                   value={tanggal}
                   onChange={(e) => setTanggal(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500"
+                  className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)]"
                 />
               </div>
 
               <div className="w-full md:w-auto">
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                   Sesi
                 </label>
                 <select
                   value={sesi}
                   onChange={(e) => setSesi(e.target.value as SesiKelas)}
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500"
+                  className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)]"
                 >
                   <option value="SESI_1">Sesi 1</option>
                   <option value="SESI_2">Sesi 2</option>
@@ -492,13 +492,13 @@ export function AbsensiKelasClient({
               </div>
               
               <div className="w-full md:w-auto">
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                   Filter Kelas
                 </label>
                 <select
                   value={kelasId}
                   onChange={(e) => setKelasId(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500"
+                  className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)]"
                 >
                   {allOptions.map((opt) => (
                     <option key={opt.id} value={opt.id}>
@@ -513,7 +513,7 @@ export function AbsensiKelasClient({
           <div className="flex gap-2">
             <button
               onClick={() => setAllStatus("HADIR")}
-              className="rounded-full bg-slate-200 px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-300"
+              className="rounded-full bg-[var(--color-surface-dark)] px-4 py-2 text-xs font-bold text-[var(--color-text)] transition hover:bg-[var(--color-surface-dark)]"
             >
               Hadirkan Semua
             </button>
@@ -521,7 +521,7 @@ export function AbsensiKelasClient({
               <button
                 onClick={handleSave}
                 disabled={isSaving || isLoading || !tanggal || !sesi}
-                className="rounded-full bg-emerald-600 px-6 py-2 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                className="rounded-full bg-[var(--color-primary)] px-6 py-2 text-sm font-bold text-white transition hover:bg-[var(--color-primary-dark)] disabled:opacity-50"
               >
                 {isSaving ? "Menyimpan..." : "Simpan Absensi"}
               </button>
@@ -531,43 +531,43 @@ export function AbsensiKelasClient({
 
         {isTeacher && hasCheckedSession && !activeSession ? (
           <div className="flex flex-col items-center justify-center p-12 bg-white">
-            <div className="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-              <Clock className="h-10 w-10 text-slate-400" />
+            <div className="h-20 w-20 bg-[var(--color-surface)] rounded-full flex items-center justify-center mb-4">
+              <Clock className="h-10 w-10 text-[var(--color-text-subtle)]" />
             </div>
-            <h2 className="text-xl font-bold text-slate-700">Tidak ada sesi aktif saat ini</h2>
-            <p className="text-slate-500 mt-2 text-center max-w-sm">Jadwal absensi dikunci karena saat ini tidak ada sesi kelas yang sedang berjalan sesuai jadwal buka/tutup.</p>
+            <h2 className="text-xl font-bold text-[var(--color-text)]">Tidak ada sesi aktif saat ini</h2>
+            <p className="text-[var(--color-text-muted)] mt-2 text-center max-w-sm">Jadwal absensi dikunci karena saat ini tidak ada sesi kelas yang sedang berjalan sesuai jadwal buka/tutup.</p>
           </div>
         ) : (
           <>
             {/* Stats */}
-            <div className="flex flex-wrap gap-4 border-b border-slate-200 px-6 py-4 bg-white">
+            <div className="flex flex-wrap gap-4 border-b border-[var(--color-surface-dark)] px-6 py-4 bg-white">
                <div className="flex items-center gap-2 text-sm font-bold">
-                 <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-                 <span className="text-slate-700">Hadir: {statHadir}</span>
+                 <span className="h-2 w-2 rounded-full bg-[var(--color-primary-50)]0"></span>
+                 <span className="text-[var(--color-text)]">Hadir: {statHadir}</span>
                </div>
                <div className="flex items-center gap-2 text-sm font-bold">
                  <span className="h-2 w-2 rounded-full bg-indigo-500"></span>
-                 <span className="text-slate-700">Izin: {statIzin}</span>
+                 <span className="text-[var(--color-text)]">Izin: {statIzin}</span>
                </div>
                <div className="flex items-center gap-2 text-sm font-bold">
-                 <span className="h-2 w-2 rounded-full bg-amber-500"></span>
-                 <span className="text-slate-700">Sakit: {statSakit}</span>
+                 <span className="h-2 w-2 rounded-full bg-[var(--color-warning-light)]0"></span>
+                 <span className="text-[var(--color-text)]">Sakit: {statSakit}</span>
                </div>
                <div className="flex items-center gap-2 text-sm font-bold">
-                 <span className="h-2 w-2 rounded-full bg-rose-500"></span>
-                 <span className="text-slate-700">Alpha: {statAlpha}</span>
+                 <span className="h-2 w-2 rounded-full bg-[var(--color-danger-light)]0"></span>
+                 <span className="text-[var(--color-text)]">Alpha: {statAlpha}</span>
                </div>
-               <div className="flex items-center gap-2 text-sm font-bold pl-4 border-l border-slate-200">
-                 <span className="text-slate-400">Belum Diabsen: {belumDiabsen}</span>
+               <div className="flex items-center gap-2 text-sm font-bold pl-4 border-l border-[var(--color-surface-dark)]">
+                 <span className="text-[var(--color-text-subtle)]">Belum Diabsen: {belumDiabsen}</span>
                </div>
             </div>
 
         <div className="overflow-x-auto">
           {isLoading ? (
-            <div className="p-8 text-center text-sm font-semibold text-slate-500">Memuat data santri...</div>
+            <div className="p-8 text-center text-sm font-semibold text-[var(--color-text-muted)]">Memuat data santri...</div>
           ) : (
-            <table className="min-w-full divide-y divide-slate-200 text-left">
-              <thead className="bg-slate-50 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+            <table className="min-w-full divide-y divide-[var(--color-surface-dark)] text-left">
+              <thead className="bg-[var(--color-secondary)] text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                 <tr>
                   <th className="px-4 py-4 text-center w-16">#</th>
                   <th className="px-6 py-4">Santri</th>
@@ -575,35 +575,35 @@ export function AbsensiKelasClient({
                   <th className="px-6 py-4">Keterangan</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
+              <tbody className="divide-y divide-[var(--color-surface)] text-sm text-[var(--color-text-muted)]">
                 {santriList.map((santri, index) => {
                   const currentStatus = absenMap[santri.riwayatId]?.status;
                   const currentKet = absenMap[santri.riwayatId]?.keterangan || "";
                   
                   return (
-                    <tr key={santri.riwayatId} className="hover:bg-slate-50/50">
-                      <td className="px-4 py-4 text-center font-bold text-slate-400">{index + 1}</td>
+                    <tr key={santri.riwayatId} className="hover:bg-[var(--color-surface-light)]">
+                      <td className="px-4 py-4 text-center font-bold text-[var(--color-text-subtle)]">{index + 1}</td>
                       <td className="px-6 py-4">
-                        <p className="font-bold text-slate-900">{santri.nama}</p>
+                        <p className="font-bold text-[var(--color-text)]">{santri.nama}</p>
                         <div className="mt-1 flex flex-wrap items-center gap-2">
-                          <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                          <span className="inline-flex items-center rounded-md bg-[var(--color-surface)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-muted)]">
                             {santri.kelasNama ?? santri.programNama ?? "Tanpa Kelas"}
                           </span>
                           {santri.gender === "BANIN" ? (
-                            <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">BANIN</span>
+                            <span className="inline-flex items-center rounded-md bg-[var(--color-primary-50)] px-2 py-0.5 text-xs font-medium text-[var(--color-primary)]">BANIN</span>
                           ) : santri.gender === "BANAT" ? (
-                            <span className="inline-flex items-center rounded-md bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700">BANAT</span>
+                            <span className="inline-flex items-center rounded-md bg-[var(--color-danger-light)] px-2 py-0.5 text-xs font-medium text-[var(--color-danger)]">BANAT</span>
                           ) : (
-                            <span className="inline-flex items-center rounded-md bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-700">{santri.gender}</span>
+                            <span className="inline-flex items-center rounded-md bg-[var(--color-secondary)] px-2 py-0.5 text-xs font-medium text-[var(--color-text)]">{santri.gender}</span>
                           )}
                           {santri.kategori === "BARU" ? (
-                            <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 capitalize">Baru</span>
+                            <span className="inline-flex items-center rounded-md bg-[var(--color-primary-50)] px-2 py-0.5 text-xs font-medium text-[var(--color-primary)] capitalize">Baru</span>
                           ) : santri.kategori === "LAMA" ? (
-                            <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 capitalize">Lama</span>
+                            <span className="inline-flex items-center rounded-md bg-[var(--color-warning-light)] px-2 py-0.5 text-xs font-medium text-[var(--color-warning)] capitalize">Lama</span>
                           ) : santri.kategori === "KSU" ? (
                             <span className="inline-flex items-center rounded-md bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 uppercase">KSU</span>
                           ) : (
-                            <span className="inline-flex items-center rounded-md bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-700 capitalize">{santri.kategori ?? "-"}</span>
+                            <span className="inline-flex items-center rounded-md bg-[var(--color-secondary)] px-2 py-0.5 text-xs font-medium text-[var(--color-text)] capitalize">{santri.kategori ?? "-"}</span>
                           )}
                         </div>
                       </td>
@@ -615,11 +615,11 @@ export function AbsensiKelasClient({
                               onClick={() => handleStatusChange(santri.riwayatId, st)}
                               className={`rounded-full px-3 py-1.5 text-xs font-bold transition-all ${
                                 currentStatus === st
-                                  ? st === "HADIR" ? "bg-emerald-500 text-white shadow-emerald-200 shadow-sm"
+                                  ? st === "HADIR" ? "bg-[var(--color-primary-50)]0 text-white shadow-[var(--color-primary-100)] shadow-sm"
                                   : st === "IZIN" ? "bg-indigo-500 text-white shadow-indigo-200 shadow-sm"
-                                  : st === "SAKIT" ? "bg-amber-500 text-white shadow-amber-200 shadow-sm"
-                                  : "bg-rose-500 text-white shadow-rose-200 shadow-sm"
-                                : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                                  : st === "SAKIT" ? "bg-[var(--color-warning-light)]0 text-white shadow-amber-200 shadow-sm"
+                                  : "bg-[var(--color-danger-light)]0 text-white shadow-rose-200 shadow-sm"
+                                : "bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-dark)]"
                               }`}
                             >
                               {st}
@@ -633,7 +633,7 @@ export function AbsensiKelasClient({
                           placeholder="Catatan..."
                           value={currentKet}
                           onChange={(e) => handleKeteranganChange(santri.riwayatId, e.target.value)}
-                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm outline-none transition focus:border-emerald-500"
+                          className="w-full rounded-xl border border-[var(--color-surface-dark)] bg-white px-3 py-1.5 text-sm outline-none transition focus:border-[var(--color-primary)]"
                         />
                       </td>
                     </tr>
@@ -641,7 +641,7 @@ export function AbsensiKelasClient({
                 })}
                 {santriList.length === 0 && !isLoading && (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-slate-500 font-medium">
+                    <td colSpan={4} className="px-6 py-8 text-center text-[var(--color-text-muted)] font-medium">
                       Tidak ada santri yang ditemukan pada filter ini.
                     </td>
                   </tr>
@@ -652,77 +652,77 @@ export function AbsensiKelasClient({
         </div>
         
         {(isTeacher && activeSession && (teacherSessions.some(ts => ts.sesi === activeSession && ts.kelasId === kelasId) || isBadalMode)) && (
-          <div className="p-6 md:p-8 bg-slate-50/50 border-t border-slate-200">
+          <div className="p-6 md:p-8 bg-[var(--color-surface-light)] border-t border-[var(--color-surface-dark)]">
             {belumDiabsen > 0 ? (
-              <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center flex flex-col items-center justify-center shadow-sm max-w-2xl mx-auto">
-                 <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                   <Lock className="w-8 h-8 text-slate-400" />
+              <div className="bg-white border border-[var(--color-surface-dark)] rounded-3xl p-10 text-center flex flex-col items-center justify-center shadow-sm max-w-2xl mx-auto">
+                 <div className="w-16 h-16 bg-[var(--color-surface)] rounded-full flex items-center justify-center mb-4">
+                   <Lock className="w-8 h-8 text-[var(--color-text-subtle)]" />
                  </div>
-                 <h3 className="text-xl font-bold text-slate-700 mb-2">Formulir Pengajar Terkunci</h3>
-                 <p className="text-slate-500 text-sm max-w-md leading-relaxed">
-                   Anda diwajibkan menyelesaikan absensi seluruh santri di kelas ini terlebih dahulu. Masih ada <strong className="text-rose-500 font-bold">{belumDiabsen} santri</strong> yang statusnya belum ditentukan.
+                 <h3 className="text-xl font-bold text-[var(--color-text)] mb-2">Formulir Pengajar Terkunci</h3>
+                 <p className="text-[var(--color-text-muted)] text-sm max-w-md leading-relaxed">
+                   Anda diwajibkan menyelesaikan absensi seluruh santri di kelas ini terlebih dahulu. Masih ada <strong className="text-[var(--color-danger)] font-bold">{belumDiabsen} santri</strong> yang statusnya belum ditentukan.
                  </p>
               </div>
             ) : (
-              <div className="bg-emerald-50/40 border border-emerald-100 rounded-3xl p-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 shadow-sm max-w-4xl mx-auto">
-                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-emerald-100/50 pb-5">
+              <div className="bg-[var(--color-primary-50)]/40 border border-[var(--color-primary-50)] rounded-3xl p-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 shadow-sm max-w-4xl mx-auto">
+                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--color-primary-50)]/50 pb-5">
                    <div>
-                     <h3 className="text-lg font-bold text-emerald-900 flex items-center gap-2">
-                       <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                     <h3 className="text-lg font-bold text-[var(--color-primary-dark)] flex items-center gap-2">
+                       <CheckCircle2 className="w-5 h-5 text-[var(--color-primary)]" />
                        Formulir Kehadiran Pengajar
                      </h3>
-                     <p className="text-xs font-medium text-emerald-700 mt-1">Lengkapi data mengajar Anda untuk menyelesaikan absensi sesi ini.</p>
+                     <p className="text-xs font-medium text-[var(--color-primary)] mt-1">Lengkapi data mengajar Anda untuk menyelesaikan absensi sesi ini.</p>
                    </div>
                  </div>
                  
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-600 mb-2">Materi Pelajaran Hari Ini</label>
-                      <input type="text" value={materi} onChange={e=>setMateri(e.target.value)} placeholder="Contoh: Nahwu Bab Isim" className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all" />
+                      <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-2">Materi Pelajaran Hari Ini</label>
+                      <input type="text" value={materi} onChange={e=>setMateri(e.target.value)} placeholder="Contoh: Nahwu Bab Isim" className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-600 mb-2">Jam Masuk (24H)</label>
+                        <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-2">Jam Masuk (24H)</label>
                         <input type="text" placeholder="Contoh: 15:30" maxLength={5} value={waktuMulai} onChange={e=>{
                           let val = e.target.value.replace(/[^0-9:]/g, '');
                           if (val.length === 2 && !val.includes(':') && e.target.value.length > waktuMulai.length) val += ':';
                           setWaktuMulai(val);
-                        }} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-mono placeholder:text-slate-300" />
+                        }} className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all font-mono placeholder:text-[var(--color-text-subtle)]" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-600 mb-2">Jam Selesai (24H)</label>
+                        <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-2">Jam Selesai (24H)</label>
                         <input type="text" placeholder="Contoh: 17:00" maxLength={5} value={waktuSelesai} onChange={e=>{
                           let val = e.target.value.replace(/[^0-9:]/g, '');
                           if (val.length === 2 && !val.includes(':') && e.target.value.length > waktuSelesai.length) val += ':';
                           setWaktuSelesai(val);
-                        }} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-mono placeholder:text-slate-300" />
+                        }} className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all font-mono placeholder:text-[var(--color-text-subtle)]" />
                       </div>
                     </div>
                  </div>
                  
                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-600 mb-3">Kelengkapan Atribut Mengajar</label>
+                    <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-3">Kelengkapan Atribut Mengajar</label>
                     <div className="flex flex-wrap gap-4">
-                       <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-slate-200 hover:border-emerald-300 transition-colors shadow-sm">
-                         <input type="checkbox" checked={atribut.kopiah} onChange={e=>setAtribut({...atribut, kopiah: e.target.checked})} className="rounded text-emerald-600 focus:ring-emerald-500 w-5 h-5 border-slate-300" />
-                         <span className="text-sm font-bold text-slate-700">Kopiah / Khimar</span>
+                       <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-[var(--color-surface-dark)] hover:border-[var(--color-primary-100)] transition-colors shadow-sm">
+                         <input type="checkbox" checked={atribut.kopiah} onChange={e=>setAtribut({...atribut, kopiah: e.target.checked})} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
+                         <span className="text-sm font-bold text-[var(--color-text)]">Kopiah / Khimar</span>
                        </label>
-                       <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-slate-200 hover:border-emerald-300 transition-colors shadow-sm">
-                         <input type="checkbox" checked={atribut.nametag} onChange={e=>setAtribut({...atribut, nametag: e.target.checked})} className="rounded text-emerald-600 focus:ring-emerald-500 w-5 h-5 border-slate-300" />
-                         <span className="text-sm font-bold text-slate-700">Nametag</span>
+                       <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-[var(--color-surface-dark)] hover:border-[var(--color-primary-100)] transition-colors shadow-sm">
+                         <input type="checkbox" checked={atribut.nametag} onChange={e=>setAtribut({...atribut, nametag: e.target.checked})} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
+                         <span className="text-sm font-bold text-[var(--color-text)]">Nametag</span>
                        </label>
-                       <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-slate-200 hover:border-emerald-300 transition-colors shadow-sm">
-                         <input type="checkbox" checked={atribut.bros} onChange={e=>setAtribut({...atribut, bros: e.target.checked})} className="rounded text-emerald-600 focus:ring-emerald-500 w-5 h-5 border-slate-300" />
-                         <span className="text-sm font-bold text-slate-700">Bros Markaz</span>
+                       <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-[var(--color-surface-dark)] hover:border-[var(--color-primary-100)] transition-colors shadow-sm">
+                         <input type="checkbox" checked={atribut.bros} onChange={e=>setAtribut({...atribut, bros: e.target.checked})} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
+                         <span className="text-sm font-bold text-[var(--color-text)]">Bros Markaz</span>
                        </label>
                     </div>
                  </div>
                  
-                 <div className="pt-6 border-t border-emerald-100/50 flex justify-end">
+                 <div className="pt-6 border-t border-[var(--color-primary-50)]/50 flex justify-end">
                     <button
                       onClick={handleSave}
                       disabled={isSaving || !tanggal || !sesi}
-                      className="w-full md:w-auto rounded-full bg-emerald-600 px-8 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 hover:shadow-md hover:shadow-emerald-200 disabled:opacity-50"
+                      className="w-full md:w-auto rounded-full bg-[var(--color-primary)] px-8 py-3 text-sm font-bold text-white transition hover:bg-[var(--color-primary-dark)] hover:shadow-md hover:shadow-[var(--color-primary-100)] disabled:opacity-50"
                     >
                       {isSaving ? "Menyimpan Data..." : "Simpan Absensi Final"}
                     </button>
@@ -737,23 +737,23 @@ export function AbsensiKelasClient({
 
       {/* Badal Modal */}
       {showBadalModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-text)]/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-slate-800">Mode Guru Badal</h3>
-              <button onClick={() => setShowBadalModal(false)} className="text-slate-400 hover:text-rose-500">
+              <h3 className="text-xl font-bold text-[var(--color-text)]">Mode Guru Badal</h3>
+              <button onClick={() => setShowBadalModal(false)} className="text-[var(--color-text-subtle)] hover:text-[var(--color-danger)]">
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <p className="text-sm text-slate-500 mb-6">Pilih kelas yang akan Anda gantikan (Badal) untuk sesi <strong className="text-slate-800">{activeSession?.replace('_', ' ')}</strong> saat ini.</p>
+            <p className="text-sm text-[var(--color-text-muted)] mb-6">Pilih kelas yang akan Anda gantikan (Badal) untuk sesi <strong className="text-[var(--color-text)]">{activeSession?.replace('_', ' ')}</strong> saat ini.</p>
             
             <div className="space-y-4">
               <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-600">Kelas Tujuan</label>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Kelas Tujuan</label>
                 <select
                   value={badalTargetKelasId}
                   onChange={(e) => setBadalTargetKelasId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-800 focus:border-emerald-500 outline-none"
+                  className="w-full rounded-xl border border-[var(--color-surface-dark)] px-4 py-3 text-sm font-semibold text-[var(--color-text)] focus:border-[var(--color-primary)] outline-none"
                 >
                   <option value="" disabled>-- Pilih Kelas --</option>
                   {allClassesOptions.map((opt) => (
@@ -764,7 +764,7 @@ export function AbsensiKelasClient({
             </div>
             
             <div className="mt-8 flex gap-3">
-              <button onClick={() => setShowBadalModal(false)} className="w-full rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-600 hover:bg-slate-200">Batal</button>
+              <button onClick={() => setShowBadalModal(false)} className="w-full rounded-xl bg-[var(--color-surface)] py-3 text-sm font-bold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-dark)]">Batal</button>
               <button 
                 onClick={() => {
                   if (badalTargetKelasId) {
@@ -777,7 +777,7 @@ export function AbsensiKelasClient({
                     toast.error("Pilih kelas terlebih dahulu");
                   }
                 }} 
-                className="w-full rounded-xl bg-amber-500 py-3 text-sm font-bold text-white hover:bg-amber-600"
+                className="w-full rounded-xl bg-[var(--color-warning-light)]0 py-3 text-sm font-bold text-white hover:bg-[var(--color-warning)]"
               >
                 Mulai Badal
               </button>

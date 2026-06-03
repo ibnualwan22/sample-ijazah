@@ -18,10 +18,10 @@ export default async function SyahadahPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-slate-900 md:text-4xl">
+        <h1 className="text-3xl font-black md:text-4xl ">
           Data Syahadah
         </h1>
-        <p className="text-base text-slate-500 max-w-2xl">
+        <p className="text-sm text-[var(--color-text-muted)] max-w-2xl">
           Pusat pengelolaan kelulusan, input nilai, pencetakan syahadah (sertifikat), & tasmi' santri secara massal maupun individu.
         </p>
       </div>

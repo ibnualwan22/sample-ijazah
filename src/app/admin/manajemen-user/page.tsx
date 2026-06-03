@@ -289,7 +289,7 @@ export default function ManajemenUserPage() {
       case "WALI_KELAS": return "bg-blue-100 text-blue-700 border-blue-200";
       case "PENGAJAR": return "bg-amber-100 text-amber-700 border-amber-200";
       case "KSU": return "bg-purple-100 text-purple-700 border-purple-200";
-      default: return "bg-emerald-100 text-emerald-700 border-emerald-200"; // custom dynamic roles
+      default: return "bg-[var(--color-primary-100)] text-[var(--color-primary)] border-[var(--color-primary-100)]"; // custom dynamic roles
     }
   };
 
@@ -310,17 +310,17 @@ export default function ManajemenUserPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <UserCog className="h-6 w-6 text-emerald-600" />
+          <h1 className="text-2xl font-bold text-[var(--color-text)] flex items-center gap-2">
+            <UserCog className="h-6 w-6 text-[var(--color-primary)]" />
             Manajemen User
           </h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-[var(--color-text-muted)] text-sm mt-1">
             Kelola data dan tugas mengajar Wali Kelas, Pengajar, KSU, dan role kustom lainnya.
           </p>
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+          className="flex items-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
         >
           <Plus size={18} />
           Tambah User
@@ -328,16 +328,16 @@ export default function ManajemenUserPage() {
       </div>
 
       {/* Main Content Card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-4 border-b border-slate-200 flex flex-col md:flex-row items-center gap-4">
+      <div className="bg-white rounded-2xl shadow-sm border border-[var(--color-surface-dark)] overflow-hidden">
+        <div className="p-4 border-b border-[var(--color-surface-dark)] flex flex-col md:flex-row items-center gap-4">
           <div className="relative w-full md:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-subtle)] h-5 w-5" />
             <input
               type="text"
               placeholder="Cari nama, username, atau role..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-[var(--color-primary)]"
             />
           </div>
         </div>
@@ -349,7 +349,7 @@ export default function ManajemenUserPage() {
             </div>
           ) : (
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-slate-500 uppercase bg-slate-50/50 border-b border-slate-200">
+              <thead className="text-xs text-[var(--color-text-muted)] uppercase bg-[var(--color-secondary)]/50 border-b border-[var(--color-surface-dark)]">
                 <tr>
                   <th className="px-6 py-4 font-semibold">Nama / Username</th>
                   <th className="px-6 py-4 font-semibold">Role</th>
@@ -361,23 +361,23 @@ export default function ManajemenUserPage() {
               <tbody className="divide-y divide-slate-100">
                 {filteredUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                    <td colSpan={5} className="px-6 py-8 text-center text-[var(--color-text-muted)]">
                       Tidak ada data user ditemukan.
                     </td>
                   </tr>
                 ) : (
                   filteredUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
+                    <tr key={user.id} className="hover:bg-[var(--color-secondary)]/50 transition-colors">
                       <td className="px-6 py-4">
-                        <div className="font-semibold text-slate-800">{user.nama}</div>
-                        <div className="text-slate-500 text-xs">@{user.username}</div>
+                        <div className="font-semibold text-[var(--color-text)]">{user.nama}</div>
+                        <div className="text-[var(--color-text-muted)] text-xs">@{user.username}</div>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${getRoleBadgeColor(user.role)}`}>
                           {user.role.replace("_", " ")}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-xs text-slate-600">
+                      <td className="px-6 py-4 text-xs text-[var(--color-text-muted)]">
                         {user.role === "WALI_KELAS" && (
                           <div className="mb-2">
                             <span>Wali: {user.kelas?.nama || <span className="text-rose-500 font-semibold">Belum diset</span>}</span>
@@ -392,7 +392,7 @@ export default function ManajemenUserPage() {
                           {canPlotSesi(user.role) && (
                             <button
                               onClick={() => handleOpenPlotting(user)}
-                              className="flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1 rounded-lg border border-emerald-200 transition-colors"
+                              className="flex items-center gap-1 bg-[var(--color-primary-50)] hover:bg-[var(--color-primary-100)] text-[var(--color-primary)] font-bold px-2.5 py-1 rounded-lg border border-[var(--color-primary-100)] transition-colors"
                             >
                               <Calendar size={12} />
                               Plotting Sesi
@@ -409,16 +409,16 @@ export default function ManajemenUserPage() {
                           )}
                         </div>
                         {!canPlotSesi(user.role) && !canSetSakan(user.role) && user.role !== "WALI_KELAS" && (
-                          <span className="text-slate-400">-</span>
+                          <span className="text-[var(--color-text-subtle)]">-</span>
                         )}
                       </td>
                       <td className="px-6 py-4 text-center">
                         {user.isActive ? (
-                          <div className="flex items-center justify-center gap-1 text-emerald-600 font-medium">
+                          <div className="flex items-center justify-center gap-1 text-[var(--color-primary)] font-medium">
                             <CheckCircle2 size={16} /> <span className="text-xs">Aktif</span>
                           </div>
                         ) : (
-                          <div className="flex items-center justify-center gap-1 text-slate-400 font-medium">
+                          <div className="flex items-center justify-center gap-1 text-[var(--color-text-subtle)] font-medium">
                             <XCircle size={16} /> <span className="text-xs">Nonaktif</span>
                           </div>
                         )}
@@ -456,61 +456,61 @@ export default function ManajemenUserPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <Shield className="h-5 w-5 text-emerald-600" />
+            <div className="px-6 py-4 border-b border-[var(--color-surface)] flex justify-between items-center bg-[var(--color-secondary)]/50">
+              <h2 className="text-lg font-bold text-[var(--color-text)] flex items-center gap-2">
+                <Shield className="h-5 w-5 text-[var(--color-primary)]" />
                 {isEditing ? "Edit User" : "Tambah User Baru"}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsModalOpen(false)} className="text-[var(--color-text-subtle)] hover:text-[var(--color-text-muted)]">
                 <XCircle size={24} />
               </button>
             </div>
             
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap</label>
+                <label className="block text-xs font-bold text-[var(--color-text)] mb-1">Nama Lengkap</label>
                 <input
                   type="text"
                   required
                   value={formData.nama}
                   onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 border border-[var(--color-surface-dark)] rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
                   placeholder="Misal: Ust. Fulan"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Username</label>
+                <label className="block text-xs font-bold text-[var(--color-text)] mb-1">Username</label>
                 <input
                   type="text"
                   required
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 border border-[var(--color-surface-dark)] rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
                   placeholder="Hanya huruf dan angka, tanpa spasi"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Password {isEditing && <span className="text-slate-400 font-normal">(Kosongkan jika tidak diubah)</span>}
+                <label className="block text-xs font-bold text-[var(--color-text)] mb-1">
+                  Password {isEditing && <span className="text-[var(--color-text-subtle)] font-normal">(Kosongkan jika tidak diubah)</span>}
                 </label>
                 <input
                   type="password"
                   required={!isEditing}
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 border border-[var(--color-surface-dark)] rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
                   placeholder="Minimal 6 karakter"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Role Akun</label>
+                <label className="block text-xs font-bold text-[var(--color-text)] mb-1">Role Akun</label>
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value, kelasId: "", sakan: "" })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 border border-[var(--color-surface-dark)] rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
                 >
                   {roles.map(role => (
                     <option key={role} value={role}>{role.replace("_", " ")}</option>
@@ -521,14 +521,14 @@ export default function ManajemenUserPage() {
               {/* Wali Kelas / Custom Role Option for assigning a main class */}
               {(formData.role === "WALI_KELAS" || (!["ADMIN", "KSU", "PENGAJAR"].includes(formData.role) && canPlotSesi(formData.role))) && (
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-[var(--color-text)] mb-1">
                     Hubungkan ke Kelas Utama (Opsional untuk Role Custom)
                   </label>
                   <select
                     required={formData.role === "WALI_KELAS"}
                     value={formData.kelasId}
                     onChange={(e) => setFormData({ ...formData, kelasId: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2 border border-[var(--color-surface-dark)] rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="">-- Pilih Kelas --</option>
                     {kelasList.map(k => (
@@ -540,11 +540,11 @@ export default function ManajemenUserPage() {
 
               {canSetSakan(formData.role) && (
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Hubungkan Sakan (Default)</label>
+                  <label className="block text-xs font-bold text-[var(--color-text)] mb-1">Hubungkan Sakan (Default)</label>
                   <select
                     value={formData.sakan}
                     onChange={(e) => setFormData({ ...formData, sakan: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2 border border-[var(--color-surface-dark)] rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="">-- Pilih Sakan --</option>
                     {sakanList.map(s => (
@@ -561,24 +561,24 @@ export default function ManajemenUserPage() {
                     id="isActive"
                     checked={formData.isActive}
                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="rounded border-slate-300 text-[var(--color-primary)] focus:ring-emerald-500"
                   />
-                  <label htmlFor="isActive" className="text-sm font-semibold text-slate-700">Akun Aktif</label>
+                  <label htmlFor="isActive" className="text-sm font-semibold text-[var(--color-text)]">Akun Aktif</label>
                 </div>
               )}
 
-              <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
+              <div className="pt-4 border-t border-[var(--color-surface)] flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] rounded-lg transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors flex items-center gap-2"
+                  className="px-4 py-2 text-sm font-semibold text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] rounded-lg transition-colors flex items-center gap-2"
                 >
                   {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
                   Simpan User
@@ -593,27 +593,27 @@ export default function ManajemenUserPage() {
       {isPlottingModalOpen && activePlottingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-emerald-600" />
+            <div className="px-6 py-4 border-b border-[var(--color-surface)] flex justify-between items-center bg-[var(--color-secondary)]/50">
+              <h2 className="text-lg font-bold text-[var(--color-text)] flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-[var(--color-primary)]" />
                 Plotting Sesi & Kelas Mengajar
               </h2>
-              <button onClick={() => setIsPlottingModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsPlottingModalOpen(false)} className="text-[var(--color-text-subtle)] hover:text-[var(--color-text-muted)]">
                 <XCircle size={24} />
               </button>
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                <p className="text-xs text-slate-500">Nama Pengajar</p>
-                <p className="font-bold text-slate-800">{activePlottingUser.nama}</p>
-                <p className="text-xs text-slate-600">@{activePlottingUser.username}</p>
+              <div className="bg-[var(--color-secondary)] p-3 rounded-xl border border-[var(--color-surface-dark)]">
+                <p className="text-xs text-[var(--color-text-muted)]">Nama Pengajar</p>
+                <p className="font-bold text-[var(--color-text)]">{activePlottingUser.nama}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">@{activePlottingUser.username}</p>
               </div>
 
               {/* Form Input Plotting */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end bg-emerald-50/30 p-3 rounded-xl border border-emerald-100">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end bg-[var(--color-primary-50)]/30 p-3 rounded-xl border border-emerald-100">
                 <div className="md:col-span-1">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Kelas</label>
+                  <label className="block text-xs font-bold text-[var(--color-text)] mb-1">Kelas</label>
                   <select
                     value={tempKelasId}
                     onChange={(e) => setTempKelasId(e.target.value)}
@@ -626,7 +626,7 @@ export default function ManajemenUserPage() {
                   </select>
                 </div>
                 <div className="md:col-span-1">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Sesi Mengajar</label>
+                  <label className="block text-xs font-bold text-[var(--color-text)] mb-1">Sesi Mengajar</label>
                   <select
                     value={tempSesi}
                     onChange={(e) => setTempSesi(e.target.value)}
@@ -641,7 +641,7 @@ export default function ManajemenUserPage() {
                 <button
                   type="button"
                   onClick={handleAddPlotting}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex justify-center items-center gap-1"
+                  className="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white font-bold py-1.5 px-3 rounded-lg text-xs flex justify-center items-center gap-1"
                 >
                   <Plus size={14} /> Tambah
                 </button>
@@ -649,19 +649,19 @@ export default function ManajemenUserPage() {
 
               {/* List assignments */}
               <div className="space-y-2">
-                <p className="text-xs font-bold text-slate-500">Jadwal yang Ditugaskan</p>
-                <div className="border border-slate-200 rounded-xl overflow-y-auto max-h-48 divide-y divide-slate-100">
+                <p className="text-xs font-bold text-[var(--color-text-muted)]">Jadwal yang Ditugaskan</p>
+                <div className="border border-[var(--color-surface-dark)] rounded-xl overflow-y-auto max-h-48 divide-y divide-slate-100">
                   {plottingAssignments.length === 0 ? (
-                    <p className="text-xs text-slate-400 text-center py-8">Belum ada kelas & sesi yang diplotting.</p>
+                    <p className="text-xs text-[var(--color-text-subtle)] text-center py-8">Belum ada kelas & sesi yang diplotting.</p>
                   ) : (
                     plottingAssignments.map((assign, index) => {
                       const kelasObj = kelasList.find(k => k.id === assign.kelasId);
                       const sesiObj = SESI_OPTIONS.find(s => s.value === assign.sesi);
                       return (
-                        <div key={index} className="flex items-center justify-between p-3 hover:bg-slate-50/50">
+                        <div key={index} className="flex items-center justify-between p-3 hover:bg-[var(--color-secondary)]/50">
                           <div>
-                            <p className="text-xs font-bold text-slate-800">{kelasObj?.nama || "Kelas tidak ditemukan"}</p>
-                            <p className="text-[11px] text-slate-500">{sesiObj?.label || assign.sesi}</p>
+                            <p className="text-xs font-bold text-[var(--color-text)]">{kelasObj?.nama || "Kelas tidak ditemukan"}</p>
+                            <p className="text-[11px] text-[var(--color-text-muted)]">{sesiObj?.label || assign.sesi}</p>
                           </div>
                           <button
                             onClick={() => handleRemovePlotting(index)}
@@ -676,11 +676,11 @@ export default function ManajemenUserPage() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
+              <div className="pt-4 border-t border-[var(--color-surface)] flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsPlottingModalOpen(false)}
-                  className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] rounded-lg transition-colors"
                 >
                   Batal
                 </button>
@@ -688,7 +688,7 @@ export default function ManajemenUserPage() {
                   type="button"
                   onClick={handleSavePlotting}
                   disabled={isSavingPlotting}
-                  className="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors flex items-center gap-2"
+                  className="px-4 py-2 text-sm font-semibold text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] rounded-lg transition-colors flex items-center gap-2"
                 >
                   {isSavingPlotting && <Loader2 className="h-4 w-4 animate-spin" />}
                   Simpan Jadwal
@@ -703,25 +703,25 @@ export default function ManajemenUserPage() {
       {isSakanModalOpen && activeSakanUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <div className="px-6 py-4 border-b border-[var(--color-surface)] flex justify-between items-center bg-[var(--color-secondary)]/50">
+              <h2 className="text-lg font-bold text-[var(--color-text)] flex items-center gap-2">
                 <Home className="h-5 w-5 text-violet-600" />
                 Hubungkan Sakan
               </h2>
-              <button onClick={() => setIsSakanModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsSakanModalOpen(false)} className="text-[var(--color-text-subtle)] hover:text-[var(--color-text-muted)]">
                 <XCircle size={24} />
               </button>
             </div>
             
             <div className="p-6 space-y-4">
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                <p className="text-xs text-slate-500">Nama User</p>
-                <p className="font-bold text-slate-800">{activeSakanUser.nama}</p>
-                <p className="text-xs text-slate-600">@{activeSakanUser.username}</p>
+              <div className="bg-[var(--color-secondary)] p-3 rounded-xl border border-[var(--color-surface-dark)]">
+                <p className="text-xs text-[var(--color-text-muted)]">Nama User</p>
+                <p className="font-bold text-[var(--color-text)]">{activeSakanUser.nama}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">@{activeSakanUser.username}</p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Sakan Default</label>
+                <label className="block text-xs font-bold text-[var(--color-text)] mb-1">Sakan Default</label>
                 <select
                   value={tempSakan}
                   onChange={(e) => setTempSakan(e.target.value)}
@@ -734,11 +734,11 @@ export default function ManajemenUserPage() {
                 </select>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex justify-end gap-3 mt-6">
+              <div className="pt-4 border-t border-[var(--color-surface)] flex justify-end gap-3 mt-6">
                 <button
                   type="button"
                   onClick={() => setIsSakanModalOpen(false)}
-                  className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] rounded-lg transition-colors"
                 >
                   Batal
                 </button>

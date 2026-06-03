@@ -31,15 +31,15 @@ export default async function InputNilaiKelasPage() {
   // Cek apakah punya akses ke kelas apapun (Admin bebas, Wali Kelas harus punya kelasId)
   if (!isAdmin && !allowedKelasId) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-slate-200 min-h-[300px] text-center space-y-4">
+      <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-[var(--color-surface-dark)] min-h-[300px] text-center space-y-4">
         <div className="h-12 w-12 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 font-bold text-xl">!</div>
-        <h3 className="text-xl font-bold text-slate-800">Akses Kelas Belum Diatur</h3>
-        <p className="text-sm text-slate-500 max-w-sm leading-relaxed">
+        <h3 className="text-xl font-bold text-[var(--color-text)]">Akses Kelas Belum Diatur</h3>
+        <p className="text-sm text-[var(--color-text-muted)] max-w-sm leading-relaxed">
           Akun Anda belum dihubungkan dengan kelas manapun. Silakan hubungi Super Admin untuk mengatur penugasan kelas Anda.
         </p>
         <Link 
           href="/admin/dashboard" 
-          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 px-4 rounded-xl transition-colors"
+          className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white font-bold text-xs py-2 px-4 rounded-xl transition-colors"
         >
           Kembali ke Dashboard
         </Link>
@@ -51,14 +51,14 @@ export default async function InputNilaiKelasPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-700">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[var(--color-primary)]">
             Input Nilai Masal
           </p>
-          <h2 className="mt-2 text-3xl font-bold text-slate-900">Input Nilai Per Kelas</h2>
+          <h2 className="mt-2 text-3xl font-bold text-[var(--color-text)]">Input Nilai Per Kelas</h2>
         </div>
         <Link
           href="/admin/syahadah"
-          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+          className="rounded-full border border-[var(--color-surface-dark)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition hover:border-slate-300 hover:bg-[var(--color-secondary)]"
         >
           Kembali ke Data Syahadah
         </Link>

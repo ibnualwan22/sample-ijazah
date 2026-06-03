@@ -24,10 +24,10 @@ type RekapData = {
 };
 
 const STATUS_CONFIG = [
-  { key: "HADIR" as const, label: "Hadir", color: "bg-emerald-500", light: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  { key: "HADIR" as const, label: "Hadir", color: "bg-[var(--color-primary-50)]0", light: "bg-[var(--color-primary-50)] text-[var(--color-primary)] border-[var(--color-primary-100)]" },
   { key: "IZIN" as const,  label: "Izin",  color: "bg-indigo-500",  light: "bg-indigo-50 text-indigo-700 border-indigo-200" },
-  { key: "SAKIT" as const, label: "Sakit", color: "bg-amber-500",   light: "bg-amber-50 text-amber-700 border-amber-200" },
-  { key: "ALPHA" as const, label: "Alpha", color: "bg-rose-500",    light: "bg-rose-50 text-rose-700 border-rose-200" },
+  { key: "SAKIT" as const, label: "Sakit", color: "bg-[var(--color-warning-light)]0",   light: "bg-[var(--color-warning-light)] text-[var(--color-warning)] border-[var(--color-warning)]" },
+  { key: "ALPHA" as const, label: "Alpha", color: "bg-[var(--color-danger-light)]0",    light: "bg-[var(--color-danger-light)] text-[var(--color-danger)] border-[var(--color-danger)]" },
 ];
 
 function getTotalFromCounts(counts: StatusCounts) {
@@ -43,14 +43,14 @@ function StatusBar({ counts }: { counts: StatusCounts }) {
         const pct = total > 0 ? (val / total) * 100 : 0;
         return (
           <div key={s.key} className="flex items-center gap-3">
-            <span className="w-12 shrink-0 text-xs font-bold text-slate-500">{s.label}</span>
-            <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+            <span className="w-12 shrink-0 text-xs font-bold text-[var(--color-text-muted)]">{s.label}</span>
+            <div className="flex-1 h-2 rounded-full bg-[var(--color-surface)] overflow-hidden">
               <div
                 className={`h-full rounded-full ${s.color} transition-all duration-500`}
                 style={{ width: `${pct}%` }}
               />
             </div>
-            <span className="w-8 shrink-0 text-right text-xs font-bold text-slate-700">{val}</span>
+            <span className="w-8 shrink-0 text-right text-xs font-bold text-[var(--color-text)]">{val}</span>
           </div>
         );
       })}
@@ -93,31 +93,31 @@ function RekapCard({
   const hadirPct = total > 0 ? Math.round((counts.HADIR / total) * 100) : 0;
 
   return (
-    <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8 relative group transition-all hover:border-violet-300 hover:shadow-md">
+    <div className="neu-card-white p-6 md:p-8 relative group transition-all hover:border-violet-300 hover:shadow-md">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${iconBg}`}>
             <Icon className="h-6 w-6" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900">{title}</h3>
-            <p className="text-sm text-slate-500">{description}</p>
+            <h3 className="text-lg font-bold text-[var(--color-text)]">{title}</h3>
+            <p className="text-sm text-[var(--color-text-muted)]">{description}</p>
           </div>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-2xl font-black text-slate-900">{total.toLocaleString("id-ID")}</p>
-          <p className="text-xs font-semibold text-slate-400">total catatan</p>
+          <p className="text-2xl font-black text-[var(--color-text)]">{total.toLocaleString("id-ID")}</p>
+          <p className="text-xs font-semibold text-[var(--color-text-subtle)]">total catatan</p>
         </div>
       </div>
 
       <div className="mt-2 flex items-center gap-2">
-        <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+        <div className="flex-1 h-1.5 rounded-full bg-[var(--color-surface)] overflow-hidden">
           <div
-            className="h-full rounded-full bg-emerald-500 transition-all duration-700"
+            className="h-full rounded-full bg-[var(--color-primary-50)]0 transition-all duration-700"
             style={{ width: `${hadirPct}%` }}
           />
         </div>
-        <span className="text-xs font-bold text-emerald-600">{hadirPct}% hadir</span>
+        <span className="text-xs font-bold text-[var(--color-primary)]">{hadirPct}% hadir</span>
       </div>
 
       <StatusBar counts={counts} />
@@ -126,7 +126,7 @@ function RekapCard({
       <button 
         onClick={onClick}
         disabled={total === 0}
-        className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 py-3 text-sm font-bold text-slate-600 border border-slate-100 transition-all hover:bg-violet-50 hover:text-violet-700 disabled:opacity-50 disabled:cursor-not-allowed group-hover:border-violet-100"
+        className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-secondary)] py-3 text-sm font-bold text-[var(--color-text-muted)] border border-[var(--color-surface)] transition-all hover:bg-violet-50 hover:text-violet-700 disabled:opacity-50 disabled:cursor-not-allowed group-hover:border-violet-100"
       >
         <FileText className="h-4 w-4" />
         Lihat Rincian Nama
@@ -192,33 +192,33 @@ export function RekapAbsenClient() {
   return (
     <div className="space-y-6">
       {/* Filter Tanggal */}
-      <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+      <section className="neu-card-white p-6">
+        <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
           Filter Rentang Tanggal
         </p>
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <label className="mb-1.5 block text-xs font-semibold text-slate-500">Dari</label>
+            <label className="mb-1.5 block text-xs font-semibold text-[var(--color-text-muted)]">Dari</label>
             <input
               type="date"
               value={dari}
               onChange={(e) => setDari(e.target.value)}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-violet-500"
+              className="rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-violet-500"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-semibold text-slate-500">Sampai</label>
+            <label className="mb-1.5 block text-xs font-semibold text-[var(--color-text-muted)]">Sampai</label>
             <input
               type="date"
               value={sampai}
               onChange={(e) => setSampai(e.target.value)}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-violet-500"
+              className="rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-violet-500"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => { setDari(getFirstDayOfMonth()); setSampai(getWibDateString()); }}
-              className="rounded-full bg-slate-100 px-4 py-2.5 text-xs font-bold text-slate-600 transition hover:bg-slate-200"
+              className="rounded-full bg-[var(--color-surface)] px-4 py-2.5 text-xs font-bold text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-dark)]"
             >
               Bulan Ini
             </button>
@@ -233,7 +233,7 @@ export function RekapAbsenClient() {
       </section>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-20 text-sm font-semibold text-slate-400">
+        <div className="flex items-center justify-center py-20 text-sm font-semibold text-[var(--color-text-subtle)]">
           <span className="animate-pulse">Memuat data rekap...</span>
         </div>
       ) : data ? (
@@ -243,7 +243,7 @@ export function RekapAbsenClient() {
             title="Absen Sakan"
             description="Kehadiran di asrama per hari"
             icon={Bed}
-            iconBg="bg-blue-100 text-blue-700"
+            iconBg="bg-blue-100 text-[var(--color-info)]"
             counts={data.sakan}
             onClick={() => handleViewDetail("sakan", "Rincian Absen Sakan")}
           />
@@ -253,37 +253,37 @@ export function RekapAbsenClient() {
             title="Absen Kelas"
             description="Kehadiran di kelas per hissoh"
             icon={BookOpen}
-            iconBg="bg-emerald-100 text-emerald-700"
+            iconBg="bg-[var(--color-primary-100)] text-[var(--color-primary)]"
             counts={data.kelas}
             onClick={() => handleViewDetail("kelas", "Rincian Absen Kelas")}
           />
 
           {/* Kegiatan - tampilkan per kategori */}
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+          <div className="neu-card-white p-6 md:p-8">
             <div className="flex items-start justify-between gap-4 mb-6">
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--color-warning-light)] text-[var(--color-warning)]">
                   <Activity className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">Absen Kegiatan</h3>
-                  <p className="text-sm text-slate-500">Kehadiran per kategori kegiatan</p>
+                  <h3 className="text-lg font-bold text-[var(--color-text)]">Absen Kegiatan</h3>
+                  <p className="text-sm text-[var(--color-text-muted)]">Kehadiran per kategori kegiatan</p>
                 </div>
               </div>
               <div className="text-right shrink-0">
-                <p className="text-2xl font-black text-slate-900">
+                <p className="text-2xl font-black text-[var(--color-text)]">
                   {getTotalFromCounts(totalKegiatan).toLocaleString("id-ID")}
                 </p>
-                <p className="text-xs font-semibold text-slate-400">total catatan</p>
+                <p className="text-xs font-semibold text-[var(--color-text-subtle)]">total catatan</p>
               </div>
             </div>
 
             {data.kegiatan.length === 0 ? (
-              <p className="text-sm text-slate-400 font-medium text-center py-4">
+              <p className="text-sm text-[var(--color-text-subtle)] font-medium text-center py-4">
                 Belum ada data kegiatan.
               </p>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-[var(--color-surface)]">
                 {data.kegiatan.map((k) => {
                   const total = getTotalFromCounts(k.counts);
                   return (
@@ -291,16 +291,16 @@ export function RekapAbsenClient() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="h-2 w-2 rounded-full bg-amber-400 shrink-0" />
-                          <span className="font-bold text-slate-800 text-sm">{k.nama}</span>
+                          <span className="font-bold text-[var(--color-text)] text-sm">{k.nama}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="text-xs font-bold text-slate-400">
+                          <span className="text-xs font-bold text-[var(--color-text-subtle)]">
                             {total} catatan
                           </span>
                           <button
                             onClick={() => handleViewDetail("kegiatan", `Rincian: ${k.nama}`, k.id)}
                             disabled={total === 0}
-                            className="flex items-center gap-1 rounded-full bg-slate-50 px-3 py-1.5 text-[11px] font-bold text-amber-700 border border-amber-100 transition-all hover:bg-amber-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-1 rounded-full bg-[var(--color-secondary)] px-3 py-1.5 text-[11px] font-bold text-[var(--color-warning)] border border-amber-100 transition-all hover:bg-[var(--color-warning-light)] disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <FileText className="h-3 w-3" />
                             Rincian <ChevronRight className="h-3 w-3" />
@@ -316,14 +316,14 @@ export function RekapAbsenClient() {
 
             {/* Global summary bar */}
             {getTotalFromCounts(totalKegiatan) > 0 && (
-              <div className="mt-6 border-t border-slate-100 pt-6">
+              <div className="mt-6 border-t border-[var(--color-surface)] pt-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                  <p className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400">
+                  <p className="text-xs font-bold uppercase tracking-[0.15em] text-[var(--color-text-subtle)]">
                     Total Keseluruhan Kegiatan
                   </p>
                   <button
                     onClick={() => handleViewDetail("kegiatan", "Rincian Global Semua Kegiatan")}
-                    className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-amber-50 px-4 py-2.5 text-xs font-bold text-amber-700 border border-amber-100 transition-all hover:bg-amber-100/80 group"
+                    className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--color-warning-light)] px-4 py-2.5 text-xs font-bold text-[var(--color-warning)] border border-amber-100 transition-all hover:bg-[var(--color-warning-light)]/80 group"
                   >
                     <FileText className="h-4 w-4" />
                     Buka Matriks Global
@@ -336,7 +336,7 @@ export function RekapAbsenClient() {
           </div>
 
           {/* Grand Summary */}
-          <div className="rounded-[2rem] border border-violet-200 bg-violet-50 p-6 shadow-sm md:p-8">
+          <div className="rounded-[var(--radius-2xl)] border border-violet-200 bg-violet-50 p-6 shadow-sm md:p-8">
             <div className="flex items-center gap-3 mb-5">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
                 <TrendingUp className="h-5 w-5" />
@@ -354,10 +354,10 @@ export function RekapAbsenClient() {
                   (totalKegiatan[s.key] || 0);
                 return (
                   <div key={s.key} className="rounded-2xl bg-white border border-violet-100 p-4 text-center shadow-sm">
-                    <p className="text-2xl font-black text-slate-900">{val.toLocaleString("id-ID")}</p>
+                    <p className="text-2xl font-black text-[var(--color-text)]">{val.toLocaleString("id-ID")}</p>
                     <div className="flex items-center justify-center gap-1.5 mt-1">
                       <span className={`h-2 w-2 rounded-full ${s.color}`} />
-                      <span className="text-xs font-bold text-slate-500">{s.label}</span>
+                      <span className="text-xs font-bold text-[var(--color-text-muted)]">{s.label}</span>
                     </div>
                   </div>
                 );

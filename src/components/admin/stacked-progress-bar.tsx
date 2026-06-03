@@ -10,10 +10,10 @@ type StackedProgressBarProps = {
 };
 
 const SEGMENTS = [
-  { key: "hadir", label: "Hadir", color: "bg-emerald-500", textColor: "text-emerald-700" },
+  { key: "hadir", label: "Hadir", color: "bg-[var(--color-primary-50)]0", textColor: "text-[var(--color-primary)]" },
   { key: "izin", label: "Izin", color: "bg-indigo-500", textColor: "text-indigo-700" },
-  { key: "sakit", label: "Sakit", color: "bg-amber-500", textColor: "text-amber-700" },
-  { key: "alpha", label: "Alfa", color: "bg-rose-500", textColor: "text-rose-700" },
+  { key: "sakit", label: "Sakit", color: "bg-[var(--color-warning-light)]0", textColor: "text-[var(--color-warning)]" },
+  { key: "alpha", label: "Alfa", color: "bg-[var(--color-danger-light)]0", textColor: "text-[var(--color-danger)]" },
 ] as const;
 
 export function StackedProgressBar({
@@ -28,9 +28,9 @@ export function StackedProgressBar({
   if (total === 0) {
     return (
       <div className="space-y-1.5">
-        <div className={`w-full ${height} rounded-full bg-slate-100 overflow-hidden`} />
+        <div className={`w-full ${height} rounded-full bg-[var(--color-surface)] overflow-hidden`} />
         {showLabels && (
-          <p className="text-[11px] font-semibold text-slate-400 text-center">Belum ada data</p>
+          <p className="text-[11px] font-semibold text-[var(--color-text-subtle)] text-center">Belum ada data</p>
         )}
       </div>
     );
@@ -41,7 +41,7 @@ export function StackedProgressBar({
   return (
     <div className="space-y-1.5">
       {/* Bar */}
-      <div className={`w-full ${height} rounded-full bg-slate-100 overflow-hidden flex`}>
+      <div className={`w-full ${height} rounded-full bg-[var(--color-surface)] overflow-hidden flex`}>
         {SEGMENTS.map((seg) => {
           const val = values[seg.key];
           if (val === 0) return null;

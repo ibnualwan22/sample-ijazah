@@ -104,19 +104,19 @@ export function PengaturanKegiatanClient({ initialList }: { initialList: Kegiata
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-slate-900 md:text-4xl">
+        <h1 className="text-3xl font-black text-[var(--color-text)] md:text-4xl">
           Pengaturan Kegiatan
         </h1>
-        <p className="text-base text-slate-500 max-w-2xl">
+        <p className="text-base text-[var(--color-text-muted)] max-w-2xl">
           Kelola daftar kategori kegiatan untuk absensi harian. Kegiatan yang tidak aktif tidak akan muncul di menu absen.
         </p>
       </div>
 
-      <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden neu-card-white">
         {/* Add New */}
-        <div className="flex flex-col gap-3 border-b border-slate-200 p-6 bg-slate-50/50 md:flex-row md:items-end">
+        <div className="flex flex-col gap-3 border-b border-[var(--color-surface-dark)] p-6 bg-[var(--color-surface-light)] md:flex-row md:items-end">
           <div className="flex-1">
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
               Nama Kegiatan Baru
             </label>
             <input
@@ -125,13 +125,13 @@ export function PengaturanKegiatanClient({ initialList }: { initialList: Kegiata
               value={newNama}
               onChange={(e) => setNewNama(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-amber-500"
+              className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-amber-500"
             />
           </div>
           <button
             onClick={handleAdd}
             disabled={isAdding || !newNama.trim()}
-            className="flex items-center gap-2 rounded-full bg-amber-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-amber-700 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-full bg-[var(--color-warning)] px-6 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--color-warning)] disabled:opacity-50"
           >
             <Plus className="h-4 w-4" />
             {isAdding ? "Menambahkan..." : "Tambah Kegiatan"}
@@ -139,16 +139,16 @@ export function PengaturanKegiatanClient({ initialList }: { initialList: Kegiata
         </div>
 
         {/* List */}
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-[var(--color-surface)]">
           {list.length === 0 && (
-            <li className="px-6 py-8 text-center text-sm font-medium text-slate-500">
+            <li className="px-6 py-8 text-center text-sm font-medium text-[var(--color-text-muted)]">
               Belum ada kategori kegiatan. Tambahkan kegiatan pertama Anda di atas!
             </li>
           )}
           {list.map((item) => (
             <li
               key={item.id}
-              className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-slate-50/50"
+              className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-[var(--color-surface-light)]"
             >
               {editId === item.id ? (
                 <div className="flex flex-1 items-center gap-3">
@@ -161,17 +161,17 @@ export function PengaturanKegiatanClient({ initialList }: { initialList: Kegiata
                       if (e.key === "Escape") setEditId(null);
                     }}
                     autoFocus
-                    className="flex-1 rounded-xl border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none"
+                    className="flex-1 rounded-xl border border-amber-400 bg-[var(--color-warning-light)] px-3 py-2 text-sm font-semibold text-[var(--color-text)] outline-none"
                   />
                   <button
                     onClick={() => handleSaveEdit(item.id)}
-                    className="flex items-center gap-1 rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-600"
+                    className="flex items-center gap-1 rounded-full bg-[var(--color-primary-50)]0 px-3 py-1.5 text-xs font-bold text-white hover:bg-[var(--color-primary)]"
                   >
                     <Check className="h-3.5 w-3.5" /> Simpan
                   </button>
                   <button
                     onClick={() => setEditId(null)}
-                    className="flex items-center gap-1 rounded-full bg-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-300"
+                    className="flex items-center gap-1 rounded-full bg-[var(--color-surface-dark)] px-3 py-1.5 text-xs font-bold text-[var(--color-text)] hover:bg-[var(--color-surface-dark)]"
                   >
                     <X className="h-3.5 w-3.5" /> Batal
                   </button>
@@ -179,11 +179,11 @@ export function PengaturanKegiatanClient({ initialList }: { initialList: Kegiata
               ) : (
                 <>
                   <div className="flex items-center gap-3">
-                    <span className={`font-semibold text-slate-900 ${!item.aktif ? "line-through text-slate-400" : ""}`}>
+                    <span className={`font-semibold text-[var(--color-text)] ${!item.aktif ? "line-through text-[var(--color-text-subtle)]" : ""}`}>
                       {item.nama}
                     </span>
                     {!item.aktif && (
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-500">
+                      <span className="rounded-full bg-[var(--color-surface)] px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--color-text-muted)]">
                         Nonaktif
                       </span>
                     )}
@@ -192,19 +192,19 @@ export function PengaturanKegiatanClient({ initialList }: { initialList: Kegiata
                     <button
                       onClick={() => handleToggleAktif(item)}
                       title={item.aktif ? "Nonaktifkan" : "Aktifkan"}
-                      className={`rounded-full p-2 transition ${item.aktif ? "text-emerald-600 hover:bg-emerald-50" : "text-slate-400 hover:bg-slate-100"}`}
+                      className={`rounded-full p-2 transition ${item.aktif ? "text-[var(--color-primary)] hover:bg-[var(--color-primary-50)]" : "text-[var(--color-text-subtle)] hover:bg-[var(--color-surface)]"}`}
                     >
                       {item.aktif ? <ToggleRight className="h-5 w-5" /> : <ToggleLeft className="h-5 w-5" />}
                     </button>
                     <button
                       onClick={() => { setEditId(item.id); setEditNama(item.nama); }}
-                      className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                      className="rounded-full p-2 text-[var(--color-text-subtle)] transition hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
                     >
                       <Pencil className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(item)}
-                      className="rounded-full p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
+                      className="rounded-full p-2 text-[var(--color-text-subtle)] transition hover:bg-[var(--color-danger-light)] hover:text-[var(--color-danger)]"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

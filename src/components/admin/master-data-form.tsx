@@ -107,24 +107,24 @@ export function MasterDataForm({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="neu-card-white p-6">
         <div className="mb-6 flex items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-700">
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[var(--color-primary)]">
               Master KKM
             </p>
-            <h2 className="mt-2 text-3xl font-bold text-slate-900">Pengaturan kelas dan ambang kelulusan</h2>
+            <h2 className="mt-2 text-3xl font-bold text-[var(--color-text)]">Pengaturan kelas dan ambang kelulusan</h2>
           </div>
-          <p className="max-w-md text-right text-sm leading-6 text-slate-500">
+          <p className="max-w-md text-right text-sm leading-6 text-[var(--color-text-muted)]">
             Perubahan KKM akan langsung memengaruhi penentuan status LULUS, MUSYAROKAH, atau TIDAK_LULUS.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {programList.map((program) => (
-            <label key={program.id} className="rounded-[1.75rem] border border-slate-200 bg-slate-50 px-4 py-4">
-              <span className="block text-base font-bold text-slate-900">{program.nama_indo}</span>
-              <span className="mt-1 block text-xs tracking-[0.2em] text-slate-500">{program.nama_arab}</span>
-              <span className="mt-3 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            <label key={program.id} className="rounded-[1.75rem] border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-4">
+              <span className="block text-base font-bold text-[var(--color-text)]">{program.nama_indo}</span>
+              <span className="mt-1 block text-xs tracking-[0.2em] text-[var(--color-text-muted)]">{program.nama_arab}</span>
+              <span className="mt-3 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                 {program.mapelList.length} mapel
               </span>
               <input
@@ -138,107 +138,107 @@ export function MasterDataForm({
                     [program.id]: event.target.value,
                   }))
                 }
-                className="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-2xl font-black text-slate-900 outline-none transition focus:border-emerald-500"
+                className="mt-4 w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-center text-2xl font-black text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)]"
               />
             </label>
           ))}
         </div>
       </section>
 
-      <section className="grid gap-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-[1.1fr_0.9fr]">
+      <section className="grid gap-6 neu-card-white p-6 md:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-700">
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[var(--color-primary)]">
               Template Syahadah
             </p>
-            <h2 className="mt-2 text-3xl font-bold text-slate-900">Tanggal cetak dan identitas mudir</h2>
+            <h2 className="mt-2 text-3xl font-bold text-[var(--color-text)]">Tanggal cetak dan identitas mudir</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <label className="space-y-2 text-sm font-semibold text-slate-700">
+            <label className="space-y-2 text-sm font-semibold text-[var(--color-text)]">
               <span>Tanggal Mulai Program</span>
               <input
                 type="date"
                 value={tanggalMulai}
                 onChange={(event) => setTanggalMulai(event.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-medium text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+                className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-3 text-base font-medium text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:bg-white"
               />
             </label>
-            <label className="space-y-2 text-sm font-semibold text-slate-700">
+            <label className="space-y-2 text-sm font-semibold text-[var(--color-text)]">
               <span>Tanggal Selesai Program</span>
               <input
                 type="date"
                 value={tanggalSelesai}
                 onChange={(event) => setTanggalSelesai(event.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-medium text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+                className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-3 text-base font-medium text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:bg-white"
               />
             </label>
-            <label className="space-y-2 text-sm font-semibold text-slate-700">
+            <label className="space-y-2 text-sm font-semibold text-[var(--color-text)]">
               <span>Tanggal Cetak Syahadah</span>
               <input
                 type="date"
                 value={tanggalCetak}
                 onChange={(event) => setTanggalCetak(event.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-medium text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+                className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-3 text-base font-medium text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:bg-white"
               />
             </label>
-            <label className="space-y-2 text-sm font-semibold text-slate-700">
+            <label className="space-y-2 text-sm font-semibold text-[var(--color-text)]">
               <span>Nama Mudir (Indonesia)</span>
               <input
                 value={templateState.nama_mudir_indo}
                 onChange={(event) => setTemplateState((current) => ({ ...current, nama_mudir_indo: event.target.value }))}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+                className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-3 text-base text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:bg-white"
               />
             </label>
-            <label className="space-y-2 text-sm font-semibold text-slate-700">
+            <label className="space-y-2 text-sm font-semibold text-[var(--color-text)]">
               <span>Nama Mudir (Arab)</span>
               <input
                 dir="rtl"
                 value={templateState.nama_mudir_arab}
                 onChange={(event) => setTemplateState((current) => ({ ...current, nama_mudir_arab: event.target.value }))}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+                className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-3 text-base text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:bg-white"
               />
             </label>
-            <label className="space-y-2 text-sm font-semibold text-slate-700">
+            <label className="space-y-2 text-sm font-semibold text-[var(--color-text)]">
               <span>Jabatan Mudir (Indonesia)</span>
               <input
                 value={templateState.jabatan_mudir_indo}
                 onChange={(event) => setTemplateState((current) => ({ ...current, jabatan_mudir_indo: event.target.value }))}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+                className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-3 text-base text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:bg-white"
               />
             </label>
-            <label className="space-y-2 text-sm font-semibold text-slate-700">
+            <label className="space-y-2 text-sm font-semibold text-[var(--color-text)]">
               <span>Jabatan Mudir (Arab)</span>
               <input
                 dir="rtl"
                 value={templateState.jabatan_mudir_arab}
                 onChange={(event) => setTemplateState((current) => ({ ...current, jabatan_mudir_arab: event.target.value }))}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+                className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-3 text-base text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:bg-white"
               />
             </label>
-            <label className="space-y-2 text-sm font-semibold text-slate-700">
+            <label className="space-y-2 text-sm font-semibold text-[var(--color-text)]">
               <span>Teks Duf'ah Program Reguler (Arab)</span>
               <input
                 dir="rtl"
                 placeholder="Contoh: الدفعة التسعون"
                 value={templateState.teks_dufah_arab ?? ""}
                 onChange={(event) => setTemplateState((current) => ({ ...current, teks_dufah_arab: event.target.value }))}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white font-arabic"
+                className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-3 text-base text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:bg-white font-arabic"
               />
             </label>
-            <label className="space-y-2 text-sm font-semibold text-slate-700">
+            <label className="space-y-2 text-sm font-semibold text-[var(--color-text)]">
               <span>Teks Duf'ah Akbarnas (Arab)</span>
               <input
                 dir="rtl"
                 placeholder="Contoh: الدفعة ٨٩ إلى ٩٠"
                 value={templateState.teks_dufah_akbarnas_arab ?? ""}
                 onChange={(event) => setTemplateState((current) => ({ ...current, teks_dufah_akbarnas_arab: event.target.value }))}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white font-arabic"
+                className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-3 text-base text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:bg-white font-arabic"
               />
             </label>
           </div>
         </div>
-        <div className="rounded-[1.75rem] bg-slate-900 p-5 text-white">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-300">Preview Template</p>
+        <div className="rounded-[1.75rem] bg-[var(--color-text)] p-5 text-white">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[var(--color-text-subtle)]">Preview Template</p>
           <div className="mt-5 space-y-4 text-sm leading-7 text-slate-200">
             <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3">
               <p className="font-semibold text-white">Tanggal cetak (Indonesia)</p>
@@ -251,26 +251,26 @@ export function MasterDataForm({
             <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3">
               <p className="font-semibold text-white">Penanda tangan</p>
               <p>{templateState.nama_mudir_indo}</p>
-              <p className="text-slate-400">{templateState.jabatan_mudir_indo}</p>
+              <p className="text-[var(--color-text-subtle)]">{templateState.jabatan_mudir_indo}</p>
             </div>
             <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3" dir="rtl">
               <p className="font-semibold text-white">الموقع</p>
               <p>{templateState.nama_mudir_arab}</p>
-              <p className="text-slate-400">{templateState.jabatan_mudir_arab}</p>
+              <p className="text-[var(--color-text-subtle)]">{templateState.jabatan_mudir_arab}</p>
             </div>
           </div>
         </div>
       </section>
 
-      {message ? <div className="rounded-3xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">{message}</div> : null}
-      {error ? <div className="rounded-3xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">{error}</div> : null}
+      {message ? <div className="rounded-3xl border border-[var(--color-primary-100)] bg-[var(--color-primary-50)] px-4 py-3 text-sm font-medium text-[var(--color-primary)]">{message}</div> : null}
+      {error ? <div className="rounded-3xl border border-[var(--color-danger)] bg-[var(--color-danger-light)] px-4 py-3 text-sm font-medium text-[var(--color-danger)]">{error}</div> : null}
 
       <div className="flex justify-end">
         <button
           type="button"
           disabled={isPending}
           onClick={handleSubmit}
-          className="rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+          className="rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-dark)] disabled:cursor-not-allowed disabled:bg-[var(--color-surface-dark)]"
         >
           {isPending ? "Menyimpan..." : "Simpan Master Data"}
         </button>

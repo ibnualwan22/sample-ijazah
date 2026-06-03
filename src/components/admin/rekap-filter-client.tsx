@@ -158,23 +158,23 @@ export function RekapFilterClient({ type, title, useUsbu }: { type: string, titl
   };
 
   return (
-    <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm mb-6">
-      <h2 className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+    <section className="neu-card-white p-6 mb-6">
+      <h2 className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
         Filter {useUsbu ? "Berdasarkan Usbu'" : "Rentang Tanggal"}
       </h2>
       
       {useUsbu ? (
         <div className="flex flex-wrap items-end gap-4">
           {!activeCtxLoaded ? (
-            <div className="text-sm text-slate-400 font-semibold py-2">Memuat filter...</div>
+            <div className="text-sm text-[var(--color-text-subtle)] font-semibold py-2">Memuat filter...</div>
           ) : (
             <>
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-500">Duf'ah (Angkatan)</label>
+                <label className="mb-1.5 block text-xs font-semibold text-[var(--color-text-muted)]">Duf'ah (Angkatan)</label>
                 <select
                   value={selectedDufah}
                   onChange={(e) => setSelectedDufah(e.target.value)}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-violet-500 min-w-[200px]"
+                  className="rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-violet-500 min-w-[200px]"
                 >
                   {dufahList.map(d => (
                     <option key={d.nama} value={d.nama}>{d.nama}</option>
@@ -182,11 +182,11 @@ export function RekapFilterClient({ type, title, useUsbu }: { type: string, titl
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-500">Usbu' (Pekan)</label>
+                <label className="mb-1.5 block text-xs font-semibold text-[var(--color-text-muted)]">Usbu' (Pekan)</label>
                 <select
                   value={selectedUsbu}
                   onChange={(e) => setSelectedUsbu(e.target.value)}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-violet-500"
+                  className="rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-violet-500"
                 >
                   <option value="ALL">Semua Usbu' (Satu Program)</option>
                   <option value="1">Usbu' 1</option>
@@ -206,21 +206,21 @@ export function RekapFilterClient({ type, title, useUsbu }: { type: string, titl
       ) : (
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <label className="mb-1.5 block text-xs font-semibold text-slate-500">Dari</label>
+            <label className="mb-1.5 block text-xs font-semibold text-[var(--color-text-muted)]">Dari</label>
             <input
               type="date"
               value={dari}
               onChange={(e) => setDari(e.target.value)}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-violet-500"
+              className="rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-violet-500"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-semibold text-slate-500">Sampai</label>
+            <label className="mb-1.5 block text-xs font-semibold text-[var(--color-text-muted)]">Sampai</label>
             <input
               type="date"
               value={sampai}
               onChange={(e) => setSampai(e.target.value)}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-violet-500"
+              className="rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-violet-500"
             />
           </div>
           <button

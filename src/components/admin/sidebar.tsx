@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Users, DoorOpen, GraduationCap, History, Settings, Menu, X, CalendarCheck, Bed, BookOpen, Activity, BarChart3, Printer, CalendarDays, Instagram, Palette, UserCog, LogOut, ShieldCheck, Calendar, Medal, Armchair } from "lucide-react";
+import { LayoutDashboard, Users, DoorOpen, GraduationCap, History, Settings, Menu, X, CalendarCheck, Bed, BookOpen, Activity, BarChart3, Printer, CalendarDays, Instagram, Palette, UserCog, LogOut, ShieldCheck, Calendar, Medal, Armchair, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const navigationGroups = [
@@ -76,6 +77,33 @@ export function Sidebar({ user, permissions = [] }: { user: any, permissions?: s
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [activeCtx, setActiveCtx] = useState<{ activeDufah: string | null; usbuLabel: string } | null>(null);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+
+  // Auto-expand group that contains the active page
+  useEffect(() => {
+    const activeGroup = navigationGroups.find(group =>
+      group.items.some((item: any) => pathname === item.href || pathname?.startsWith(`${item.href}/`))
+    );
+    if (activeGroup) {
+      setCollapsedGroups(prev => {
+        const next = new Set(prev);
+        next.delete(activeGroup.title);
+        return next;
+      });
+    }
+  }, [pathname]);
+
+  const toggleGroup = (title: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(title)) {
+        next.delete(title);
+      } else {
+        next.add(title);
+      }
+      return next;
+    });
+  };
 
   // Kumpulkan semua menu yang diizinkan untuk user ini
   const allowedItems: any[] = [];
@@ -111,34 +139,42 @@ export function Sidebar({ user, permissions = [] }: { user: any, permissions?: s
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <div className="lg:hidden flex items-center justify-between bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-30">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold">M</div>
-          <span className="font-bold text-slate-800 tracking-wide text-sm">Markaz Arabiyah</span>
+      {/* Mobile Top Bar */}
+      <div className="lg:hidden flex items-center justify-between px-4 py-3 sticky top-0 z-30" style={{ background: "var(--bg-app)", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+        <div className="flex items-center gap-2.5">
+          <Image
+            src="/images/Logo Markaz.png"
+            alt="Logo Markaz Arabiyah"
+            width={32}
+            height={32}
+            className="rounded-lg"
+            style={{ boxShadow: "var(--shadow-flat)" }}
+          />
+          <span className="font-bold tracking-wide text-sm font-display" style={{ color: "var(--color-text)" }}>Markaz Arabiyah</span>
         </div>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 -mr-2 text-slate-600 hover:text-emerald-700 transition"
+          className="p-2 -mr-2 transition-colors rounded-lg"
+          style={{ color: "var(--color-text-muted)" }}
         >
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
 
       {/* Bottom Navigation for Mobile */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 px-2 py-1.5 flex items-center justify-around shadow-[0_-4px_6px_-1px_rgb(0,0,0,0.05)] pb-safe">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 px-2 py-1.5 flex items-center justify-around pb-safe" style={{ background: "var(--bg-app)", boxShadow: "0 -4px 12px rgba(0,0,0,0.06)" }}>
         {bottomNavItems.map(item => {
           const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (
-            <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)} className={`flex flex-col items-center justify-center gap-1 w-16 h-12 rounded-xl transition-colors ${isActive ? "text-emerald-600" : "text-slate-400 hover:text-slate-600"}`}>
-              <Icon className={`h-[22px] w-[22px] ${isActive ? "text-emerald-600" : ""}`} strokeWidth={isActive ? 2.5 : 2} />
+            <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)} className="flex flex-col items-center justify-center gap-1 w-16 h-12 rounded-xl transition-all" style={isActive ? { color: "var(--color-primary)", boxShadow: "var(--shadow-raised-sm)", background: "#ffffff" } : { color: "var(--color-text-subtle)" }}>
+              <Icon className="h-[22px] w-[22px]" strokeWidth={isActive ? 2.5 : 2} />
               <span className="text-[9px] font-bold text-center leading-tight truncate w-full px-1">{item.label}</span>
             </Link>
           )
         })}
         {showMenuInBottomNav && (
-          <button onClick={() => setIsOpen(true)} className={`flex flex-col items-center justify-center gap-1 w-16 h-12 rounded-xl transition-colors ${isOpen ? "text-emerald-600" : "text-slate-400 hover:text-slate-600"}`}>
+          <button onClick={() => setIsOpen(true)} className="flex flex-col items-center justify-center gap-1 w-16 h-12 rounded-xl transition-colors" style={isOpen ? { color: "var(--color-primary)", boxShadow: "var(--shadow-raised-sm)", background: "#ffffff" } : { color: "var(--color-text-subtle)" }}>
             <Menu className="h-[22px] w-[22px]" strokeWidth={isOpen ? 2.5 : 2} />
             <span className="text-[9px] font-bold text-center leading-tight">Lainnya</span>
           </button>
@@ -148,32 +184,40 @@ export function Sidebar({ user, permissions = [] }: { user: any, permissions?: s
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden"
+          className="fixed inset-0 z-40 lg:hidden"
+          style={{ background: "rgba(30,41,56,0.4)", backdropFilter: "blur(4px)" }}
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Sidebar Content */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 overflow-y-auto flex flex-col ${isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`neu-sidebar fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 overflow-y-auto flex flex-col ${isOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
-        <div className="hidden lg:flex flex-col p-6 border-b border-slate-100 items-center justify-center bg-emerald-50/50">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 shadow-md text-white font-black text-xl mb-3">
-            M
+        {/* Logo Area */}
+        <div className="hidden lg:flex flex-col p-5 items-center justify-center">
+          <div className="neu-card p-4 flex flex-col items-center gap-3 w-full">
+            <Image
+              src="/images/Logo Markaz.png"
+              alt="Logo Markaz Arabiyah"
+              width={56}
+              height={56}
+              className="rounded-xl"
+            />
+            <h1 className="text-center text-[14px] font-bold tracking-wide leading-tight font-display" style={{ color: "var(--color-text)" }}>
+              Sistem Akademik<br />
+              <span className="font-bold text-[13px] tracking-normal" style={{ color: "var(--color-primary)" }}>Markaz Arabiyah</span>
+            </h1>
           </div>
-          <h1 className="text-center text-[15px] font-black tracking-wide text-slate-900 leading-tight">
-            Sistem Akademik<br />
-            <span className="text-emerald-700 font-bold text-sm tracking-normal">Markaz Arabiyah</span>
-          </h1>
         </div>
 
-        <nav className="flex-1 p-4 space-y-8 mt-4 lg:mt-0">
+        <nav className="flex-1 p-4 space-y-2 mt-4 lg:mt-0 overflow-y-auto">
           {/* Active Context Information */}
           {activeCtx && activeCtx.activeDufah && (
-            <div className="px-2 mb-2 lg:mt-0 mt-2">
-              <div className="flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/50 px-3 py-2 text-[11px] font-bold text-emerald-700 shadow-sm">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="px-1 mb-3 lg:mt-0 mt-2">
+              <div className="neu-inset flex items-center justify-center gap-2 px-3 py-2.5 text-[11px] font-bold" style={{ color: "var(--color-primary)" }}>
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full animate-pulse" style={{ background: "var(--color-success)" }} />
                 Aktif: {activeCtx.activeDufah} • {activeCtx.usbuLabel}
               </div>
             </div>
@@ -194,48 +238,75 @@ export function Sidebar({ user, permissions = [] }: { user: any, permissions?: s
 
             if (filteredItems.length === 0) return null;
 
+            const isCollapsed = collapsedGroups.has(group.title);
+            const hasActiveChild = filteredItems.some((item: any) =>
+              pathname === item.href || pathname?.startsWith(`${item.href}/`)
+            );
+
             return (
-              <div key={group.title}>
-                <p className="px-4 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
-                  {group.title}
-                </p>
-                <ul className="space-y-1">
-                  {filteredItems.map((item) => {
-                    const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-                    const Icon = item.icon;
-                    return (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          onClick={() => setIsOpen(false)}
-                          className={`group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${isActive
-                            ? "bg-emerald-50 text-emerald-700 shadow-sm shadow-emerald-100"
-                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                            }`}
-                        >
-                          <Icon className={`h-5 w-5 transition-colors ${isActive ? "text-emerald-600" : "text-slate-400 group-hover:text-slate-600"}`} />
-                          {item.label}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
+              <div key={group.title} className="mb-1">
+                <button
+                  onClick={() => toggleGroup(group.title)}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors cursor-pointer group"
+                  style={{ color: hasActiveChild ? "var(--color-primary)" : "var(--color-text-subtle)" }}
+                >
+                  <span className="text-[11px] font-black uppercase tracking-[0.15em]">
+                    {group.title}
+                  </span>
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : 'rotate-0'}`}
+                  />
+                </button>
+
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[1000px] opacity-100'}`}>
+                  <ul className="space-y-0.5 mt-1 pl-1">
+                    {filteredItems.map((item) => {
+                      const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                      const Icon = item.icon;
+                      return (
+                        <li key={item.href}>
+                          <Link
+                            href={item.href}
+                            onClick={() => setIsOpen(false)}
+                            className={`neu-nav-item group flex items-center gap-3 text-[13px] ${isActive ? 'active' : ''}`}
+                            style={!isActive ? { color: "var(--color-text-muted)" } : undefined}
+                          >
+                            <Icon className="h-[18px] w-[18px] transition-colors" style={{ color: isActive ? "var(--color-primary)" : "var(--color-text-subtle)" }} />
+                            {item.label}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               </div>
             );
           })}
         </nav>
 
-        <div className="p-6 border-t border-slate-100">
-          <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4">
-            <p className="text-sm font-bold text-slate-800">{user?.nama}</p>
-            <p className="text-xs text-slate-500 mt-1 mb-3">{user?.role}</p>
+        {/* User Card */}
+        <div className="p-4">
+          <div className="neu-inset p-4 rounded-xl">
+            <p className="text-sm font-bold" style={{ color: "var(--color-text)" }}>{user?.nama}</p>
+            <p className="text-xs mt-0.5 mb-3" style={{ color: "var(--color-text-subtle)" }}>{user?.role}</p>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold py-2 px-3 rounded-xl transition-colors text-sm"
+              className="w-full flex items-center justify-center gap-2 font-bold py-2 px-3 rounded-lg transition-all text-sm"
+              style={{
+                background: "var(--color-danger-light)",
+                color: "var(--color-danger)",
+                boxShadow: "var(--shadow-flat)"
+              }}
             >
               <LogOut size={16} />
               Logout
             </button>
+          </div>
+          {/* Mobile footer */}
+          <div className="lg:hidden mt-3 text-center">
+            <p className="text-[10px] font-semibold" style={{ color: "var(--color-text-subtle)" }}>
+              Developed by <span className="font-bold" style={{ color: "var(--color-primary)" }}>Aksara X</span> KSU Batch 10
+            </p>
           </div>
         </div>
       </aside>

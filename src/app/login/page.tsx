@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Lock, User } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -41,33 +42,44 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden">
-        <div className="bg-emerald-600 px-6 py-10 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 mx-auto text-white font-black text-2xl mb-4">
-            M
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--bg-app)" }}>
+      <div className="max-w-md w-full">
+        {/* Card */}
+        <div className="neu-card p-8 md:p-10">
+          {/* Logo & Title */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="neu-card p-4 mb-5 rounded-2xl">
+              <Image
+                src="/images/Logo Markaz.png"
+                alt="Logo Markaz Arabiyah"
+                width={64}
+                height={64}
+                className="rounded-lg"
+              />
+            </div>
+            <h1 className="text-2xl font-bold tracking-wide font-display" style={{ color: "var(--color-text)" }}>
+              SIAKAD
+            </h1>
+            <p className="mt-1 text-sm font-semibold" style={{ color: "var(--color-primary)" }}>
+              Markaz Arabiyah
+            </p>
           </div>
-          <h1 className="text-2xl font-black text-white tracking-wide">
-            SIAKAD
-          </h1>
-          <p className="text-emerald-100 mt-2 text-sm font-medium">
-            Markaz Arabiyah
-          </p>
-        </div>
 
-        <div className="p-8">
+          {/* Error */}
           {errorMsg && (
-            <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700 shadow-sm animate-pulse">
+            <div className="mb-6 rounded-xl p-4 text-sm font-semibold" style={{ background: "var(--color-danger-light)", color: "var(--color-danger)", boxShadow: "var(--shadow-inset-sm)" }}>
               ⚠️ {errorMsg}
             </div>
           )}
-          <form onSubmit={handleSubmit} className="space-y-6">
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-[0.15em] mb-2" style={{ color: "var(--color-text-muted)" }}>
                 Username
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none" style={{ color: "var(--color-text-subtle)" }}>
                   <User size={18} />
                 </div>
                 <input
@@ -75,18 +87,18 @@ export default function LoginPage() {
                   required
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all text-slate-700"
+                  className="neu-input w-full pl-11 pr-4 py-3"
                   placeholder="Masukkan username"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-[0.15em] mb-2" style={{ color: "var(--color-text-muted)" }}>
                 Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none" style={{ color: "var(--color-text-subtle)" }}>
                   <Lock size={18} />
                 </div>
                 <input
@@ -94,18 +106,16 @@ export default function LoginPage() {
                   required
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all text-slate-700"
+                  className="neu-input w-full pl-11 pr-4 py-3"
                   placeholder="Masukkan password"
                 />
               </div>
             </div>
 
-
-
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition-colors disabled:opacity-70 flex justify-center items-center"
+              className="neu-button-primary w-full py-3.5 px-4 rounded-xl text-sm flex justify-center items-center"
             >
               {loading ? (
                 <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -115,6 +125,11 @@ export default function LoginPage() {
             </button>
           </form>
         </div>
+
+        {/* Footer */}
+        <p className="text-center mt-6 text-[11px] font-semibold" style={{ color: "var(--color-text-subtle)" }}>
+          Developed by <span className="font-bold" style={{ color: "var(--color-primary)" }}>Aksara X</span> KSU Batch 10
+        </p>
       </div>
     </div>
   );

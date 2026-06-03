@@ -13,8 +13,8 @@ export default async function AgendaPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Agenda Rutinan</h1>
-        <p className="text-sm text-slate-500">Kelola jadwal kegiatan dan agenda berulang.</p>
+        <h1 className="text-2xl font-bold text-[var(--color-text)]">Agenda Rutinan</h1>
+        <p className="text-sm text-[var(--color-text-muted)]">Kelola jadwal kegiatan dan agenda berulang.</p>
       </div>
 
       <AgendaClient initialData={agendas} />

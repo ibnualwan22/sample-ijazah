@@ -4,18 +4,18 @@ import { AbsensiRekapDetailClient } from "@/components/admin/absensi-rekap-detai
 export default function RekapDetailPage() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+      <div className="flex items-center justify-between pb-4 border-b border-[var(--color-surface-dark)]">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">
+          <h1 className="text-2xl font-black tracking-tight text-[var(--color-text)]">
             Rincian Kehadiran
           </h1>
-          <p className="mt-1 text-sm font-medium text-slate-500">
+          <p className="mt-1 text-sm font-medium text-[var(--color-text-muted)]">
             Detail data absen dan statistik per kelompok
           </p>
         </div>
       </div>
 
-      <Suspense fallback={<div className="animate-pulse p-10 text-center text-slate-400 font-medium">Memuat Rincian...</div>}>
+      <Suspense fallback={<div className="animate-pulse p-10 text-center text-[var(--color-text-subtle)] font-medium">Memuat Rincian...</div>}>
         <AbsensiRekapDetailClient />
       </Suspense>
     </div>

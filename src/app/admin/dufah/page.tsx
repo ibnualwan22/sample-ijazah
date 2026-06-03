@@ -23,8 +23,8 @@ export default async function DufahPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Manajemen Angkatan (Duf'ah)</h1>
-          <p className="text-sm text-slate-500 mt-1">Mengelola siklus waktu angkatan dan sistem Usbu'.</p>
+          <h1 className="text-2xl font-bold text-[var(--color-text)] tracking-tight">Manajemen Angkatan (Duf'ah)</h1>
+          <p className="text-sm text-[var(--color-text-muted)] mt-1">Mengelola siklus waktu angkatan dan sistem Usbu'.</p>
         </div>
       </div>
       

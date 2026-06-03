@@ -30,12 +30,12 @@ function normalizeWaNumber(raw: string): string {
 
 function KategoriBadge({ kategori }: { kategori: string }) {
   const colors: Record<string, string> = {
-    BARU: "bg-blue-50 text-blue-700 border-blue-200",
-    LAMA: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    BARU: "bg-blue-50 text-[var(--color-info)] border-blue-200",
+    LAMA: "bg-[var(--color-primary-50)] text-[var(--color-primary)] border-[var(--color-primary-100)]",
     KSU: "bg-purple-50 text-purple-700 border-purple-200",
   };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border ${colors[kategori] ?? "bg-slate-50 text-slate-600 border-slate-200"}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border ${colors[kategori] ?? "bg-[var(--color-secondary)] text-[var(--color-text-muted)] border-[var(--color-surface-dark)]"}`}>
       {kategori}
     </span>
   );
@@ -194,12 +194,12 @@ export function DataSantriClient({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 md:text-4xl">Data Santri Duf&apos;ah</h1>
-          <p className="text-base text-slate-500 mt-1">Data lengkap santri aktif pada duf&apos;ah saat ini.</p>
+          <h1 className="text-3xl font-black text-[var(--color-text)] md:text-4xl">Data Santri Duf&apos;ah</h1>
+          <p className="text-base text-[var(--color-text-muted)] mt-1">Data lengkap santri aktif pada duf&apos;ah saat ini.</p>
         </div>
         <button
           onClick={() => setShowExportModal(true)}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-md shadow-emerald-200 transition-all hover:shadow-lg"
+          className="flex items-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-md shadow-[var(--color-primary-100)] transition-all hover:shadow-lg"
         >
           <Download size={16} />
           Export Excel
@@ -209,11 +209,11 @@ export function DataSantriClient({
       {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          { label: "Total Santri", value: filtered.length, color: "bg-slate-800 text-white" },
+          { label: "Total Santri", value: filtered.length, color: "bg-[var(--color-text)] text-white" },
           { label: "Banin", value: totalBanin, color: "bg-sky-50 text-sky-700 border border-sky-200" },
           { label: "Banat", value: totalBanat, color: "bg-pink-50 text-pink-700 border border-pink-200" },
-          { label: "Baru", value: totalBaru, color: "bg-blue-50 text-blue-700 border border-blue-200" },
-          { label: "Lama", value: totalLama, color: "bg-emerald-50 text-emerald-700 border border-emerald-200" },
+          { label: "Baru", value: totalBaru, color: "bg-blue-50 text-[var(--color-info)] border border-blue-200" },
+          { label: "Lama", value: totalLama, color: "bg-[var(--color-primary-50)] text-[var(--color-primary)] border border-[var(--color-primary-100)]" },
           { label: "KSU", value: totalKsu, color: "bg-purple-50 text-purple-700 border border-purple-200" },
         ].map((s) => (
           <div key={s.label} className={`rounded-2xl px-4 py-3 ${s.color}`}>
@@ -224,43 +224,43 @@ export function DataSantriClient({
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
-        <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
+      <div className="neu-card-white p-4 space-y-3">
+        <div className="flex items-center gap-2 text-sm font-bold text-[var(--color-text-muted)]">
           <Filter size={16} />
           Filter & Pencarian
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Search */}
           <div className="relative lg:col-span-2">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-subtle)]" />
             <input
               type="text"
               placeholder="Cari nama atau NIS..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] text-sm font-medium focus:outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-50)] transition"
             />
           </div>
-          <select value={filterGender} onChange={(e) => { setFilterGender(e.target.value); setPage(1); }} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <select value={filterGender} onChange={(e) => { setFilterGender(e.target.value); setPage(1); }} className="rounded-xl neu-input">
             <option value="ALL">Semua Gender</option>
             <option value="BANIN">Banin</option>
             <option value="BANAT">Banat</option>
           </select>
-          <select value={filterKategori} onChange={(e) => { setFilterKategori(e.target.value); setPage(1); }} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <select value={filterKategori} onChange={(e) => { setFilterKategori(e.target.value); setPage(1); }} className="rounded-xl neu-input">
             <option value="ALL">Semua Kategori</option>
             <option value="BARU">Baru</option>
             <option value="LAMA">Lama</option>
             <option value="KSU">KSU</option>
           </select>
-          <select value={filterSakan} onChange={(e) => { setFilterSakan(e.target.value); setPage(1); }} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <select value={filterSakan} onChange={(e) => { setFilterSakan(e.target.value); setPage(1); }} className="rounded-xl neu-input">
             <option value="ALL">Semua Sakan</option>
             {uniqueSakans.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
-          <select value={filterProgram} onChange={(e) => { setFilterProgram(e.target.value); setFilterKelas("ALL"); setPage(1); }} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <select value={filterProgram} onChange={(e) => { setFilterProgram(e.target.value); setFilterKelas("ALL"); setPage(1); }} className="rounded-xl neu-input">
             <option value="ALL">Semua Program</option>
             {uniquePrograms.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
-          <select value={filterKelas} onChange={(e) => { setFilterKelas(e.target.value); setPage(1); }} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <select value={filterKelas} onChange={(e) => { setFilterKelas(e.target.value); setPage(1); }} className="rounded-xl neu-input">
             <option value="ALL">Semua Kelas</option>
             {(filterProgram !== "ALL"
               ? [...new Set(rows.filter((r) => r.programNama === filterProgram).map((r) => r.kelasNama).filter((k) => k !== "-"))].sort()
@@ -268,25 +268,25 @@ export function DataSantriClient({
             ).map((k) => <option key={k} value={k}>{k}</option>)}
           </select>
           {hasFilters && (
-            <button onClick={resetFilters} className="flex items-center justify-center gap-1.5 text-sm font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 px-3 py-2.5 rounded-xl border border-rose-200 transition">
+            <button onClick={resetFilters} className="flex items-center justify-center gap-1.5 text-sm font-bold text-[var(--color-danger)] bg-[var(--color-danger-light)] hover:bg-[var(--color-danger-light)] px-3 py-2.5 rounded-xl border border-[var(--color-danger)] transition">
               <X size={14} /> Reset Filter
             </button>
           )}
         </div>
         {hasFilters && (
-          <p className="text-xs font-semibold text-slate-500">
-            Menampilkan <span className="text-emerald-600 font-bold">{filtered.length}</span> dari <span className="font-bold">{rows.length}</span> santri
+          <p className="text-xs font-semibold text-[var(--color-text-muted)]">
+            Menampilkan <span className="text-[var(--color-primary)] font-bold">{filtered.length}</span> dari <span className="font-bold">{rows.length}</span> santri
           </p>
         )}
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="neu-card-white overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="px-4 py-3 text-left text-[11px] font-black uppercase tracking-wider text-slate-500 w-12">No</th>
+              <tr className="bg-[var(--color-secondary)] border-b border-[var(--color-surface-dark)]">
+                <th className="px-4 py-3 text-left text-[11px] font-black uppercase tracking-wider text-[var(--color-text-muted)] w-12">No</th>
                 {([
                   { field: "nama" as SortField, label: "Nama Santri", sortable: true },
                   { field: "sakan" as SortField, label: "Sakan / Kamar / Lemari", sortable: true },
@@ -297,46 +297,46 @@ export function DataSantriClient({
                   { field: "" as SortField, label: "No. WA Santri", sortable: false },
                   { field: "" as SortField, label: "Gender", sortable: false },
                 ]).map((col, i) => (
-                  <th key={i} className="px-4 py-3 text-left text-[11px] font-black uppercase tracking-wider text-slate-500">
+                  <th key={i} className="px-4 py-3 text-left text-[11px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">
                     {col.sortable ? (
-                      <button onClick={() => toggleSort(col.field)} className="flex items-center gap-1 hover:text-emerald-600 transition">
+                      <button onClick={() => toggleSort(col.field)} className="flex items-center gap-1 hover:text-[var(--color-primary)] transition">
                         {col.label}
-                        <ArrowUpDown size={12} className={sortField === col.field ? "text-emerald-600" : "text-slate-300"} />
+                        <ArrowUpDown size={12} className={sortField === col.field ? "text-[var(--color-primary)]" : "text-[var(--color-text-subtle)]"} />
                       </button>
                     ) : col.label}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[var(--color-surface)]">
               {paginated.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="px-4 py-16 text-center">
-                    <Users size={48} className="mx-auto text-slate-300 mb-3" />
-                    <p className="text-sm font-bold text-slate-500">Tidak ada data santri yang cocok</p>
-                    <p className="text-xs text-slate-400 mt-1">Coba ubah filter atau kata kunci pencarian</p>
+                    <Users size={48} className="mx-auto text-[var(--color-text-subtle)] mb-3" />
+                    <p className="text-sm font-bold text-[var(--color-text-muted)]">Tidak ada data santri yang cocok</p>
+                    <p className="text-xs text-[var(--color-text-subtle)] mt-1">Coba ubah filter atau kata kunci pencarian</p>
                   </td>
                 </tr>
               ) : paginated.map((r, i) => {
                 const waNum = normalizeWaNumber(r.noWaSantri);
                 return (
-                  <tr key={r.id} className="hover:bg-emerald-50/30 transition-colors">
-                    <td className="px-4 py-3 text-slate-400 font-semibold">{(safePage - 1) * perPage + i + 1}</td>
+                  <tr key={r.id} className="hover:bg-[var(--color-primary-50)]/30 transition-colors">
+                    <td className="px-4 py-3 text-[var(--color-text-subtle)] font-semibold">{(safePage - 1) * perPage + i + 1}</td>
                     <td className="px-4 py-3">
-                      <p className="font-bold text-slate-800">{r.nama}</p>
-                      <p className="text-[11px] text-slate-400 font-mono mt-0.5">{r.id}</p>
+                      <p className="font-bold text-[var(--color-text)]">{r.nama}</p>
+                      <p className="text-[11px] text-[var(--color-text-subtle)] font-mono mt-0.5">{r.id}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="font-semibold text-slate-700">{r.sakan}</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">Kamar {r.kamar} / Lemari {r.nomorLemari}</p>
+                      <p className="font-semibold text-[var(--color-text)]">{r.sakan}</p>
+                      <p className="text-[11px] text-[var(--color-text-subtle)] mt-0.5">Kamar {r.kamar} / Lemari {r.nomorLemari}</p>
                     </td>
-                    <td className="px-4 py-3 text-slate-600 font-medium">{r.kabupaten}</td>
+                    <td className="px-4 py-3 text-[var(--color-text-muted)] font-medium">{r.kabupaten}</td>
                     <td className="px-4 py-3">
-                      <p className="font-semibold text-slate-700">{r.programNama}</p>
-                      {r.kelasNama !== "-" && <p className="text-[11px] text-slate-400 mt-0.5">Kelas {r.kelasNama}</p>}
+                      <p className="font-semibold text-[var(--color-text)]">{r.programNama}</p>
+                      {r.kelasNama !== "-" && <p className="text-[11px] text-[var(--color-text-subtle)] mt-0.5">Kelas {r.kelasNama}</p>}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-amber-50 text-amber-700 font-black text-sm border border-amber-200">
+                      <span className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-[var(--color-warning-light)] text-[var(--color-warning)] font-black text-sm border border-[var(--color-warning)]">
                         {r.bulanKe}
                       </span>
                     </td>
@@ -348,7 +348,7 @@ export function DataSantriClient({
                             href={`https://wa.me/${waNum}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-emerald-600 hover:text-emerald-800 font-semibold text-xs bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-lg border border-emerald-200 transition"
+                            className="flex items-center gap-1 text-[var(--color-primary)] hover:text-[var(--color-primary-dark)] font-semibold text-xs bg-[var(--color-primary-50)] hover:bg-[var(--color-primary-100)] px-2 py-1 rounded-lg border border-[var(--color-primary-100)] transition"
                             title="Buka WhatsApp"
                           >
                             <Phone size={12} />
@@ -356,15 +356,15 @@ export function DataSantriClient({
                           </a>
                           <button
                             onClick={() => copyWa(r.noWaSantri)}
-                            className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition"
+                            className="text-[var(--color-text-subtle)] hover:text-[var(--color-text-muted)] p-1 rounded-lg hover:bg-[var(--color-surface)] transition"
                             title="Salin nomor"
                           >
                             <Copy size={12} />
                           </button>
-                          <span className="text-xs text-slate-500 font-mono hidden xl:inline">{r.noWaSantri}</span>
+                          <span className="text-xs text-[var(--color-text-muted)] font-mono hidden xl:inline">{r.noWaSantri}</span>
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-300">-</span>
+                        <span className="text-xs text-[var(--color-text-subtle)]">-</span>
                       )}
                     </td>
                     <td className="px-4 py-3"><GenderBadge gender={r.gender} /></td>
@@ -376,18 +376,18 @@ export function DataSantriClient({
         </div>
 
         {/* Pagination */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-slate-200 bg-slate-50/50">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-[var(--color-surface-dark)] bg-[var(--color-surface-light)]">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 font-medium">Per halaman:</span>
-            <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }} className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <span className="text-xs text-[var(--color-text-muted)] font-medium">Per halaman:</span>
+            <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }} className="rounded-lg border border-[var(--color-surface-dark)] bg-white px-2 py-1 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]">
               {[10, 25, 50, 100].map((n) => <option key={n} value={n}>{n}</option>)}
             </select>
-            <span className="text-xs text-slate-400 font-medium ml-2">
+            <span className="text-xs text-[var(--color-text-subtle)] font-medium ml-2">
               {(safePage - 1) * perPage + 1}–{Math.min(safePage * perPage, sorted.length)} dari {sorted.length}
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={safePage <= 1} className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition">
+            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={safePage <= 1} className="p-1.5 rounded-lg hover:bg-[var(--color-surface-dark)] disabled:opacity-30 disabled:cursor-not-allowed transition">
               <ChevronLeft size={16} />
             </button>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -397,12 +397,12 @@ export function DataSantriClient({
               else if (safePage >= totalPages - 2) { pg = totalPages - 4 + i; }
               else { pg = safePage - 2 + i; }
               return (
-                <button key={pg} onClick={() => setPage(pg)} className={`h-8 w-8 rounded-lg text-xs font-bold transition ${pg === safePage ? "bg-emerald-600 text-white shadow" : "hover:bg-slate-200 text-slate-600"}`}>
+                <button key={pg} onClick={() => setPage(pg)} className={`h-8 w-8 rounded-lg text-xs font-bold transition ${pg === safePage ? "bg-[var(--color-primary)] text-white shadow" : "hover:bg-[var(--color-surface-dark)] text-[var(--color-text-muted)]"}`}>
                   {pg}
                 </button>
               );
             })}
-            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={safePage >= totalPages} className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition">
+            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={safePage >= totalPages} className="p-1.5 rounded-lg hover:bg-[var(--color-surface-dark)] disabled:opacity-30 disabled:cursor-not-allowed transition">
               <ChevronRight size={16} />
             </button>
           </div>
@@ -411,47 +411,47 @@ export function DataSantriClient({
 
       {/* Export Modal */}
       {showExportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-text)]/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95">
-            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="text-lg font-black text-slate-900">Export ke Excel</h3>
-              <button onClick={() => setShowExportModal(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition">
+            <div className="px-6 py-4 border-b border-[var(--color-surface-dark)] flex items-center justify-between">
+              <h3 className="text-lg font-black text-[var(--color-text)]">Export ke Excel</h3>
+              <button onClick={() => setShowExportModal(false)} className="p-1.5 rounded-lg hover:bg-[var(--color-surface)] text-[var(--color-text-subtle)] hover:text-[var(--color-text-muted)] transition">
                 <X size={18} />
               </button>
             </div>
             <div className="px-6 py-4">
-              <p className="text-sm text-slate-500 mb-4">Pilih kolom yang ingin diexport:</p>
+              <p className="text-sm text-[var(--color-text-muted)] mb-4">Pilih kolom yang ingin diexport:</p>
               <div className="flex gap-2 mb-4">
-                <button onClick={() => setExportCols(Object.fromEntries(COLUMN_DEFS.map((c) => [c.key, true])))} className="text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-200 transition">
+                <button onClick={() => setExportCols(Object.fromEntries(COLUMN_DEFS.map((c) => [c.key, true])))} className="text-xs font-bold text-[var(--color-primary)] bg-[var(--color-primary-50)] hover:bg-[var(--color-primary-100)] px-3 py-1.5 rounded-lg border border-[var(--color-primary-100)] transition">
                   Pilih Semua
                 </button>
-                <button onClick={() => setExportCols(Object.fromEntries(COLUMN_DEFS.map((c) => [c.key, false])))} className="text-xs font-bold text-slate-500 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 transition">
+                <button onClick={() => setExportCols(Object.fromEntries(COLUMN_DEFS.map((c) => [c.key, false])))} className="text-xs font-bold text-[var(--color-text-muted)] bg-[var(--color-secondary)] hover:bg-[var(--color-surface)] px-3 py-1.5 rounded-lg border border-[var(--color-surface-dark)] transition">
                   Hapus Semua
                 </button>
               </div>
               <div className="space-y-2">
                 {COLUMN_DEFS.map((c) => (
-                  <label key={c.key} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 cursor-pointer transition">
+                  <label key={c.key} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[var(--color-secondary)] cursor-pointer transition">
                     <input
                       type="checkbox"
                       checked={exportCols[c.key] ?? true}
                       onChange={(e) => setExportCols((prev) => ({ ...prev, [c.key]: e.target.checked }))}
-                      className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      className="h-4 w-4 rounded border-[var(--color-surface-dark)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                     />
-                    <span className="text-sm font-semibold text-slate-700">{c.label}</span>
+                    <span className="text-sm font-semibold text-[var(--color-text)]">{c.label}</span>
                   </label>
                 ))}
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-              <p className="text-xs text-slate-400 font-medium">
+            <div className="px-6 py-4 border-t border-[var(--color-surface-dark)] bg-[var(--color-secondary)] flex items-center justify-between">
+              <p className="text-xs text-[var(--color-text-subtle)] font-medium">
                 {sorted.length} data akan diexport
                 {hasFilters && " (sesuai filter)"}
               </p>
               <button
                 onClick={handleExport}
                 disabled={!COLUMN_DEFS.some((c) => exportCols[c.key])}
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-md transition"
+                className="flex items-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] disabled:bg-[var(--color-surface-dark)] text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-md transition"
               >
                 <Download size={16} />
                 Download .xlsx

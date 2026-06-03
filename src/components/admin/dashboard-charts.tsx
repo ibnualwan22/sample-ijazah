@@ -37,9 +37,9 @@ type ProgramItem = {
 };
 
 const COLORS = [
-  "#059669", "#10b981", "#34d399", "#6ee7b7", "#0ea5e9", 
-  "#38bdf8", "#7dd3fc", "#8b5cf6", "#a78bfa", "#f59e0b",
-  "#fbbf24", "#fcd34d", "#ef4444", "#f87171"
+  "#006666", "#008585", "#00A63D", "#34d399", "#0ea5e9", 
+  "#38bdf8", "#7dd3fc", "#8b5cf6", "#a78bfa", "#FE9900",
+  "#fbbf24", "#fcd34d", "#FF2157", "#f87171"
 ];
 
 export function DashboardCharts({
@@ -157,50 +157,52 @@ export function DashboardCharts({
   
   return (
     <div className="space-y-6">
+      {/* Stat Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-         <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-700">Total Santri</p>
-            <h3 className="mt-2 text-4xl font-black text-slate-900">{totalSantri}</h3>
+         <div className="neu-card p-6 flex flex-col justify-center">
+            <p className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "var(--color-text-muted)" }}>Total Santri</p>
+            <h3 className="mt-2 text-4xl font-black font-display" style={{ color: "var(--color-text)" }}>{totalSantri}</h3>
          </div>
-         <div className="rounded-[2rem] border border-slate-200 bg-emerald-600 p-6 shadow-sm flex flex-col justify-center text-white">
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-200">Sudah Ditempatkan</p>
-            <h3 className="mt-2 text-4xl font-black text-white">{totalAssigned}</h3>
+         <div className="p-6 flex flex-col justify-center rounded-xl" style={{ background: "var(--color-primary)", boxShadow: "4px 4px 12px rgba(0,102,102,0.3), -3px -3px 8px rgba(0,133,133,0.15)", borderRadius: "var(--radius-xl)" }}>
+            <p className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.7)" }}>Sudah Ditempatkan</p>
+            <h3 className="mt-2 text-4xl font-black font-display text-white">{totalAssigned}</h3>
          </div>
-         <div className="rounded-[2rem] border border-slate-200 bg-rose-50 p-6 shadow-sm flex flex-col justify-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-rose-700">Belum Ditempatkan</p>
-            <h3 className="mt-2 text-4xl font-black text-rose-900">{totalSantri - totalAssigned}</h3>
+         <div className="neu-card p-6 flex flex-col justify-center">
+            <p className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "var(--color-danger)" }}>Belum Ditempatkan</p>
+            <h3 className="mt-2 text-4xl font-black font-display" style={{ color: "var(--color-text)" }}>{totalSantri - totalAssigned}</h3>
          </div>
       </div>
 
+      {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="neu-card-white p-6">
           <div className="mb-6">
-            <h3 className="text-xl font-bold text-slate-900">Distribusi per Program</h3>
-            <p className="text-sm text-slate-500">Jumlah santri di masing-masing program/master kelas.</p>
+            <h3 className="text-lg font-bold font-display" style={{ color: "var(--color-text)" }}>Distribusi per Program</h3>
+            <p className="text-sm mt-1" style={{ color: "var(--color-text-subtle)" }}>Jumlah santri di masing-masing program/master kelas.</p>
           </div>
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartDataParent} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-surface-dark)" />
                 <XAxis 
                   dataKey="name" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fontSize: 12, fill: "#64748b" }} 
+                  tick={{ fontSize: 12, fill: "var(--color-text-subtle)" }} 
                 />
                 <YAxis 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fontSize: 12, fill: "#64748b" }} 
+                  tick={{ fontSize: 12, fill: "var(--color-text-subtle)" }} 
                 />
                 <Tooltip 
-                  cursor={{ fill: "#f1f5f9" }}
-                  contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
+                  cursor={{ fill: "var(--color-surface-light)" }}
+                  contentStyle={{ borderRadius: 'var(--radius-lg)', border: 'none', boxShadow: 'var(--shadow-raised)', background: 'var(--bg-card)' }}
                 />
                 <Bar 
                   dataKey="Jumlah" 
-                  fill="#059669" 
-                  radius={[4, 4, 0, 0]} 
+                  fill="var(--color-primary)" 
+                  radius={[6, 6, 0, 0]} 
                   barSize={40}
                 />
               </BarChart>
@@ -208,10 +210,10 @@ export function DashboardCharts({
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="neu-card-white p-6">
           <div className="mb-6">
-            <h3 className="text-xl font-bold text-slate-900">Distribusi per Ruangan</h3>
-            <p className="text-sm text-slate-500">Sebaran jumlah santri di masing-masing rombongan belajar.</p>
+            <h3 className="text-lg font-bold font-display" style={{ color: "var(--color-text)" }}>Distribusi per Ruangan</h3>
+            <p className="text-sm mt-1" style={{ color: "var(--color-text-subtle)" }}>Sebaran jumlah santri di masing-masing rombongan belajar.</p>
           </div>
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -232,7 +234,7 @@ export function DashboardCharts({
                   ))}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ borderRadius: 'var(--radius-lg)', border: 'none', boxShadow: 'var(--shadow-raised)', background: 'var(--bg-card)' }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -240,43 +242,45 @@ export function DashboardCharts({
         </div>
       </div>
 
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      {/* Table */}
+      <div className="neu-card-white p-6">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-xl font-bold text-slate-900">Rincian Data Kelas</h3>
-            <p className="text-sm text-slate-500">Tabel jumlah santri beserta sebaran Banin dan Banat.</p>
+            <h3 className="text-lg font-bold font-display" style={{ color: "var(--color-text)" }}>Rincian Data Kelas</h3>
+            <p className="text-sm mt-1" style={{ color: "var(--color-text-subtle)" }}>Tabel jumlah santri beserta sebaran Banin dan Banat.</p>
           </div>
           <button 
             onClick={handleCopyWA}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors"
+            className="neu-button flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold"
+            style={{ color: "var(--color-text-muted)" }}
           >
-            {isCopied ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
+            {isCopied ? <Check size={16} style={{ color: "var(--color-success)" }} /> : <Copy size={16} />}
             {isCopied ? "Tersalin!" : "Salin Format WA"}
           </button>
         </div>
         
-        <div className="overflow-x-auto rounded-xl border border-slate-200">
+        <div className="overflow-x-auto rounded-xl" style={{ boxShadow: "var(--shadow-inset-sm)" }}>
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-xs border-b border-slate-200">
+            <thead style={{ background: "var(--color-surface-light)" }}>
               <tr>
-                <th className="px-6 py-4">Nama Kelas</th>
-                <th className="px-6 py-4 text-center">Total Santri</th>
-                <th className="px-6 py-4 text-center text-emerald-700 bg-emerald-50">Banin</th>
-                <th className="px-6 py-4 text-center text-rose-700 bg-rose-50">Banat</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-[0.15em]" style={{ color: "var(--color-text-subtle)" }}>Nama Kelas</th>
+                <th className="px-6 py-4 text-center text-[11px] font-black uppercase tracking-[0.15em]" style={{ color: "var(--color-text-subtle)" }}>Total Santri</th>
+                <th className="px-6 py-4 text-center text-[11px] font-black uppercase tracking-[0.15em]" style={{ color: "var(--color-primary)" }}>Banin</th>
+                <th className="px-6 py-4 text-center text-[11px] font-black uppercase tracking-[0.15em]" style={{ color: "var(--color-danger)" }}>Banat</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {classStats.map((c) => (
-                <tr key={c.kelasNama} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 font-bold text-slate-800">{c.kelasNama}</td>
-                  <td className="px-6 py-4 text-center font-bold text-slate-700">{c.total}</td>
-                  <td className="px-6 py-4 text-center font-bold text-emerald-700 bg-emerald-50/30">{c.banin}</td>
-                  <td className="px-6 py-4 text-center font-bold text-rose-700 bg-rose-50/30">{c.banat}</td>
+            <tbody>
+              {classStats.map((c, i) => (
+                <tr key={c.kelasNama} className="transition-colors" style={{ borderBottom: "1px solid var(--color-surface)", background: i % 2 === 0 ? "white" : "var(--color-secondary)" }}>
+                  <td className="px-6 py-4 font-bold" style={{ color: "var(--color-text)" }}>{c.kelasNama}</td>
+                  <td className="px-6 py-4 text-center font-bold" style={{ color: "var(--color-text)" }}>{c.total}</td>
+                  <td className="px-6 py-4 text-center font-bold" style={{ color: "var(--color-primary)" }}>{c.banin}</td>
+                  <td className="px-6 py-4 text-center font-bold" style={{ color: "var(--color-danger)" }}>{c.banat}</td>
                 </tr>
               ))}
               {classStats.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-slate-500 font-medium">
+                  <td colSpan={4} className="px-6 py-12 text-center font-medium" style={{ color: "var(--color-text-subtle)" }}>
                     Belum ada data kelas yang terdaftar.
                   </td>
                 </tr>
