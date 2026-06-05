@@ -214,44 +214,46 @@ export function HaflahWadaClient({
           const ratio = usableWidth / canvas.width;
           const scaledH = canvas.height * ratio;
 
-          // If this section doesn't fit on the current page, start a new page
-          if (currentY + scaledH > f4Height - margin && currentY > margin + 1) {
-            pdf.addPage([215.9, 330.2], orientation as "landscape" | "portrait");
-            pageNum++;
-            currentY = margin;
-          }
+          // Calculate max height we can draw on the CURRENT page
+          let availableHeight = (f4Height - margin) - currentY;
 
-          // If section is taller than one full page, slice at row boundaries
-          if (scaledH > usableHeight) {
-            // Find row boundaries for clean cuts (never cut through a row)
+          if (scaledH <= availableHeight) {
+            // Fits entirely on current page
+            pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", margin, currentY, usableWidth, scaledH);
+            currentY += scaledH + 4; // 4mm gap between sections
+          } else {
+            // It doesn't fit on the current page entirely.
+            // If the available height is too small (e.g. less than 30mm), just start on a new page.
+            if (availableHeight < 30) {
+              pdf.addPage([215.9, 330.2], orientation as "landscape" | "portrait");
+              pageNum++;
+              currentY = margin;
+              availableHeight = usableHeight;
+            }
+
+            // Find row boundaries for clean cuts
             const sectionRect = section.getBoundingClientRect();
             const rowBottoms: number[] = [];
-            section.querySelectorAll("tr").forEach((el) => {
-              const elRect = el.getBoundingClientRect();
-              const fracBottom = (elRect.bottom - sectionRect.top) / sectionRect.height;
-              rowBottoms.push(Math.round(fracBottom * canvas.height));
-            });
-            // Also add header elements (divs before tables)
-            section.querySelectorAll(":scope > div, :scope > table").forEach((el) => {
+            
+            // Add all valid horizontal cut lines (bottom of rows and headers)
+            section.querySelectorAll("tr, :scope > div, :scope > table").forEach((el) => {
               const elRect = el.getBoundingClientRect();
               const fracBottom = (elRect.bottom - sectionRect.top) / sectionRect.height;
               rowBottoms.push(Math.round(fracBottom * canvas.height));
             });
             rowBottoms.sort((a, b) => a - b);
 
-            const maxSliceHeight = usableHeight / ratio;
             let srcY = 0;
-
             while (srcY < canvas.height - 2) {
-              if (srcY > 0) { pdf.addPage([215.9, 330.2], orientation as "landscape" | "portrait"); pageNum++; currentY = margin; }
+              // How many canvas pixels fit in the available height?
+              const maxSlicePixels = availableHeight / ratio;
+              let cutY = Math.min(srcY + maxSlicePixels, canvas.height);
 
-              let cutY = Math.min(srcY + maxSliceHeight, canvas.height);
-
-              // Find the last row boundary that fits within the page
-              if (rowBottoms.length > 0) {
+              // Snap to the nearest row boundary to avoid cutting text in half
+              if (rowBottoms.length > 0 && cutY < canvas.height) {
                 let bestCut = -1;
                 for (const rb of rowBottoms) {
-                  if (rb > srcY + 2 && rb <= srcY + maxSliceHeight) {
+                  if (rb > srcY + 2 && rb <= srcY + maxSlicePixels) {
                     bestCut = rb;
                   }
                 }
@@ -263,17 +265,27 @@ export function HaflahWadaClient({
               const sliceH = Math.ceil(Math.min(cutY - srcY, canvas.height - srcY));
               if (sliceH <= 0) break;
 
+              // Draw slice
               const sc = document.createElement("canvas");
               sc.width = canvas.width;
               sc.height = sliceH;
               sc.getContext("2d")!.drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+              
               pdf.addImage(sc.toDataURL("image/jpeg", 0.95), "JPEG", margin, currentY, usableWidth, sliceH * ratio);
-              currentY += sliceH * ratio;
+              
               srcY += sliceH;
+              
+              if (srcY < canvas.height - 2) {
+                // Still more to draw, add a new page
+                pdf.addPage([215.9, 330.2], orientation as "landscape" | "portrait");
+                pageNum++;
+                currentY = margin;
+                availableHeight = usableHeight;
+              } else {
+                // Done with this section, update currentY for the next section
+                currentY += sliceH * ratio + 4;
+              }
             }
-          } else {
-            pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", margin, currentY, usableWidth, scaledH);
-            currentY += scaledH + 4; // 4mm gap between sections
           }
         }
       }
