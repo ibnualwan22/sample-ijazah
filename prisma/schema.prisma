@@ -113,8 +113,9 @@ model Nilai {
   nilaiUsbu1 Float?
   nilaiUsbu2 Float?
   nilaiNihai Float?
-  nilaiAkhir Float?
-  riwayat    RiwayatSantri @relation(fields: [riwayatId], references: [id], onDelete: Cascade)
+  nilaiAkhir    Float?
+  nilaiTambahan Float         @default(0)
+  riwayat       RiwayatSantri @relation(fields: [riwayatId], references: [id], onDelete: Cascade)
   mapel      Mapel         @relation(fields: [mapelId], references: [id], onDelete: Restrict)
 
   @@unique([riwayatId, mapelId])

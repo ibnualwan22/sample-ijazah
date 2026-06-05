@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Fragment } from "react";
 import { useRouter } from "next/navigation";
+import { GabunganTable } from "./gabungan-table";
 
 type MapelOption = {
   id: string;
@@ -12,6 +13,7 @@ type MapelOption = {
   jumlah_tes_b2?: number | null;
   bobot?: number;
   bobot_usbu?: number;
+  masuk_akumulasi?: boolean;
 };
 
 type KelasOption = {
@@ -22,6 +24,7 @@ type KelasOption = {
 type ProgramOption = {
   id: string;
   nama_indo: string;
+  kkm: number;
   mapelList: MapelOption[];
   kelasList: KelasOption[];
 };
@@ -31,6 +34,7 @@ type NilaiData = {
   u2: number | null;
   n: number | null;
   a: number | null;
+  tambahan: number;
 };
 
 type SantriRow = {
@@ -65,7 +69,7 @@ export function InputNilaiBulkClient({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [changes, setChanges] = useState<Record<string, ChangesRow>>({});
-  const [akbarnasMonth, setAkbarnasMonth] = useState<1 | 2>(1);
+  const [akbarnasMonth, setAkbarnasMonth] = useState<1 | 2 | "gabungan">(1);
 
   // Filter program & kelas based on allowedKelasId
   const availablePrograms = programList.map(p => {
@@ -92,6 +96,7 @@ export function InputNilaiBulkClient({
       setSantriList([]);
       setChanges({});
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedKelasId, akbarnasMonth]);
 
   const fetchData = async () => {
@@ -197,10 +202,12 @@ export function InputNilaiBulkClient({
   };
 
   const isAkbarnas = selectedProgram?.nama_indo.toLowerCase().includes("akbarnas") ?? false;
+  const isGabunganMode = isAkbarnas && akbarnasMonth === "gabungan";
+  const kkm = selectedProgram?.kkm ?? 60;
 
   let mapels = selectedProgram?.mapelList || [];
 
-  if (isAkbarnas) {
+  if (isAkbarnas && !isGabunganMode) {
     mapels = mapels.filter((mapel) => {
       if (akbarnasMonth === 2) {
         return mapel.bulan_aktif !== 1;
@@ -213,7 +220,51 @@ export function InputNilaiBulkClient({
       }
       return mapel;
     });
+  } else if (isGabunganMode) {
+    // Show all mapels with masuk_akumulasi for gabungan view
+    mapels = mapels.filter(m => m.masuk_akumulasi !== false);
   }
+
+  // Helper: compute summary for a santri row (used in both normal and gabungan mode)
+  const computeSummary = (row: SantriRow) => {
+    const mapelSummaries: { mapelId: string; nilaiAkhir: number; tambahan: number; final: number; belowKkm: boolean }[] = [];
+    let totalSkorBobot = 0;
+    let totalBobot = 0;
+
+    const accMapels = (selectedProgram?.mapelList || []).filter(m => m.masuk_akumulasi !== false);
+
+    for (const m of accMapels) {
+      const nd = row.nilai?.[m.id];
+      let nilaiAkhir = nd?.a ?? 0;
+      const tambahan = changes[row.riwayatId]?.nilai?.[m.id]?.tambahan !== undefined
+        ? (changes[row.riwayatId].nilai![m.id].tambahan as number)
+        : (nd?.tambahan ?? 0);
+
+      // For non-gabungan: compute from U1/U2/Nihai if nilaiAkhir not set
+      if (!isGabunganMode && nilaiAkhir === 0) {
+        const u1 = changes[row.riwayatId]?.nilai?.[m.id]?.u1 !== undefined ? changes[row.riwayatId].nilai![m.id].u1 as number : (nd?.u1 ?? null);
+        const u2 = changes[row.riwayatId]?.nilai?.[m.id]?.u2 !== undefined ? changes[row.riwayatId].nilai![m.id].u2 as number : (nd?.u2 ?? null);
+        const n = changes[row.riwayatId]?.nilai?.[m.id]?.n !== undefined ? changes[row.riwayatId].nilai![m.id].n as number : (nd?.n ?? null);
+        if (u1 !== null && u2 !== null && n !== null) {
+          if (isAkbarnas) {
+            nilaiAkhir = Number(((u1 + u2 + n) / 3).toFixed(2));
+          } else {
+            nilaiAkhir = Number(((u1 * 0.3) + (u2 * 0.3) + (n * 0.4)).toFixed(2));
+          }
+        }
+      }
+
+      const final_ = nilaiAkhir + tambahan;
+      const bobot = m.bobot ?? 1;
+      totalSkorBobot += final_ * bobot;
+      totalBobot += bobot;
+      mapelSummaries.push({ mapelId: m.id, nilaiAkhir, tambahan, final: final_, belowKkm: final_ < kkm });
+    }
+
+    const rataRata = totalBobot > 0 ? totalSkorBobot / totalBobot : 0;
+    const hasMusyarokah = mapelSummaries.some(s => s.belowKkm && s.nilaiAkhir > 0);
+    return { mapelSummaries, rataRata, hasMusyarokah };
+  };
 
   return (
     <div className="space-y-6">
@@ -246,11 +297,15 @@ export function InputNilaiBulkClient({
               <span>Bulan Pembelajaran (Khusus Akbarnas)</span>
               <select
                 value={akbarnasMonth}
-                onChange={(e) => setAkbarnasMonth(Number(e.target.value) as 1 | 2)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setAkbarnasMonth(v === "gabungan" ? "gabungan" : Number(v) as 1 | 2);
+                }}
                 className="w-full rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-base font-bold text-indigo-900 outline-none transition focus:border-indigo-500 focus:bg-white"
               >
                 <option value={1}>Bulan 1 (Riwayat Baru)</option>
                 <option value={2}>Bulan 2 (Riwayat Lanjutan)</option>
+                <option value="gabungan">📊 Gabungan (Final + Nilai Tambahan)</option>
               </select>
             </label>
           )}
@@ -266,8 +321,12 @@ export function InputNilaiBulkClient({
         <section className="neu-card-white overflow-hidden flex flex-col">
           <div className="p-6 border-b border-[var(--color-surface)] flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-bold text-[var(--color-text)]">Master Sheet Penilaian Kelas</h3>
-              <p className="text-sm text-[var(--color-text-muted)] mt-1">Gunakan tombol Tab untuk berpindah antar kolom secara cepat.</p>
+              <h3 className="text-xl font-bold text-[var(--color-text)]">
+                {isGabunganMode ? "📊 Ledger Final — Gabungan & Nilai Tambahan" : "Master Sheet Penilaian Kelas"}
+              </h3>
+              <p className="text-sm text-[var(--color-text-muted)] mt-1">
+                {isGabunganMode ? `KKM: ${kkm} — Klik kolom tambahan untuk menambah nilai (maks +5)` : "Gunakan tombol Tab untuk berpindah antar kolom secara cepat."}
+              </p>
             </div>
             <button
               onClick={handleSave}
@@ -279,6 +338,9 @@ export function InputNilaiBulkClient({
           </div>
 
           <div className="overflow-x-auto w-full custom-scrollbar">
+            {isGabunganMode ? (
+              <GabunganTable mapels={mapels} santriList={santriList} isLoading={isLoading} kkm={kkm} changes={changes} computeSummary={computeSummary} handleNilaiChange={handleNilaiChange} />
+            ) : (
             <table className="w-full text-left text-sm text-[var(--color-text-muted)] border-collapse min-w-max">
               <thead className="bg-[var(--color-secondary)] text-xs uppercase tracking-[0.1em] text-[var(--color-text-muted)]">
                 <tr>
@@ -286,10 +348,12 @@ export function InputNilaiBulkClient({
                   <th className="px-3 md:px-4 py-3 font-semibold border-b border-[var(--color-surface-dark)] sticky left-[40px] md:left-[50px] bg-[var(--color-secondary)] z-20 border-r min-w-[140px] w-[140px] md:min-w-[250px] md:w-[250px] text-xs md:text-sm" rowSpan={2}>Nama Peserta Didik</th>
                   <th className="px-4 py-3 font-semibold text-center border-b border-r border-[var(--color-surface-dark)] md:sticky md:left-[300px] bg-[var(--color-secondary)] md:z-20 min-w-[80px] w-[80px]" rowSpan={2}>Tasmi'</th>
                   {mapels.map(m => (
-                    <th key={m.id} className="px-2 py-2 font-bold text-center border-b border-r border-[var(--color-surface-dark)] bg-[var(--color-surface)]" colSpan={m.jumlah_tes === 3 ? 3 : 1}>
+                    <th key={m.id} className="px-2 py-2 font-bold text-center border-b border-r border-[var(--color-surface-dark)] bg-[var(--color-surface)]" colSpan={m.jumlah_tes === 3 ? 4 : 2}>
                       <div>{m.nama_indo}</div>
                     </th>
                   ))}
+                  <th className="px-3 py-3 font-bold text-center border-b border-[var(--color-surface-dark)] bg-emerald-50 min-w-[65px]" rowSpan={2}>Rata²</th>
+                  <th className="px-3 py-3 font-bold text-center border-b border-[var(--color-surface-dark)] bg-emerald-50 min-w-[90px]" rowSpan={2}>Status</th>
                 </tr>
                 <tr>
                   {mapels.map(m => {
@@ -306,17 +370,22 @@ export function InputNilaiBulkClient({
                             <div>U2</div>
                             <div className="text-[9px] text-[var(--color-text-subtle)] font-medium">({wUsbu}%)</div>
                           </th>
-                          <th className="px-2 py-2 font-semibold text-center border-b border-r border-[var(--color-surface-dark)] bg-[var(--color-secondary)] w-20 text-[10px]">
+                          <th className="px-2 py-2 font-semibold text-center border-b border-[var(--color-surface-dark)] bg-[var(--color-secondary)] w-20 text-[10px]">
                             <div>Nihai</div>
                             <div className="text-[9px] text-[var(--color-primary)] font-bold">({wNihai}%)</div>
+                          </th>
+                          <th className="px-1 py-2 font-semibold text-center border-b border-r border-[var(--color-surface-dark)] bg-amber-50 w-[70px] text-[9px] text-amber-700">
+                            <div>Rata</div>
+                            <div className="text-[8px]">+Tambah</div>
                           </th>
                         </Fragment>
                       );
                     }
                     return (
-                      <th key={`sub_${m.id}`} className="px-2 py-2 font-semibold text-center border-b border-r border-[var(--color-surface-dark)] bg-[var(--color-secondary)] w-24 text-[10px]">
-                        Akhir
-                      </th>
+                      <Fragment key={`sub_${m.id}`}>
+                        <th className="px-2 py-2 font-semibold text-center border-b border-[var(--color-surface-dark)] bg-[var(--color-secondary)] w-24 text-[10px]">Akhir</th>
+                        <th className="px-1 py-2 font-semibold text-center border-b border-r border-[var(--color-surface-dark)] bg-amber-50 w-[70px] text-[9px] text-amber-700"><div>+Tambah</div></th>
+                      </Fragment>
                     );
                   })}
                 </tr>
@@ -381,40 +450,101 @@ export function InputNilaiBulkClient({
                                     <div className="w-full rounded-lg border border-[var(--color-surface)] bg-[var(--color-secondary)] px-2 py-1.5 text-center font-bold text-[var(--color-text-subtle)]">{u2 === null ? "-" : u2}</div>
                                   )}
                                 </td>
-                                <td className="px-1 py-2 border-r border-[var(--color-surface-dark)]">
+                                <td className="px-1 py-2">
                                   {activeFlags.u3 ? (
                                     <input 
                                       type="number" min={0} max={100} 
                                       value={n === null ? "" : n}
                                       onChange={(e) => handleNilaiChange(row.riwayatId, m.id, "n", e.target.value === "" ? null : Number(e.target.value))}
-                                      className="w-full rounded-lg border border-[var(--color-surface-dark)] bg-white px-2 py-1.5 text-center font-bold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-emerald-100 focus:bg-[var(--color-primary-50)]/30 hover:border-[var(--color-surface-dark)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                      className="w-full rounded-lg border border-[var(--color-surface-dark)] bg-white px-2 py-1.5 text-center font-bold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-emerald-100 focus:bg-[var(--color-primary-50)]/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                     />
                                   ) : (
                                     <div className="w-full rounded-lg border border-[var(--color-surface)] bg-[var(--color-secondary)] px-2 py-1.5 text-center font-bold text-[var(--color-text-subtle)]">{n === null ? "-" : n}</div>
                                   )}
                                 </td>
+                                {/* Rata + Tambahan column */}
+                                {(() => {
+                                  let avg = row.nilai?.[m.id]?.a ?? null;
+                                  
+                                  if (avg === null) {
+                                    const u1 = getNilaiVal(row, m.id, "u1");
+                                    const u2 = getNilaiVal(row, m.id, "u2");
+                                    const n = getNilaiVal(row, m.id, "n");
+                                    if (u1 !== null && u2 !== null && n !== null) {
+                                      if (isAkbarnas) {
+                                        avg = Number(((u1 + u2 + n) / 3).toFixed(2));
+                                      } else {
+                                        avg = Number(((u1 * 0.3) + (u2 * 0.3) + (n * 0.4)).toFixed(2));
+                                      }
+                                    }
+                                  }
+
+                                  const curTambahan = changes[row.riwayatId]?.nilai?.[m.id]?.tambahan !== undefined
+                                    ? (changes[row.riwayatId].nilai![m.id].tambahan as number) : (row.nilai?.[m.id]?.tambahan ?? 0);
+                                  const maxTambahan = avg !== null ? Math.max(0, 100 - Math.round(avg)) : 100;
+                                  return (
+                                    <td className="px-0.5 py-1 border-r border-[var(--color-surface-dark)] bg-amber-50/30">
+                                      <div className={`text-center text-[10px] font-bold mb-0.5 ${avg !== null && (avg + curTambahan) < kkm ? 'text-red-600' : 'text-[var(--color-text)]'}`}>
+                                        {avg !== null ? Math.round(avg + curTambahan) : '-'}
+                                      </div>
+                                      {avg !== null && (
+                                        <input type="number" min={0} max={maxTambahan}
+                                          value={curTambahan || ""}
+                                          placeholder="+"
+                                          onChange={(e) => handleNilaiChange(row.riwayatId, m.id, "tambahan" as any, e.target.value === "" ? 0 : Math.min(maxTambahan, Math.max(0, Number(e.target.value))))}
+                                          className="w-full rounded border border-amber-300 bg-amber-50 px-0.5 py-0.5 text-center text-[10px] font-bold text-amber-800 outline-none focus:border-amber-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                        />
+                                      )}
+                                    </td>
+                                  );
+                                })()}
                               </Fragment>
                             );
                           } else {
                             const a = getNilaiVal(row, m.id, "a");
+                            const nd2 = row.nilai?.[m.id];
+                            const curT = changes[row.riwayatId]?.nilai?.[m.id]?.tambahan !== undefined
+                              ? (changes[row.riwayatId].nilai![m.id].tambahan as number) : (nd2?.tambahan ?? 0);
+                            const maxT = a !== null ? Math.max(0, 100 - a) : 100;
                             return (
-                              <td key={`td_${m.id}`} className="px-1 py-2 border-r border-[var(--color-surface-dark)]">
-                                <input 
-                                  type="number" min={0} max={100} 
-                                  value={a === null ? "" : a}
-                                  onChange={(e) => handleNilaiChange(row.riwayatId, m.id, "a", e.target.value === "" ? null : Number(e.target.value))}
-                                  className="w-full rounded-lg border border-[var(--color-surface-dark)] bg-white px-2 py-1.5 text-center font-bold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-emerald-100 focus:bg-[var(--color-primary-50)]/30 hover:border-[var(--color-surface-dark)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
-                                />
-                              </td>
+                              <Fragment key={`td_${m.id}`}>
+                                <td className="px-1 py-2">
+                                  <input 
+                                    type="number" min={0} max={100} 
+                                    value={a === null ? "" : a}
+                                    onChange={(e) => handleNilaiChange(row.riwayatId, m.id, "a", e.target.value === "" ? null : Number(e.target.value))}
+                                    className="w-full rounded-lg border border-[var(--color-surface-dark)] bg-white px-2 py-1.5 text-center font-bold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-emerald-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                  />
+                                </td>
+                                <td className="px-0.5 py-1 border-r border-[var(--color-surface-dark)] bg-amber-50/30">
+                                  {a !== null && (
+                                    <input type="number" min={0} max={maxT}
+                                      value={curT || ""} placeholder="+"
+                                      onChange={(e) => handleNilaiChange(row.riwayatId, m.id, "tambahan" as any, e.target.value === "" ? 0 : Math.min(maxT, Math.max(0, Number(e.target.value))))}
+                                      className="w-full rounded border border-amber-300 bg-amber-50 px-0.5 py-0.5 text-center text-[10px] font-bold text-amber-800 outline-none focus:border-amber-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    />
+                                  )}
+                                </td>
+                              </Fragment>
                             );
                           }
                         })}
+                        {/* Summary columns */}
+                        {(() => { const s = computeSummary(row); return (<>
+                          <td className="px-2 py-2 text-center font-extrabold text-sm bg-emerald-50/50">{s.rataRata > 0 ? Math.round(s.rataRata) : "-"}</td>
+                          <td className="px-2 py-2 text-center bg-emerald-50/50">
+                            {s.hasMusyarokah ? <span className="inline-block px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-700">MUSYAROKAH</span>
+                            : s.rataRata > 0 ? <span className="inline-block px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700">LULUS</span>
+                            : <span className="text-[10px] text-gray-400">-</span>}
+                          </td>
+                        </>); })()}
                       </tr>
                     );
                   })
                 )}
               </tbody>
             </table>
+            )}
           </div>
           
           <div className="p-4 bg-[var(--color-secondary)] border-t border-[var(--color-surface)] flex justify-end">

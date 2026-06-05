@@ -287,14 +287,14 @@ export async function getDashboardSantriRows() {
         {
           is_tasmi: riwayat?.is_tasmi ?? false,
         },
-        accumulativeNilai.map((n: any) => ({ skor: n.nilaiAkhir || 0 })),
+        accumulativeNilai.map((n: any) => ({ skor: (n.nilaiAkhir || 0) + (n.nilaiTambahan || 0) })),
         program,
       );
 
       const totalSkorBobot = accumulativeNilai.reduce((total: number, n: any) => {
         const pm = program?.programMapels.find((p: any) => p.mapelId === n.mapelId);
         const bobot = pm?.mapel.bobot ?? 1;
-        return total + ((n.nilaiAkhir || 0) * bobot);
+        return total + (((n.nilaiAkhir || 0) + (n.nilaiTambahan || 0)) * bobot);
       }, 0);
       const average = accumulativeNilai.length > 0 ? totalSkorBobot / 100 : 0;
       const averagePredikat = getPredikat(average);

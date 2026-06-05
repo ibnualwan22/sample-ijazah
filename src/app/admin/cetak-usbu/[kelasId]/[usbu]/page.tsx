@@ -111,6 +111,13 @@ export default async function CetakUsbuPrintPage(props: { params: Promise<{ kela
           grandScore = Number((allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(2));
         }
 
+        // Add nilaiTambahan from the latest riwayat entry
+        let tambahan = 0;
+        for (const n of nilaiEntries) {
+          if (n.nilaiTambahan && n.nilaiTambahan > 0) tambahan = n.nilaiTambahan;
+        }
+        if (grandScore !== null && tambahan > 0) grandScore += tambahan;
+
         if (grandScore !== null) {
           mapelScores.push(grandScore);
           if (pm.mapel.masuk_akumulasi !== false) {
@@ -214,7 +221,7 @@ export default async function CetakUsbuPrintPage(props: { params: Promise<{ kela
         if (targetUsbu === 1) score = match.nilaiUsbu1 ?? match.nilaiAkhir;
         if (targetUsbu === 2) score = match.nilaiUsbu2 ?? match.nilaiAkhir;
         if (targetUsbu === 3) score = match.nilaiNihai ?? match.nilaiAkhir;
-        if (targetUsbu === 4) score = match.nilaiAkhir;
+        if (targetUsbu === 4) score = (match.nilaiAkhir ?? 0) + (match.nilaiTambahan ?? 0) || null;
       }
 
       if (score !== null && score !== undefined) {

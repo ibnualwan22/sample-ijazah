@@ -80,31 +80,55 @@ export default async function TranskripPage({ params }: { params: Promise<{ id: 
       n: b2_n,
     };
 
-    // Calculate Nilai Akhir Mapel
-    const allWeeklyB1 = [];
+    // Calculate Nilai Akhir Mapel - prioritize DB stored nilaiAkhir for consistency
+    const allWeeklyB1: number[] = [];
     if (b1.u1 !== null && b1.u1 !== undefined) allWeeklyB1.push(b1.u1);
     if (b1.u2 !== null && b1.u2 !== undefined) allWeeklyB1.push(b1.u2);
     if (b1.n !== null && b1.n !== undefined) allWeeklyB1.push(b1.n);
     const b1Avg = allWeeklyB1.length > 0 ? Number((allWeeklyB1.reduce((a, b) => a + b, 0) / allWeeklyB1.length).toFixed(2)) : null;
 
-    const allWeeklyB2 = [];
+    const allWeeklyB2: number[] = [];
     if (b2.u1 !== null && b2.u1 !== undefined) allWeeklyB2.push(b2.u1);
     if (b2.u2 !== null && b2.u2 !== undefined) allWeeklyB2.push(b2.u2);
     if (b2.n !== null && b2.n !== undefined) allWeeklyB2.push(b2.n);
     const b2Avg = allWeeklyB2.length > 0 ? Number((allWeeklyB2.reduce((a, b) => a + b, 0) / allWeeklyB2.length).toFixed(2)) : null;
 
-    const allWeekly = [...allWeeklyB1, ...allWeeklyB2];
+    // Use stored nilaiAkhir from DB when available (same as input-nilai page)
+    // This ensures consistency between pages
+    let nilaiAkhir: number | null = null;
 
-    let nilaiAkhir = null;
-    if (allWeekly.length > 0) {
-      nilaiAkhir = Number((allWeekly.reduce((a, b) => a + b, 0) / allWeekly.length).toFixed(2));
-    } else if ((n1 && n1.nilaiAkhir !== null && n1.nilaiAkhir !== undefined) || (n2 && n2.nilaiAkhir !== null && n2.nilaiAkhir !== undefined)) {
-       const dScores = [];
-       if (n1 && n1.nilaiAkhir !== null && n1.nilaiAkhir !== undefined) dScores.push(n1.nilaiAkhir);
-       if (n2 && n2.nilaiAkhir !== null && n2.nilaiAkhir !== undefined) dScores.push(n2.nilaiAkhir);
-       if (dScores.length > 0) {
-          nilaiAkhir = Number((dScores.reduce((a,b)=>a+b,0) / dScores.length).toFixed(2));
-       }
+    if (isAkbarnas) {
+      // Akbarnas: average nilaiAkhir from both B1 and B2 riwayats
+      const dbScores: number[] = [];
+      if (n1 && n1.nilaiAkhir !== null && n1.nilaiAkhir !== undefined) dbScores.push(n1.nilaiAkhir);
+      if (n2 && n2.nilaiAkhir !== null && n2.nilaiAkhir !== undefined) dbScores.push(n2.nilaiAkhir);
+      if (dbScores.length > 0) {
+        nilaiAkhir = Number((dbScores.reduce((a, b) => a + b, 0) / dbScores.length).toFixed(2));
+      }
+    } else {
+      // Non-Akbarnas: use the single riwayat's nilaiAkhir
+      if (n1 && n1.nilaiAkhir !== null && n1.nilaiAkhir !== undefined) {
+        nilaiAkhir = n1.nilaiAkhir;
+      }
+    }
+
+    // Fallback: recalculate from raw scores if DB nilaiAkhir is not set
+    if (nilaiAkhir === null) {
+      const allWeekly = [...allWeeklyB1, ...allWeeklyB2];
+      if (allWeekly.length > 0) {
+        nilaiAkhir = Number((allWeekly.reduce((a, b) => a + b, 0) / allWeekly.length).toFixed(2));
+      }
+    }
+
+    // Add nilaiTambahan (bonus points from teacher)
+    let tambahan = 0;
+    if (n2 && (n2 as any).nilaiTambahan > 0) {
+      tambahan = (n2 as any).nilaiTambahan;
+    } else if (n1 && (n1 as any).nilaiTambahan > 0) {
+      tambahan = (n1 as any).nilaiTambahan;
+    }
+    if (nilaiAkhir !== null && tambahan > 0) {
+      nilaiAkhir = Math.min(100, nilaiAkhir + tambahan);
     }
 
     items.push({
