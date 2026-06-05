@@ -521,7 +521,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
                     position: "absolute",
                     left: `calc(-29mm + ${lo.tandaTangan.offsetX}mm)`,
                     bottom: `calc(-2mm + ${-lo.tandaTangan.offsetY}mm)`,
-                    height: "25mm",
+                    height: "40mm",
                     objectFit: "contain",
                     zIndex: 1,
                     ...(editorMode ? { cursor: "pointer" } : {}),
