@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Fragment } from "react";
 import { useRouter } from "next/navigation";
 import { GabunganTable } from "./gabungan-table";
+import { calcMapelNilaiAkhir, calcAkumulatif } from "@/lib/grade-calculator";
 
 type MapelOption = {
   id: string;
@@ -228,8 +229,7 @@ export function InputNilaiBulkClient({
   // Helper: compute summary for a santri row (used in both normal and gabungan mode)
   const computeSummary = (row: SantriRow) => {
     const mapelSummaries: { mapelId: string; nilaiAkhir: number; tambahan: number; final: number; belowKkm: boolean }[] = [];
-    let totalSkorBobot = 0;
-    let totalBobot = 0;
+    const akumulatifItems: { score: number; bobot: number }[] = [];
 
     const accMapels = (selectedProgram?.mapelList || []).filter(m => m.masuk_akumulasi !== false);
 
@@ -245,23 +245,17 @@ export function InputNilaiBulkClient({
         const u1 = changes[row.riwayatId]?.nilai?.[m.id]?.u1 !== undefined ? changes[row.riwayatId].nilai![m.id].u1 as number : (nd?.u1 ?? null);
         const u2 = changes[row.riwayatId]?.nilai?.[m.id]?.u2 !== undefined ? changes[row.riwayatId].nilai![m.id].u2 as number : (nd?.u2 ?? null);
         const n = changes[row.riwayatId]?.nilai?.[m.id]?.n !== undefined ? changes[row.riwayatId].nilai![m.id].n as number : (nd?.n ?? null);
-        if (u1 !== null && u2 !== null && n !== null) {
-          if (isAkbarnas) {
-            nilaiAkhir = Number(((u1 + u2 + n) / 3).toFixed(2));
-          } else {
-            nilaiAkhir = Number(((u1 * 0.3) + (u2 * 0.3) + (n * 0.4)).toFixed(2));
-          }
-        }
+        const calculated = calcMapelNilaiAkhir({ u1, u2, n }, isAkbarnas);
+        if (calculated !== null) nilaiAkhir = calculated;
       }
 
       const final_ = nilaiAkhir + tambahan;
       const bobot = m.bobot ?? 1;
-      totalSkorBobot += final_ * bobot;
-      totalBobot += bobot;
+      akumulatifItems.push({ score: final_, bobot });
       mapelSummaries.push({ mapelId: m.id, nilaiAkhir, tambahan, final: final_, belowKkm: final_ < kkm });
     }
 
-    const rataRata = totalBobot > 0 ? totalSkorBobot / totalBobot : 0;
+    const rataRata = calcAkumulatif(akumulatifItems);
     const hasMusyarokah = mapelSummaries.some(s => s.belowKkm && s.nilaiAkhir > 0);
     return { mapelSummaries, rataRata, hasMusyarokah };
   };

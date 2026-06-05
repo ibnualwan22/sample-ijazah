@@ -3,6 +3,7 @@ import { calculateStatus } from "@/lib/kelulusan";
 import { formatDateIndo, getPredikat, translateDateToArabic } from "@/lib/formatters";
 import { getMasterSantriById, getMasterSantriList } from "@/lib/santri-api";
 import { getActiveDufahName } from "@/lib/absensi";
+import { calcAkbarnasGabungan, calcAkbarnasMapelAverage, calcAkumulatif, calcMapelNilaiAkhir, applyNilaiTambahan } from "@/lib/grade-calculator";
 
 const programInclude = {
   programMapels: {
@@ -217,44 +218,19 @@ export async function getDashboardSantriRows() {
         );
 
         // Kumpulkan nilaiList dari semua riwayat
-        const combinedNilaiMap = new Map<string, any[]>();
+        const allNilaiRecords: any[] = [];
         for (const hist of historical) {
-          for (const n of hist.nilaiList) {
-            if (!combinedNilaiMap.has(n.mapelId)) {
-              combinedNilaiMap.set(n.mapelId, []);
-            }
-            combinedNilaiMap.get(n.mapelId)!.push(n);
-          }
+          allNilaiRecords.push(...hist.nilaiList);
         }
 
-        // Sekarang, untuk setiap mapel di Akbarnas, hitung rata-rata murni
+        // Use grade-calculator for Akbarnas gabungan
+        const gabunganMap = calcAkbarnasGabungan(allNilaiRecords);
+
         const mergedNilaiList: any[] = [];
-        for (const [mapelId, list] of combinedNilaiMap.entries()) {
-          const allWeeklyScores: number[] = [];
-          for (const n of list) {
-            if (n.nilaiUsbu1 !== null && n.nilaiUsbu1 !== undefined) allWeeklyScores.push(n.nilaiUsbu1);
-            if (n.nilaiUsbu2 !== null && n.nilaiUsbu2 !== undefined) allWeeklyScores.push(n.nilaiUsbu2);
-            if (n.nilaiNihai !== null && n.nilaiNihai !== undefined) allWeeklyScores.push(n.nilaiNihai);
-          }
-
-          const directScores: number[] = [];
-          for (const n of list) {
-            if (n.nilaiUsbu1 === null && n.nilaiUsbu2 === null && n.nilaiNihai === null && n.nilaiAkhir !== null && n.nilaiAkhir !== undefined) {
-              directScores.push(n.nilaiAkhir);
-            }
-          }
-
-          let grandNilaiAkhir = null;
-          // Combine all scores: weekly (U1/U2/Nihai) + direct (nilaiAkhir for jumlah_tes_b2=1 mapels)
-          const allScores = [...allWeeklyScores, ...directScores];
-          if (allScores.length > 0) {
-            const sum = allScores.reduce((a, b) => a + b, 0);
-            grandNilaiAkhir = Number((sum / allScores.length).toFixed(2));
-          }
-
+        for (const [mapelId, avg] of gabunganMap.entries()) {
           mergedNilaiList.push({
             mapelId,
-            nilaiAkhir: grandNilaiAkhir,
+            nilaiAkhir: avg,
           });
         }
 
@@ -262,10 +238,9 @@ export async function getDashboardSantriRows() {
       } else if (!isAkbarnas && riwayat) {
         for (const n of nilaiList) {
           if (n.nilaiAkhir === null && (n.nilaiUsbu1 !== null || n.nilaiUsbu2 !== null || n.nilaiNihai !== null)) {
-            n.nilaiAkhir = Number(
-              (((n.nilaiUsbu1 || 0) * 0.3) + 
-              ((n.nilaiUsbu2 || 0) * 0.3) + 
-              ((n.nilaiNihai || 0) * 0.4)).toFixed(2)
+            n.nilaiAkhir = calcMapelNilaiAkhir(
+              { u1: n.nilaiUsbu1, u2: n.nilaiUsbu2, n: n.nilaiNihai },
+              false
             );
           }
         }
@@ -291,12 +266,12 @@ export async function getDashboardSantriRows() {
         program,
       );
 
-      const totalSkorBobot = accumulativeNilai.reduce((total: number, n: any) => {
-        const pm = program?.programMapels.find((p: any) => p.mapelId === n.mapelId);
-        const bobot = pm?.mapel.bobot ?? 1;
-        return total + (((n.nilaiAkhir || 0) + (n.nilaiTambahan || 0)) * bobot);
-      }, 0);
-      const average = accumulativeNilai.length > 0 ? totalSkorBobot / 100 : 0;
+      const average = calcAkumulatif(
+        accumulativeNilai.map((n: any) => {
+          const pm = program?.programMapels.find((p: any) => p.mapelId === n.mapelId);
+          return { score: (n.nilaiAkhir || 0) + (n.nilaiTambahan || 0), bobot: pm?.mapel.bobot ?? 1 };
+        })
+      );
       const averagePredikat = getPredikat(average);
 
       return {
@@ -542,30 +517,8 @@ export async function getCertificateData(id: string) {
   const nilaiMap = new Map();
   for (const [mapelId, list] of nilaiGroups.entries()) {
     if (isAkbarnas) {
-      // 1. Kumpulkan semua nilai usbu dari semua bulan
-      const allWeeklyScores: number[] = [];
-      for (const n of list) {
-        if (n.nilaiUsbu1 !== null && n.nilaiUsbu1 !== undefined) allWeeklyScores.push(n.nilaiUsbu1);
-        if (n.nilaiUsbu2 !== null && n.nilaiUsbu2 !== undefined) allWeeklyScores.push(n.nilaiUsbu2);
-        if (n.nilaiNihai !== null && n.nilaiNihai !== undefined) allWeeklyScores.push(n.nilaiNihai);
-      }
-
-      // 2. Kumpulkan nilai langsung jika ada
-      const directScores: number[] = [];
-      for (const n of list) {
-        if (n.nilaiUsbu1 === null && n.nilaiUsbu2 === null && n.nilaiNihai === null && n.nilaiAkhir !== null && n.nilaiAkhir !== undefined) {
-          directScores.push(n.nilaiAkhir);
-        }
-      }
-
-      let grandNilaiAkhir = null;
-      if (allWeeklyScores.length > 0) {
-        const sum = allWeeklyScores.reduce((a, b) => a + b, 0);
-        grandNilaiAkhir = Number((sum / allWeeklyScores.length).toFixed(2));
-      } else if (directScores.length > 0) {
-        const sum = directScores.reduce((a, b) => a + b, 0);
-        grandNilaiAkhir = Number((sum / directScores.length).toFixed(2));
-      }
+      // Use grade-calculator for Akbarnas gabungan
+      const grandNilaiAkhir = calcAkbarnasMapelAverage(list);
 
       // Ambil nilai record terakhir sebagai base
       const baseNilai = list[list.length - 1];
@@ -588,10 +541,9 @@ export async function getCertificateData(id: string) {
       if (selected && selected.nilaiAkhir === null && (selected.nilaiUsbu1 !== null || selected.nilaiUsbu2 !== null || selected.nilaiNihai !== null)) {
         selected = {
           ...selected,
-          nilaiAkhir: Number(
-            (((selected.nilaiUsbu1 || 0) * 0.3) + 
-            ((selected.nilaiUsbu2 || 0) * 0.3) + 
-            ((selected.nilaiNihai || 0) * 0.4)).toFixed(2)
+          nilaiAkhir: calcMapelNilaiAkhir(
+            { u1: selected.nilaiUsbu1, u2: selected.nilaiUsbu2, n: selected.nilaiNihai },
+            false
           )
         };
       }
@@ -604,7 +556,7 @@ export async function getCertificateData(id: string) {
     const nilai = nilaiMap.get(programMapel.mapel.id);
     const baseScore = nilai?.nilaiAkhir ?? null;
     const tambahan = nilai?.nilaiTambahan ?? 0;
-    const skor = baseScore !== null ? Math.min(100, baseScore + tambahan) : null;
+    const skor = baseScore !== null ? applyNilaiTambahan(baseScore, tambahan) : null;
 
     return {
       mapelId: programMapel.mapel.id,
@@ -623,8 +575,9 @@ export async function getCertificateData(id: string) {
   });
 
   const accumulativeRows = nilaiRows.filter((nilai: any) => typeof nilai.skor === "number" && nilai.masuk_akumulasi);
-  const totalSkorBobot = accumulativeRows.reduce((total: any, nilai: any) => total + (Number(nilai.skor) * nilai.bobot), 0);
-  const average = accumulativeRows.length > 0 ? totalSkorBobot / 100 : 0;
+  const average = calcAkumulatif(
+    accumulativeRows.map((nilai: any) => ({ score: Number(nilai.skor), bobot: nilai.bobot }))
+  );
   const status = calculateStatus(riwayat, accumulativeRows.map((nilai: any) => ({ skor: Number(nilai.skor) })), riwayat.program);
 
   let predikat: { indo: string; arab: string } = getPredikat(average);
@@ -755,10 +708,9 @@ export async function getRiwayatSantriRows() {
     if (!isAkbarnas) {
       for (const n of nilaiList) {
         if (n.nilaiAkhir === null && (n.nilaiUsbu1 !== null || n.nilaiUsbu2 !== null || n.nilaiNihai !== null)) {
-          n.nilaiAkhir = Number(
-            (((n.nilaiUsbu1 || 0) * 0.3) + 
-            ((n.nilaiUsbu2 || 0) * 0.3) + 
-            ((n.nilaiNihai || 0) * 0.4)).toFixed(2)
+          n.nilaiAkhir = calcMapelNilaiAkhir(
+            { u1: n.nilaiUsbu1, u2: n.nilaiUsbu2, n: n.nilaiNihai },
+            false
           );
         }
       }

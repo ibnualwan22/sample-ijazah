@@ -237,6 +237,7 @@ export function SyahadahEditor({
           html, body { background: white !important; margin: 0 !important; padding: 0 !important; }
           @page { size: 330mm 215mm; landscape; margin: 0; }
           .editor-toolbar, .editor-panel { display: none !important; }
+          .editor-crosshair { display: none !important; }
         }
       `}</style>
 

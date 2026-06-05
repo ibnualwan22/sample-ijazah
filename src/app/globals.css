@@ -312,6 +312,18 @@ a {
     margin-bottom: 0 !important;
     box-shadow: none !important;
   }
+
+  /* Hide editor helpers: crosshairs, outlines, selection labels */
+  .syahadah-element,
+  .syahadah-element:hover,
+  .syahadah-element.selected {
+    outline: none !important;
+    outline-offset: 0 !important;
+    cursor: default !important;
+  }
+  .syahadah-element.selected::after {
+    display: none !important;
+  }
 }
 
 /* Syahadah Layout Editor */

@@ -108,6 +108,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
           <>
             {/* Vertical Center Line */}
             <div
+              className="editor-crosshair"
               style={{
                 position: "absolute",
                 top: 0,
@@ -121,6 +122,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
             />
             {/* Horizontal Center Line */}
             <div
+              className="editor-crosshair"
               style={{
                 position: "absolute",
                 top: "50%",

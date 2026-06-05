@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { getActiveRiwayatListForAbsen } from "@/lib/absensi";
 import { getMasterSantriList } from "@/lib/santri-api";
 import { PROGRAM_SEED_DATA } from "@/lib/academic-config";
+import { calcMapelNilaiAkhir, calcAkbarnasMapelAverage } from "@/lib/grade-calculator";
 
 export const dynamic = "force-dynamic";
 
@@ -62,26 +63,19 @@ export async function GET(request: Request) {
         const nilaiMap: any = {};
         for (const pm of allMapels) {
           const m = pm.mapel;
-          // Collect all scores from all riwayat for this mapel
-          const allScores: number[] = [];
+          // Collect all nilai records from all riwayat for this mapel
+          const allNilaiForMapel: any[] = [];
           let tambahan = 0;
           for (const riwayat of allRiwayats) {
             const match = riwayat.nilaiList.find(n => n.mapelId === m.id);
             if (match) {
-              // Collect weekly scores
-              if (match.nilaiUsbu1 !== null) allScores.push(match.nilaiUsbu1);
-              if (match.nilaiUsbu2 !== null) allScores.push(match.nilaiUsbu2);
-              if (match.nilaiNihai !== null) allScores.push(match.nilaiNihai);
-              // Direct scores (jumlah_tes === 1)
-              if (match.nilaiUsbu1 === null && match.nilaiUsbu2 === null && match.nilaiNihai === null && match.nilaiAkhir !== null) {
-                allScores.push(match.nilaiAkhir);
-              }
+              allNilaiForMapel.push(match);
               // Take tambahan from the latest riwayat that has it
               if (match.nilaiTambahan > 0) tambahan = match.nilaiTambahan;
             }
           }
 
-          const avg = allScores.length > 0 ? Number((allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(2)) : null;
+          const avg = calcAkbarnasMapelAverage(allNilaiForMapel);
           nilaiMap[m.id] = {
             u1: null, u2: null, n: null,
             a: avg,
@@ -264,14 +258,10 @@ export async function POST(request: Request) {
                     });
                     const isAkbarnas = riwayat?.program?.nama_indo?.toLowerCase().includes("akbarnas") ?? false;
 
-                    let nilaiAkhir: number;
-                    if (isAkbarnas) {
-                      // Akbarnas: rata-rata sederhana (U1 + U2 + Nihai) / 3
-                      nilaiAkhir = Number(((currentNilai.nilaiUsbu1 + currentNilai.nilaiUsbu2 + currentNilai.nilaiNihai) / 3).toFixed(2));
-                    } else {
-                      // Non-Akbarnas: U1(30%) + U2(30%) + Nihai(40%)
-                      nilaiAkhir = Number((currentNilai.nilaiUsbu1 * 0.3 + currentNilai.nilaiUsbu2 * 0.3 + currentNilai.nilaiNihai * 0.4).toFixed(2));
-                    }
+                    const nilaiAkhir = calcMapelNilaiAkhir(
+                      { u1: currentNilai.nilaiUsbu1, u2: currentNilai.nilaiUsbu2, n: currentNilai.nilaiNihai },
+                      isAkbarnas
+                    );
 
                     await tx.nilai.update({
                       where: { riwayatId_mapelId: { riwayatId: update.riwayatId, mapelId } },

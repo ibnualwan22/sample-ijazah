@@ -4,6 +4,7 @@ import { getMasterSantriList } from "@/lib/santri-api";
 import { redirect } from "next/navigation";
 import { CetakUsbuDocument } from "@/components/admin/cetak-usbu-document";
 import { getActiveDufahName } from "@/lib/absensi";
+import { calcAkumulatif, calcAkbarnasMapelAverage, applyNilaiTambahan } from "@/lib/grade-calculator";
 
 export default async function CetakUsbuPrintPage(props: { params: Promise<{ kelasId: string, usbu: string }>, searchParams: Promise<{ bulan?: string }> }) {
   await requirePermission("cetak_nilai_pekanan");
@@ -60,8 +61,9 @@ export default async function CetakUsbuPrintPage(props: { params: Promise<{ kela
       include: { santri: true, nilaiList: true },
     });
 
-    // Include ALL mapels (same as Syahadah) — no bulan_aktif or bobot_usbu filter
-    const allMapels = kelas.program.programMapels.filter(pm => pm.mapel.masuk_akumulasi !== false);
+    // Include ALL mapels for display — MC, Dubbing, Taqdimul Qishah etc.
+    // Akumulatif calculation still only uses masuk_akumulasi mapels (handled below)
+    const allMapels = kelas.program.programMapels;
 
     // Group riwayat by santriId
     const riwayatBySantri = new Map<string, typeof allAkbarnasRiwayat>();
@@ -86,54 +88,32 @@ export default async function CetakUsbuPrintPage(props: { params: Promise<{ kela
       }
 
       const mapelScores: (number | "-")[] = [];
-      let totalSkorBobot = 0;
-      let totalBobotCalculated = 0;
+      const akumulatifItems: { score: number; bobot: number }[] = [];
 
       for (const pm of allMapels) {
         const nilaiEntries = combinedNilaiMap.get(pm.mapelId) || [];
 
-        // Use nilaiAkhir from DB (consistent with transkrip/input-nilai)
-        const dbScores: number[] = [];
-        for (const n of nilaiEntries) {
-          if (n.nilaiAkhir !== null && n.nilaiAkhir !== undefined) dbScores.push(n.nilaiAkhir);
-        }
+        // Use grade-calculator for Akbarnas gabungan average
+        let grandScore = calcAkbarnasMapelAverage(nilaiEntries);
 
-        let grandScore: number | null = null;
-        if (dbScores.length > 0) {
-          grandScore = Number((dbScores.reduce((a, b) => a + b, 0) / dbScores.length).toFixed(2));
-        } else {
-          // Fallback: recalculate from raw scores if nilaiAkhir not set
-          const allWeeklyScores: number[] = [];
-          for (const n of nilaiEntries) {
-            if (n.nilaiUsbu1 !== null && n.nilaiUsbu1 !== undefined) allWeeklyScores.push(n.nilaiUsbu1);
-            if (n.nilaiUsbu2 !== null && n.nilaiUsbu2 !== undefined) allWeeklyScores.push(n.nilaiUsbu2);
-            if (n.nilaiNihai !== null && n.nilaiNihai !== undefined) allWeeklyScores.push(n.nilaiNihai);
-          }
-          if (allWeeklyScores.length > 0) {
-            grandScore = Number((allWeeklyScores.reduce((a, b) => a + b, 0) / allWeeklyScores.length).toFixed(2));
-          }
-        }
-
-        // Add nilaiTambahan from the latest riwayat entry (capped at 100)
+        // Add nilaiTambahan from the latest riwayat entry
         let tambahan = 0;
         for (const n of nilaiEntries) {
           if (n.nilaiTambahan && n.nilaiTambahan > 0) tambahan = n.nilaiTambahan;
         }
-        if (grandScore !== null && tambahan > 0) grandScore = Math.min(100, grandScore + tambahan);
+        if (grandScore !== null && tambahan > 0) grandScore = applyNilaiTambahan(grandScore, tambahan);
 
         if (grandScore !== null) {
           mapelScores.push(grandScore);
           if (pm.mapel.masuk_akumulasi !== false) {
-            const weight = pm.mapel.bobot ?? 1;
-            totalSkorBobot += grandScore * weight;
-            totalBobotCalculated += weight;
+            akumulatifItems.push({ score: grandScore, bobot: pm.mapel.bobot ?? 1 });
           }
         } else {
           mapelScores.push("-");
         }
       }
 
-      const nilaiAkumulatif = totalSkorBobot > 0 ? Number((totalSkorBobot / 100).toFixed(2)) : 0;
+      const nilaiAkumulatif = calcAkumulatif(akumulatifItems);
 
       return { nama: ms.nama, gender: ms.gender || "-", mapelScores, nilaiAkumulatif };
     }).filter(Boolean) as any[];
@@ -213,8 +193,7 @@ export default async function CetakUsbuPrintPage(props: { params: Promise<{ kela
     const gender = ms?.gender || "-";
 
     const mapelScores: (number | "-")[] = [];
-    let totalSkorBobot = 0;
-    let totalBobotCalculated = 0;
+    const akumulatifItems: { score: number; bobot: number }[] = [];
 
     for (const pm of activeMapels) {
       const match = riwayat.nilaiList.find((n: any) => n.mapelId === pm.mapelId);
@@ -224,22 +203,25 @@ export default async function CetakUsbuPrintPage(props: { params: Promise<{ kela
         if (targetUsbu === 1) score = match.nilaiUsbu1 ?? match.nilaiAkhir;
         if (targetUsbu === 2) score = match.nilaiUsbu2 ?? match.nilaiAkhir;
         if (targetUsbu === 3) score = match.nilaiNihai ?? match.nilaiAkhir;
-        if (targetUsbu === 4) { const base = match.nilaiAkhir; const tmb = match.nilaiTambahan ?? 0; score = base !== null && base !== undefined ? Math.min(100, base + tmb) : null; }
+        if (targetUsbu === 4) {
+          const base = match.nilaiAkhir;
+          const tmb = match.nilaiTambahan ?? 0;
+          score = base !== null && base !== undefined ? applyNilaiTambahan(base, tmb) : null;
+        }
       }
 
       if (score !== null && score !== undefined) {
         mapelScores.push(score);
         if (pm.mapel.masuk_akumulasi !== false) {
           const currentWeight = targetUsbu === 4 ? (pm.mapel.bobot ?? 1) : ((pm.mapel as any).bobot_usbu ?? 1);
-          totalSkorBobot += score * currentWeight;
-          totalBobotCalculated += currentWeight;
+          akumulatifItems.push({ score, bobot: currentWeight });
         }
       } else {
         mapelScores.push("-");
       }
     }
 
-    const nilaiAkumulatif = totalSkorBobot > 0 ? Number((totalSkorBobot / 100).toFixed(2)) : 0;
+    const nilaiAkumulatif = calcAkumulatif(akumulatifItems);
 
     return { nama, gender, mapelScores, nilaiAkumulatif };
   }).filter(Boolean) as any[];

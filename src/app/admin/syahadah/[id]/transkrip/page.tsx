@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import { TranskripDocument } from "@/components/admin/transkrip-document";
 import { getMasterSantriById } from "@/lib/santri-api";
+import { calcAkumulatif } from "@/lib/grade-calculator";
 
 export default async function TranskripPage({ params }: { params: Promise<{ id: string }> }) {
   await requirePermission("cetak_transkrip");
@@ -143,16 +144,10 @@ export default async function TranskripPage({ params }: { params: Promise<{ id: 
   }
 
   // Calculate Grand Average
-  let totalBobot = 0;
-  let totalSkorBobot = 0;
-  for (const item of items) {
-    if (item.masukAkumulasi && item.nilaiAkhir !== null) {
-      totalBobot += item.bobot;
-      totalSkorBobot += item.nilaiAkhir * item.bobot;
-    }
-  }
-
-  const rataRataAkhir = totalSkorBobot > 0 ? Number((totalSkorBobot / 100).toFixed(2)) : 0;
+  const rataRataAkhir = calcAkumulatif(
+    items.filter(item => item.masukAkumulasi && item.nilaiAkhir !== null)
+      .map(item => ({ score: item.nilaiAkhir!, bobot: item.bobot }))
+  );
 
   return (
     <div className="min-h-screen bg-slate-200 p-4 md:p-8">

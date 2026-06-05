@@ -4,6 +4,7 @@ import { calculateStatus } from "@/lib/kelulusan";
 import { getPredikat } from "@/lib/formatters";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { calcMapelNilaiAkhir, calcAkumulatif } from "@/lib/grade-calculator";
 
 type MapelOption = {
   id: string;
@@ -145,15 +146,7 @@ export function InputNilaiForm({
 
 
     const currA = mapel.jumlah_tes === 1 ? (val.a === "" ? null : Number(val.a)) :
-      ((currU1 !== null || currU2 !== null || currN !== null) ? Number(
-        isAkbarnas
-          ? (() => {
-              const activeValues = [currU1, currU2, currN].filter((v): v is number => v !== null);
-              const sum = activeValues.reduce((acc, v) => acc + v, 0);
-              return (sum / activeValues.length).toFixed(2);
-            })()
-          : (((currU1 || 0) * 0.3) + ((currU2 || 0) * 0.3) + ((currN || 0) * 0.4)).toFixed(2)
-      ) : null);
+      calcMapelNilaiAkhir({ u1: currU1, u2: currU2, n: currN }, isAkbarnas);
 
     return {
       mapelId: mapel.id,
@@ -182,9 +175,7 @@ export function InputNilaiForm({
 
   const numericNilai = parsedNilai.filter(n => n.a !== null && n.masuk_akumulasi);
 
-  const totalSkorBobot = numericNilai.reduce((total, nilai) => total + (nilai.skor * nilai.bobot), 0);
-
-  const average = numericNilai.length > 0 ? totalSkorBobot / 100 : 0;
+  const average = calcAkumulatif(numericNilai.map(n => ({ score: n.skor, bobot: n.bobot })));
   const averagePredikat = getPredikat(average);
   const previewStatus = !selectedProgram
     ? "TIDAK_LULUS"
