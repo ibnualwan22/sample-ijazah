@@ -128,13 +128,13 @@ export function IjazahClient({ data }: { data: IjazahClientData }) {
                     <tr key={row.mapelId}>
                       <td style={{ ...tdLabel, borderRight: "none" }}>{row.nama_indo}</td>
                       <td style={{ ...tdColon, borderRight: "none" }}>:</td>
-                      <td style={tdValue}>{row.skor ?? "-"}</td>
+                      <td style={tdValue}>{row.skor !== null ? Math.round(row.skor) : "-"}</td>
                     </tr>
                   ))}
                   <tr>
                     <td style={{ ...tdLabel, borderRight: "none" }}>Nilai Akumulatif</td>
                     <td style={{ ...tdColon, borderRight: "none" }}>:</td>
-                    <td style={tdValue}>{data.average.toFixed(1)}</td>
+                    <td style={tdValue}>{Math.round(data.average)}</td>
                   </tr>
                   <tr>
                     <td style={{ ...tdLabel, borderRight: "none" }}>Predikat</td>

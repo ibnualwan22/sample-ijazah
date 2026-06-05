@@ -65,7 +65,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
   const isMusyarokah = data.status === "MUSYAROKAH";
   const tanggalMulai = data.template.tgl_mulai_arab || "........";
   const tanggalSampai = data.template.tgl_selesai_arab || "........";
-  const averageValue = isMusyarokah ? "" : convertToArabicNumerals(data.average.toFixed(1));
+  const averageValue = isMusyarokah ? "" : convertToArabicNumerals(Math.round(data.average));
   const averagePredikat = isMusyarokah ? "" : data.averagePredikat.arab;
 
   const namaFontSize = lo.namaSantri.fontSize ?? 40;
@@ -286,7 +286,7 @@ export function SyahadahDocument({ qrUrl, data, layout, editorMode, selectedElem
                                   fontSize: "13pt",
                                 }}
                               >
-                                {isMusyarokah || row.skor === null ? "" : convertToArabicNumerals(row.skor)}
+                                {isMusyarokah || row.skor === null ? "" : convertToArabicNumerals(Math.round(row.skor))}
                               </td>
                             </React.Fragment>
                           );

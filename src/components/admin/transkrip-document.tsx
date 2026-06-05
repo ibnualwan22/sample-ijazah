@@ -45,7 +45,7 @@ export function TranskripDocument({
       }
     }
     if (totalBobot === 0) return "-";
-    return (totalScore / totalBobot).toFixed(2);
+    return Math.round(totalScore / totalBobot).toString();
   };
 
   const handlePrint = () => {
@@ -122,19 +122,19 @@ export function TranskripDocument({
               <tr key={idx}>
                 <td className="border border-black p-2 text-left font-bold">{item.mapel}</td>
                 <td className="border border-black p-2">{item.masukAkumulasi ? item.bobot : "-"}</td>
-                <td className="border border-black p-2">{item.b1.u1 ?? "-"}</td>
-                <td className="border border-black p-2">{item.b1.u2 ?? "-"}</td>
-                <td className="border border-black p-2">{item.b1.n ?? "-"}</td>
-                <td className="border border-black p-2 bg-amber-50/50 font-bold">{item.b1.avg ?? "-"}</td>
+                <td className="border border-black p-2">{item.b1.u1 !== null ? Math.round(item.b1.u1) : "-"}</td>
+                <td className="border border-black p-2">{item.b1.u2 !== null ? Math.round(item.b1.u2) : "-"}</td>
+                <td className="border border-black p-2">{item.b1.n !== null ? Math.round(item.b1.n) : "-"}</td>
+                <td className="border border-black p-2 bg-amber-50/50 font-bold">{item.b1.avg !== null && item.b1.avg !== undefined ? Math.round(item.b1.avg) : "-"}</td>
                 {isAkbarnas && (
                   <>
-                    <td className="border border-black p-2">{item.b2.u1 ?? "-"}</td>
-                    <td className="border border-black p-2">{item.b2.u2 ?? "-"}</td>
-                    <td className="border border-black p-2">{item.b2.n ?? "-"}</td>
-                    <td className="border border-black p-2 bg-amber-50/50 font-bold">{item.b2.avg ?? "-"}</td>
+                    <td className="border border-black p-2">{item.b2.u1 !== null ? Math.round(item.b2.u1) : "-"}</td>
+                    <td className="border border-black p-2">{item.b2.u2 !== null ? Math.round(item.b2.u2) : "-"}</td>
+                    <td className="border border-black p-2">{item.b2.n !== null ? Math.round(item.b2.n) : "-"}</td>
+                    <td className="border border-black p-2 bg-amber-50/50 font-bold">{item.b2.avg !== null && item.b2.avg !== undefined ? Math.round(item.b2.avg) : "-"}</td>
                   </>
                 )}
-                <td className="border border-black p-2 bg-emerald-50/30 font-bold">{item.nilaiAkhir ?? "-"}</td>
+                <td className="border border-black p-2 bg-emerald-50/30 font-bold">{item.nilaiAkhir !== null ? Math.round(item.nilaiAkhir) : "-"}</td>
               </tr>
             ))}
             <tr>
@@ -162,7 +162,7 @@ export function TranskripDocument({
                 Total Rata-Rata Akhir (Nilai Syahadah)
               </td>
               <td className="border border-black p-3 font-bold text-lg bg-emerald-100 text-emerald-800">
-                {rataRataAkhir}
+                {Math.round(rataRataAkhir)}
               </td>
             </tr>
           </tbody>

@@ -97,7 +97,7 @@ export function MartabahUlaClient({
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span className="font-black text-[var(--color-text)] text-lg">
-                      {santri.average.toFixed(2)}
+                      {Math.round(santri.average)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">

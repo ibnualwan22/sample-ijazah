@@ -164,9 +164,9 @@ export function CetakUsbuDocument({
                 {row.nama}
               </td>
               {row.mapelScores.map((score, sIdx) => (
-                <td key={sIdx} className="border border-black px-2 py-1">{score}</td>
+                <td key={sIdx} className="border border-black px-2 py-1">{typeof score === "number" ? Math.round(score) : score}</td>
               ))}
-              <td className="border border-black px-2 py-1 font-bold">{row.nilaiAkumulatif}</td>
+              <td className="border border-black px-2 py-1 font-bold">{Math.round(row.nilaiAkumulatif)}</td>
               <td className="border border-black px-2 py-1 font-bold">{row.peringkat}</td>
               <td className="border border-black px-2 py-1">{row.gender}</td>
             </tr>
