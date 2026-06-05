@@ -134,7 +134,14 @@ export function TranskripDocument({
                     <td className="border border-black p-2 bg-amber-50/50 font-bold">{item.b2.avg !== null && item.b2.avg !== undefined ? Math.round(item.b2.avg) : "-"}</td>
                   </>
                 )}
-                <td className="border border-black p-2 bg-emerald-50/30 font-bold">{item.nilaiAkhir !== null ? Math.round(item.nilaiAkhir) : "-"}</td>
+                <td className="border border-black p-2 bg-emerald-50/30 font-bold">
+                  {item.nilaiAkhir !== null ? (
+                    <div className="flex flex-col items-center">
+                      <span>{item.nilaiAkhir.toFixed(2)}</span>
+                      <span className="text-[9px] text-emerald-700 font-black">({Math.round(item.nilaiAkhir)})</span>
+                    </div>
+                  ) : "-"}
+                </td>
               </tr>
             ))}
             <tr>
@@ -161,8 +168,11 @@ export function TranskripDocument({
               <td colSpan={isAkbarnas ? 10 : 6} className="border border-black p-3 text-right font-bold uppercase tracking-widest bg-slate-100">
                 Total Rata-Rata Akhir (Nilai Syahadah)
               </td>
-              <td className="border border-black p-3 font-bold text-lg bg-emerald-100 text-emerald-800">
-                {Math.round(rataRataAkhir)}
+              <td className="border border-black p-3 font-bold bg-emerald-100 text-emerald-800">
+                <div className="flex flex-col items-center">
+                  <span className="text-base">{rataRataAkhir.toFixed(2)}</span>
+                  <span className="text-lg font-black">({Math.round(rataRataAkhir)})</span>
+                </div>
               </td>
             </tr>
           </tbody>

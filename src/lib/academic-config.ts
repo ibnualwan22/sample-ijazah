@@ -138,7 +138,7 @@ export const PROGRAM_SEED_DATA: AcademicProgramConfig[] = [
       { nama_indo: "Arabiyah Lin Nasyiin", nama_arab: "العربية للناشئين", bobot_usbu: 15, bobot: 0 },
       { nama_indo: "MC", nama_arab: "إم سي", bobot_usbu: 0, bobot: 0, masuk_akumulasi: false },
       { nama_indo: "Dubbing", nama_arab: "الدبلجة", bobot_usbu: 0, bobot: 0, masuk_akumulasi: false },
-      { nama_indo: "Taqdimul Qishah", nama_arab: "تقديم القصة", bobot_usbu: 0, bobot: 0, masuk_akumulasi: false }
+      { nama_indo: "Taqdimul Qishah", nama_arab: "تقديم القصة", bobot_usbu: 0, bobot: 7, masuk_akumulasi: true }
     ]
   }
 ];

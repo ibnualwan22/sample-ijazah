@@ -43,7 +43,7 @@ export default async function TranskripPage({ params }: { params: Promise<{ id: 
       program: isAkbarnas ? { nama_indo: { contains: "akbarnas", mode: "insensitive" } } : { id: activeRiwayat.program.id }
     },
     include: { nilaiList: true },
-    orderBy: { id: 'asc' }
+    orderBy: { dufahNama: 'asc' }
   });
 
   const b1Riwayat = riwayats[0];

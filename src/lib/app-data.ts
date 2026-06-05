@@ -245,12 +245,11 @@ export async function getDashboardSantriRows() {
           }
 
           let grandNilaiAkhir = null;
-          if (allWeeklyScores.length > 0) {
-            const sum = allWeeklyScores.reduce((a, b) => a + b, 0);
-            grandNilaiAkhir = Number((sum / allWeeklyScores.length).toFixed(2));
-          } else if (directScores.length > 0) {
-            const sum = directScores.reduce((a, b) => a + b, 0);
-            grandNilaiAkhir = Number((sum / directScores.length).toFixed(2));
+          // Combine all scores: weekly (U1/U2/Nihai) + direct (nilaiAkhir for jumlah_tes_b2=1 mapels)
+          const allScores = [...allWeeklyScores, ...directScores];
+          if (allScores.length > 0) {
+            const sum = allScores.reduce((a, b) => a + b, 0);
+            grandNilaiAkhir = Number((sum / allScores.length).toFixed(2));
           }
 
           mergedNilaiList.push({

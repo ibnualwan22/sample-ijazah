@@ -106,10 +106,9 @@ export default async function CetakUsbuPrintPage(props: { params: Promise<{ kela
         }
 
         let grandScore: number | null = null;
-        if (allWeeklyScores.length > 0) {
-          grandScore = Number((allWeeklyScores.reduce((a, b) => a + b, 0) / allWeeklyScores.length).toFixed(2));
-        } else if (directScores.length > 0) {
-          grandScore = Number((directScores.reduce((a, b) => a + b, 0) / directScores.length).toFixed(2));
+        const allScores = [...allWeeklyScores, ...directScores];
+        if (allScores.length > 0) {
+          grandScore = Number((allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(2));
         }
 
         if (grandScore !== null) {
