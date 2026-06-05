@@ -2,7 +2,7 @@ import { getCertificateData } from "@/lib/app-data";
 import { getBaseUrl } from "@/lib/base-url";
 import { notFound } from "next/navigation";
 import { SyahadahEditor } from "@/components/syahadah-editor";
-import { getLayoutForRiwayat, getProgramLayout, getGlobalLayout } from "@/lib/syahadah-layout";
+import { getLayoutForRiwayat, getProgramLayout, getGlobalLayout, getMusyarokahLayout, getMusyarokahLayoutForRiwayat } from "@/lib/syahadah-layout";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -54,13 +54,24 @@ export default async function CetakPage({
   const programId = data.program?.id ?? null;
   
   // Fetch layout: per-santri override → per-program → global → default
+  // Use musyarokah-specific layout if status is MUSYAROKAH
   let layout;
-  if (riwayatId && programId) {
-    layout = await getLayoutForRiwayat(riwayatId, programId);
-  } else if (programId) {
-    layout = await getProgramLayout(programId);
+  const isMusyarokah = data.status === "MUSYAROKAH";
+  
+  if (isMusyarokah) {
+    if (riwayatId && programId) {
+      layout = await getMusyarokahLayoutForRiwayat(riwayatId, programId);
+    } else {
+      layout = await getMusyarokahLayout(programId);
+    }
   } else {
-    layout = await getGlobalLayout();
+    if (riwayatId && programId) {
+      layout = await getLayoutForRiwayat(riwayatId, programId);
+    } else if (programId) {
+      layout = await getProgramLayout(programId);
+    } else {
+      layout = await getGlobalLayout();
+    }
   }
 
   return (

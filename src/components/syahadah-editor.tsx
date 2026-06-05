@@ -11,6 +11,7 @@ type SyahadahEditorProps = {
   riwayatId?: string | null; // null = global or per-program
   programId?: string | null;
   mode: "global" | "per-program" | "per-santri";
+  musyarokah?: boolean;
   backHref: string;
   backLabel: string;
   titleLabel?: string;
@@ -25,6 +26,7 @@ export function SyahadahEditor({
   riwayatId,
   programId,
   mode,
+  musyarokah,
   backHref,
   backLabel,
   titleLabel,
@@ -70,6 +72,7 @@ export function SyahadahEditor({
           riwayatId: mode === "per-santri" ? riwayatId : null,
           programId: mode === "per-program" ? programId : null,
           layoutData: layout,
+          musyarokah: musyarokah === true,
         }),
       });
       if (res.ok) {
@@ -81,7 +84,7 @@ export function SyahadahEditor({
     } finally {
       setSaving(false);
     }
-  }, [layout, mode, riwayatId, programId]);
+  }, [layout, mode, riwayatId, programId, musyarokah]);
 
   // Keyboard handler
   useEffect(() => {

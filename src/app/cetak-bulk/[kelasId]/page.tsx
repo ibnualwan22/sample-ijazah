@@ -49,17 +49,31 @@ export default async function CetakBulkPage({
     eligibleSantris.map(async (santri) => {
       const data = await getCertificateData(santri.id);
       
-      let layout = globalLayout;
       const programId = data?.program?.id;
+      const isMusyarokah = data?.status === "MUSYAROKAH";
       
-      // Try per-program layout
-      if (programId && programLayouts.has(programId)) {
-        layout = programLayouts.get(programId);
-      }
+      let layout = globalLayout;
       
-      // Try per-santri layout override
-      if (data?.riwayatSantri?.id && programId) {
-        layout = await getLayoutForRiwayat(data.riwayatSantri.id, programId);
+      if (isMusyarokah) {
+        // Use musyarokah-specific layout
+        const { getMusyarokahLayout, getMusyarokahLayoutForRiwayat } = await import("@/lib/syahadah-layout");
+        if (data?.riwayatSantri?.id && programId) {
+          layout = await getMusyarokahLayoutForRiwayat(data.riwayatSantri.id, programId);
+        } else if (programId) {
+          layout = await getMusyarokahLayout(programId);
+        } else {
+          layout = await getMusyarokahLayout(null);
+        }
+      } else {
+        // Try per-program layout
+        if (programId && programLayouts.has(programId)) {
+          layout = programLayouts.get(programId);
+        }
+        
+        // Try per-santri layout override
+        if (data?.riwayatSantri?.id && programId) {
+          layout = await getLayoutForRiwayat(data.riwayatSantri.id, programId);
+        }
       }
       
       return { id: santri.id, data, layout };

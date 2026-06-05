@@ -125,24 +125,79 @@ export async function getProgramLayout(programId: string): Promise<LayoutData> {
   return getGlobalLayout();
 }
 
-/** Save layout (global, per-program, or per-santri) */
+// ===== MUSYAROKAH LAYOUT =====
+
+/** Fetch musyarokah layout for a specific program, falling back to global musyarokah, then global default */
+export async function getMusyarokahLayout(programId: string | null): Promise<LayoutData> {
+  if (programId) {
+    const perProgram = await prisma.syahadahLayout.findUnique({
+      where: { programId },
+    });
+    if (perProgram?.musyarokahLayoutData) {
+      return mergeLayout(perProgram.musyarokahLayoutData as Partial<LayoutData>);
+    }
+  }
+
+  // Fallback to global musyarokah
+  const global = await prisma.syahadahLayout.findFirst({
+    where: { riwayatId: null, programId: null },
+  });
+  if (global?.musyarokahLayoutData) {
+    return mergeLayout(global.musyarokahLayoutData as Partial<LayoutData>);
+  }
+
+  // Fallback to regular global layout
+  return getGlobalLayout();
+}
+
+/** Fetch musyarokah layout for a specific riwayat, falling back chain */
+export async function getMusyarokahLayoutForRiwayat(riwayatId: string, programId: string): Promise<LayoutData> {
+  // 1. Per-santri musyarokah override
+  const perSantri = await prisma.syahadahLayout.findUnique({
+    where: { riwayatId },
+  });
+  if (perSantri?.musyarokahLayoutData) {
+    return mergeLayout(perSantri.musyarokahLayoutData as Partial<LayoutData>);
+  }
+
+  // 2. Per-program musyarokah → global musyarokah → global default
+  return getMusyarokahLayout(programId);
+}
+
+/** Save layout (global, per-program, or per-santri). Set musyarokah=true to save to musyarokahLayoutData. */
 export async function saveLayout(
-  params: { riwayatId?: string | null; programId?: string | null },
+  params: { riwayatId?: string | null; programId?: string | null; musyarokah?: boolean },
   layoutData: LayoutData
 ) {
+  const isMusyarokah = params.musyarokah === true;
+
   if (params.riwayatId) {
     // Per-santri: upsert by riwayatId
     await prisma.syahadahLayout.upsert({
       where: { riwayatId: params.riwayatId },
-      update: { layoutData: layoutData as any },
-      create: { riwayatId: params.riwayatId, programId: null, layoutData: layoutData as any },
+      update: isMusyarokah
+        ? { musyarokahLayoutData: layoutData as any }
+        : { layoutData: layoutData as any },
+      create: {
+        riwayatId: params.riwayatId,
+        programId: null,
+        layoutData: (isMusyarokah ? getDefaultLayout() : layoutData) as any,
+        ...(isMusyarokah ? { musyarokahLayoutData: layoutData as any } : {}),
+      },
     });
   } else if (params.programId) {
     // Per-program: upsert by programId
     await prisma.syahadahLayout.upsert({
       where: { programId: params.programId },
-      update: { layoutData: layoutData as any },
-      create: { riwayatId: null, programId: params.programId, layoutData: layoutData as any },
+      update: isMusyarokah
+        ? { musyarokahLayoutData: layoutData as any }
+        : { layoutData: layoutData as any },
+      create: {
+        riwayatId: null,
+        programId: params.programId,
+        layoutData: (isMusyarokah ? getDefaultLayout() : layoutData) as any,
+        ...(isMusyarokah ? { musyarokahLayoutData: layoutData as any } : {}),
+      },
     });
   } else {
     // Global: upsert the single global record
@@ -152,11 +207,18 @@ export async function saveLayout(
     if (existing) {
       await prisma.syahadahLayout.update({
         where: { id: existing.id },
-        data: { layoutData: layoutData as any },
+        data: isMusyarokah
+          ? { musyarokahLayoutData: layoutData as any }
+          : { layoutData: layoutData as any },
       });
     } else {
       await prisma.syahadahLayout.create({
-        data: { riwayatId: null, programId: null, layoutData: layoutData as any },
+        data: {
+          riwayatId: null,
+          programId: null,
+          layoutData: (isMusyarokah ? getDefaultLayout() : layoutData) as any,
+          ...(isMusyarokah ? { musyarokahLayoutData: layoutData as any } : {}),
+        },
       });
     }
   }

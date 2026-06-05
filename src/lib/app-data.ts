@@ -602,7 +602,9 @@ export async function getCertificateData(id: string) {
 
   const nilaiRows = allProgramMapels.map((programMapel: any) => {
     const nilai = nilaiMap.get(programMapel.mapel.id);
-    const skor = nilai?.nilaiAkhir ?? null;
+    const baseScore = nilai?.nilaiAkhir ?? null;
+    const tambahan = nilai?.nilaiTambahan ?? 0;
+    const skor = baseScore !== null ? Math.min(100, baseScore + tambahan) : null;
 
     return {
       mapelId: programMapel.mapel.id,
@@ -612,6 +614,7 @@ export async function getCertificateData(id: string) {
       nilaiUsbu2: nilai?.nilaiUsbu2 ?? null,
       nilaiNihai: nilai?.nilaiNihai ?? null,
       nilaiAkhir: nilai?.nilaiAkhir ?? null,
+      nilaiTambahan: tambahan,
       skor,
       predikat: skor === null ? null : getPredikat(skor),
       masuk_akumulasi: programMapel.mapel.masuk_akumulasi ?? true,

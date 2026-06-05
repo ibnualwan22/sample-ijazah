@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 
 type StatusKelulusan = "LULUS" | "TIDAK_LULUS" | "MUSYAROKAH";
@@ -36,6 +36,20 @@ function statusClass(status: string) {
   return "bg-[var(--color-danger-light)] text-[var(--color-danger)]";
 }
 
+// Simple SVG icons
+function IconCheck({ className }: { className?: string }) {
+  return <svg className={className} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>;
+}
+function IconAlert({ className }: { className?: string }) {
+  return <svg className={className} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
+}
+function IconX({ className }: { className?: string }) {
+  return <svg className={className} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+}
+function IconPrinter({ className }: { className?: string }) {
+  return <svg className={className} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>;
+}
+
 export function SyahadahClient({
   santriRows,
   programList,
@@ -43,17 +57,36 @@ export function SyahadahClient({
   santriRows: DashboardSantri[];
   programList: ProgramItem[];
 }) {
-  const [filterKelasId, setFilterKelasId] = useState<string>("ALL");
+  // Build class chips data
+  const classChips = useMemo(() => {
+    const chips: { id: string; label: string; group: string; count: number }[] = [];
 
-  const allOptions = [
-    { id: "ALL", label: "Semua Santri", group: "" },
-    ...programList.flatMap((program) =>
-      program.kelasList.length > 0
-        ? program.kelasList.map((k) => ({ id: k.id, label: k.nama, group: program.nama_indo }))
-        : [{ id: `PROGRAM_${program.id}`, label: program.nama_indo, group: "Program" }]
-    ),
-    { id: "UNASSIGNED", label: "Belum Ditempatkan", group: "" },
-  ];
+    for (const program of programList) {
+      if (program.kelasList.length > 0) {
+        for (const k of program.kelasList) {
+          const count = santriRows.filter(s => s.kelasId === k.id).length;
+          if (count > 0) {
+            chips.push({ id: k.id, label: k.nama, group: program.nama_indo, count });
+          }
+        }
+      } else {
+        const count = santriRows.filter(s => s.programId === program.id && !s.kelasId).length;
+        if (count > 0) {
+          chips.push({ id: `PROGRAM_${program.id}`, label: program.nama_indo, group: "Program", count });
+        }
+      }
+    }
+
+    const unassigned = santriRows.filter(s => s.programId === null).length;
+    if (unassigned > 0) {
+      chips.push({ id: "UNASSIGNED", label: "Belum Ditempatkan", group: "", count: unassigned });
+    }
+
+    return chips;
+  }, [santriRows, programList]);
+
+  // Default to first class chip instead of ALL
+  const [filterKelasId, setFilterKelasId] = useState<string>(classChips[0]?.id ?? "ALL");
 
   const filteredSantri = santriRows.filter((santri) => {
     if (filterKelasId === "ALL") return true;
@@ -65,51 +98,77 @@ export function SyahadahClient({
     return santri.kelasId === filterKelasId;
   });
 
-  const totalTasmi = filteredSantri.filter((santri) => santri.isTasmi).length;
-  const totalSiapCetak = filteredSantri.filter((santri) => santri.canPrintSyahadah).length;
-  const selectedLabel = allOptions.find((o) => o.id === filterKelasId)?.label ?? "Semua Santri";
-  const selectedCount = filteredSantri.length;
+  // Compute stats for filtered
+  const stats = useMemo(() => {
+    const lulus = filteredSantri.filter(s => s.statusKelulusan === "LULUS").length;
+    const musyarokah = filteredSantri.filter(s => s.statusKelulusan === "MUSYAROKAH").length;
+    const tidakLulus = filteredSantri.filter(s => s.statusKelulusan === "TIDAK_LULUS").length;
+    const siapCetak = filteredSantri.filter(s => s.canPrintSyahadah).length;
+    const totalTasmi = filteredSantri.filter(s => s.isTasmi).length;
+    return { lulus, musyarokah, tidakLulus, siapCetak, totalTasmi, total: filteredSantri.length };
+  }, [filteredSantri]);
+
+  const isRealKelas = filterKelasId !== "ALL" && filterKelasId !== "UNASSIGNED" && !filterKelasId.startsWith("PROGRAM_");
 
   return (
-    <div className="space-y-6">
-      {/* Filter + Summary Row */}
-      <section className="overflow-hidden neu-card-white">
-        <div className="flex flex-col gap-4 border-b border-[var(--color-surface-dark)] px-6 py-5 md:flex-row md:items-end md:justify-between">
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:gap-4">
-            {/* Dropdown Filter */}
-            <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
-                Filter Kelas / Ruangan
-              </label>
-              <select
-                value={filterKelasId}
-                onChange={(e) => setFilterKelasId(e.target.value)}
-                className="rounded-2xl border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:bg-white"
+    <div className="space-y-5">
+      {/* Class Chips */}
+      <section className="neu-card-white overflow-hidden">
+        <div className="px-6 py-5 border-b border-[var(--color-surface-dark)]">
+          <label className="mb-3 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+            Pilih Kelas / Ruangan
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {classChips.map(chip => (
+              <button
+                key={chip.id}
+                onClick={() => setFilterKelasId(chip.id)}
+                className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 border ${
+                  filterKelasId === chip.id
+                    ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-md shadow-emerald-200/50"
+                    : "bg-[var(--color-secondary)] text-[var(--color-text)] border-[var(--color-surface-dark)] hover:border-[var(--color-primary-100)] hover:bg-white"
+                }`}
               >
-                {allOptions.map((opt) => (
-                  <option key={opt.id} value={opt.id}>
-                    {opt.group ? `${opt.group} — ${opt.label}` : opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <span>{chip.label}</span>
+                <span className={`inline-flex items-center justify-center rounded-full px-1.5 min-w-[20px] h-5 text-[10px] font-bold ${
+                  filterKelasId === chip.id
+                    ? "bg-white/20 text-white"
+                    : "bg-[var(--color-surface)] text-[var(--color-text-muted)]"
+                }`}>
+                  {chip.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
 
-            {/* Summary Stats */}
-            <div className="flex flex-wrap items-center gap-3 text-sm">
-              <span className="rounded-2xl bg-[var(--color-surface)] px-3 py-1.5 font-semibold text-[var(--color-text)]">
-                {selectedCount} santri
-              </span>
-              <span className="rounded-2xl bg-[var(--color-primary-50)] px-3 py-1.5 font-semibold text-[var(--color-primary)]">
-                {totalTasmi} Tasmi&apos;
-              </span>
-              <span className="rounded-2xl bg-[var(--color-warning-light)] px-3 py-1.5 font-semibold text-[var(--color-warning)]">
-                {totalSiapCetak} Siap Cetak
-              </span>
+        {/* Stats Bar */}
+        <div className="px-6 py-4 flex flex-wrap items-center gap-x-6 gap-y-3 bg-[var(--color-surface)]/30">
+          <div className="flex items-center gap-5 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-600"><IconCheck /></span>
+              <span className="text-sm font-bold text-emerald-700">{stats.lulus}</span>
+              <span className="text-xs text-[var(--color-text-muted)]">Lulus</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-600"><IconAlert /></span>
+              <span className="text-sm font-bold text-amber-700">{stats.musyarokah}</span>
+              <span className="text-xs text-[var(--color-text-muted)]">Musyarokah</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-100 text-red-600"><IconX /></span>
+              <span className="text-sm font-bold text-red-700">{stats.tidakLulus}</span>
+              <span className="text-xs text-[var(--color-text-muted)]">Tidak Lulus</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600"><IconPrinter /></span>
+              <span className="text-sm font-bold text-blue-700">{stats.siapCetak}</span>
+              <span className="text-xs text-[var(--color-text-muted)]">Siap Cetak</span>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 ml-auto">
             <Link
               href="/admin/input-nilai-kelas"
               className="rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-dark)] shadow-sm"
@@ -118,36 +177,32 @@ export function SyahadahClient({
             </Link>
             <Link
               href="/admin/manajemen-kelas"
-              className="rounded-full border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition hover:border-[var(--color-primary-100)] hover:bg-white hover:text-[var(--color-primary)]"
+              className="rounded-full border border-[var(--color-surface-dark)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition hover:border-[var(--color-primary-100)] hover:text-[var(--color-primary)]"
             >
-              Atur Penempatan Kelas
-            </Link>
-            <Link
-              href="/admin/master-data"
-              className="rounded-full border border-[var(--color-surface-dark)] bg-[var(--color-secondary)] px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition hover:border-[var(--color-primary-100)] hover:bg-white hover:text-[var(--color-primary)]"
-            >
-              Atur KKM &amp; Template
+              Atur Kelas
             </Link>
             <Link
               href="/layout-editor"
               className="rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-[var(--color-info)] transition hover:border-blue-300 hover:bg-blue-100"
             >
-              🎨 Atur Layout Syahadah
+              Layout Syahadah
             </Link>
-            {filterKelasId !== "ALL" && filterKelasId !== "UNASSIGNED" && !filterKelasId.startsWith("PROGRAM_") && (
+            {isRealKelas && (
               <a
                 href={`/cetak-bulk/${filterKelasId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full bg-[var(--color-warning)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-warning)] shadow-sm"
+                className="rounded-full bg-[var(--color-warning)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110 shadow-sm"
               >
-                Cetak Syahadah (Ruangan)
+                Cetak Syahadah ({stats.siapCetak})
               </a>
             )}
           </div>
         </div>
+      </section>
 
-        {/* Table */}
+      {/* Table */}
+      <section className="overflow-hidden neu-card-white">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-[var(--color-surface-dark)] text-left">
             <thead className="bg-[var(--color-secondary)] text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">

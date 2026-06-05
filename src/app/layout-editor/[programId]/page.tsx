@@ -1,6 +1,6 @@
 import { getCertificateData, getDashboardSantriRows } from "@/lib/app-data";
 import { getBaseUrl } from "@/lib/base-url";
-import { getProgramLayout, getGlobalLayout } from "@/lib/syahadah-layout";
+import { getProgramLayout, getGlobalLayout, getMusyarokahLayout } from "@/lib/syahadah-layout";
 import { ProgramLayoutEditorClient } from "@/components/admin/program-layout-editor";
 import { Metadata } from "next";
 import prisma from "@/lib/prisma";
@@ -31,6 +31,7 @@ export default async function ProgramLayoutEditorPage({
 
   const baseUrl = await getBaseUrl();
   const layout = isGlobal ? await getGlobalLayout() : await getProgramLayout(programId);
+  const musyarokahLayout = await getMusyarokahLayout(isGlobal ? null : programId);
   
   // If editing global, pass null as programId to save function.
   const actualProgramId = isGlobal ? null : programId;
@@ -134,10 +135,15 @@ export default async function ProgramLayoutEditorPage({
     sampleQrUrl = `${baseUrl}/preview`;
   }
 
+  // Build musyarokah sample data (clone and set status)
+  const musyarokahSampleData = sampleData ? { ...sampleData, status: "MUSYAROKAH" } : null;
+
   return (
     <ProgramLayoutEditorClient
       initialLayout={layout}
+      initialMusyarokahLayout={musyarokahLayout}
       sampleData={sampleData}
+      musyarokahSampleData={musyarokahSampleData}
       sampleQrUrl={sampleQrUrl}
       programId={actualProgramId}
       programName={programName}
