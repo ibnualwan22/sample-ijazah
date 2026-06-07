@@ -50,7 +50,7 @@ type ApiSantriResponse = {
   kategori?: string;
 };
 
-const SANTRI_API_URL = "https://ppdb-markaz.vercel.app/api/santri";
+const PPDB_URL = process.env.NEXT_PUBLIC_PPDB_URL || "https://ppdb.markazarabiyah.site";
 
 function normalizeSantri(santri: ApiSantriResponse): MasterSantri {
   const assignedRiwayat = santri.riwayat?.find((riwayat) => riwayat.status === "ASSIGNED");
@@ -78,7 +78,8 @@ function normalizeSantri(santri: ApiSantriResponse): MasterSantri {
 
 export async function getMasterSantriList(): Promise<MasterSantri[]> {
   try {
-    const response = await fetch(SANTRI_API_URL, {
+    const apiKey = process.env.PPDB_API_KEY || "markaz-siakad-api-2026";
+    const response = await fetch(`${PPDB_URL}/api/santri/siakad?key=${apiKey}&filter=AKTIF`, {
       next: { revalidate: 86400, tags: ["santri-data"] },
     });
 
