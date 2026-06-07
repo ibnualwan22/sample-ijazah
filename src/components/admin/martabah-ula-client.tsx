@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { convertToArabicNumerals } from "@/lib/formatters";
+import { Crown, Trophy } from "lucide-react";
 
 type MartabahUlaRow = {
   id: string; // santriId
@@ -23,7 +23,7 @@ export function MartabahUlaClient({
 }: {
   santriRows: MartabahUlaRow[];
 }) {
-  const martabahUlaList = useMemo(() => {
+  const { martabahUlaList, globalTopId } = useMemo(() => {
     // 1. Filter santri yang nilai akhirnya sudah lengkap (canViewIjazah)
     const completed = santriRows.filter((s) => s.canViewIjazah && s.statusKelulusan !== "TIDAK_LULUS");
 
@@ -42,14 +42,21 @@ export function MartabahUlaClient({
       // Sort by average descending
       students.sort((a, b) => b.average - a.average);
       if (students.length > 0) {
-        // Here we just pick the first one (the highest).
-        // Tie break is naturally handled by the sort algorithm (first one wins, or we can add secondary criteria).
         topStudents.push(students[0]);
       }
     }
 
     // 4. Sort by program name
-    return topStudents.sort((a, b) => a.programNama.localeCompare(b.programNama, "id"));
+    const sorted = topStudents.sort((a, b) => a.programNama.localeCompare(b.programNama, "id"));
+
+    // 5. Find the global top scorer (king of all Martabah Ula)
+    let globalTopId: string | null = null;
+    if (sorted.length > 0) {
+      const highest = sorted.reduce((best, curr) => curr.average > best.average ? curr : best, sorted[0]);
+      globalTopId = highest.id;
+    }
+
+    return { martabahUlaList: sorted, globalTopId };
   }, [santriRows]);
 
   return (
@@ -79,47 +86,88 @@ export function MartabahUlaClient({
                   <div className="flex flex-col items-center justify-center gap-2">
                     <span className="text-2xl">🏆</span>
                     <p>Belum ada santri peraih Martabah Ula.</p>
-                    <p className="text-xs">Pastikan Usbu' Nihai sudah terisi untuk semua mapel.</p>
+                    <p className="text-xs">Pastikan Usbu&apos; Nihai sudah terisi untuk semua mapel.</p>
                   </div>
                 </td>
               </tr>
             ) : (
-              martabahUlaList.map((santri) => (
-                <tr key={santri.programId} className="hover:bg-[var(--color-secondary)] transition">
-                  <td className="px-6 py-4">
-                    <span className="font-semibold text-[var(--color-primary)] bg-[var(--color-primary-50)] px-3 py-1 rounded-full text-xs">
-                      {santri.programNama}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="font-bold text-[var(--color-text)]">{santri.nama}</div>
-                    <div className="text-xs text-[var(--color-text-muted)]">{santri.lokasi}</div>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="font-black text-[var(--color-text)] text-lg">
-                      {Math.round(santri.average)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="font-bold text-[var(--color-warning)] bg-[var(--color-warning-light)] px-3 py-1 rounded-full text-[10px] uppercase tracking-wider">
-                        Martabah Ula
+              martabahUlaList.map((santri) => {
+                const isGlobalTop = santri.id === globalTopId;
+                return (
+                  <tr
+                    key={santri.programId}
+                    className={`transition ${isGlobalTop
+                      ? "bg-gradient-to-r from-amber-50/80 via-yellow-50/60 to-amber-50/80 hover:from-amber-100/80 hover:via-yellow-100/60 hover:to-amber-100/80"
+                      : "hover:bg-[var(--color-secondary)]"
+                    }`}
+                  >
+                    <td className="px-6 py-4">
+                      <span className="font-semibold text-[var(--color-primary)] bg-[var(--color-primary-50)] px-3 py-1 rounded-full text-xs">
+                        {santri.programNama}
                       </span>
-                      <span className="text-xs text-[var(--color-text-muted)] font-arabic" dir="rtl">
-                        الامتياز مع مرتبة الشرف الأولى
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        {isGlobalTop && (
+                          <span className="relative flex-shrink-0" title="Nilai Tertinggi dari Seluruh Program">
+                            <Crown className="w-6 h-6 text-amber-500 drop-shadow-sm" fill="#f59e0b" strokeWidth={1.5} />
+                            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                            </span>
+                          </span>
+                        )}
+                        <div>
+                          <div className={`font-bold ${isGlobalTop ? "text-amber-800" : "text-[var(--color-text)]"}`}>
+                            {santri.nama}
+                          </div>
+                          <div className="text-xs text-[var(--color-text-muted)]">{santri.lokasi}</div>
+                          {isGlobalTop && (
+                            <div className="text-[10px] font-bold text-amber-600 mt-0.5 tracking-wider uppercase flex items-center gap-1">
+                              <Trophy className="w-3 h-3" />
+                              Nilai Tertinggi Seluruh Program
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`font-black text-lg ${isGlobalTop ? "text-amber-700" : "text-[var(--color-text)]"}`}>
+                        {santri.average.toFixed(2)}
                       </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <Link
-                      href={`/admin/syahadah/${santri.id}/transkrip`}
-                      className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 text-xs font-semibold text-[var(--color-info)] transition hover:bg-blue-100"
-                    >
-                      Lihat Syahadah
-                    </Link>
-                  </td>
-                </tr>
-              ))
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex flex-col items-center gap-1">
+                        <span className={`font-bold px-3 py-1 rounded-full text-[10px] uppercase tracking-wider ${isGlobalTop
+                          ? "text-amber-800 bg-amber-200/80 ring-1 ring-amber-300"
+                          : "text-[var(--color-warning)] bg-[var(--color-warning-light)]"
+                        }`}>
+                          Martabah Ula
+                        </span>
+                        <span className="text-xs text-[var(--color-text-muted)] font-arabic" dir="rtl">
+                          الامتياز مع مرتبة الشرف الأولى
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/admin/syahadah/${santri.id}/transkrip`}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-600 transition hover:bg-emerald-100"
+                        >
+                          Transkrip
+                        </Link>
+                        <Link
+                          href={`/admin/syahadah/${santri.id}/transkrip`}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-4 py-2 text-xs font-semibold text-[var(--color-info)] transition hover:bg-blue-100"
+                        >
+                          Lihat Syahadah
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -127,3 +175,4 @@ export function MartabahUlaClient({
     </div>
   );
 }
+

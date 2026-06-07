@@ -1,3 +1,4 @@
+import { cache } from "react";
 import prisma from "@/lib/prisma";
 import { calculateStatus } from "@/lib/kelulusan";
 import { formatDateIndo, getPredikat, translateDateToArabic } from "@/lib/formatters";
@@ -22,23 +23,61 @@ const programInclude = {
 };
 
 async function checkMartabahUla(programId: string, dufahNama: string, riwayatId: string): Promise<boolean> {
-  const allRows = await getDashboardSantriRows();
-  
-  const programStudents = allRows.filter((s: any) => 
-    s.programId === programId && 
-    s.isAktif && 
-    s.canViewIjazah && 
-    s.statusKelulusan !== "TIDAK_LULUS"
-  );
+  // Query langsung ke DB: hanya ambil riwayat dari program yang sama
+  const riwayatList = await prisma.riwayatSantri.findMany({
+    where: {
+      programId,
+      status_kelulusan: { not: "TIDAK_LULUS" },
+    },
+    include: {
+      nilaiList: {
+        include: { mapel: true },
+      },
+      program: {
+        include: {
+          programMapels: {
+            include: { mapel: true },
+          },
+        },
+      },
+    },
+  });
 
-  if (programStudents.length === 0) {
+  if (riwayatList.length === 0) {
     return false;
   }
 
-  programStudents.sort((a: any, b: any) => b.average - a.average);
-  const topStudent = programStudents[0];
+  // Hitung rata-rata akumulatif per riwayat langsung dari nilai di DB
+  let highestAverage = -1;
+  let topRiwayatId: string | null = null;
 
-  return topStudent.riwayatId === riwayatId;
+  for (const riwayat of riwayatList) {
+    const program = riwayat.program;
+    if (!program) continue;
+
+    const totalMapel = program.programMapels.length;
+    if (totalMapel === 0 || riwayat.nilaiList.length < totalMapel) continue;
+
+    const accItems: { score: number; bobot: number }[] = [];
+    for (const nilai of riwayat.nilaiList) {
+      const pm = program.programMapels.find((p: any) => p.mapelId === nilai.mapelId);
+      if (!pm || pm.mapel.masuk_akumulasi === false) continue;
+
+      const base = nilai.nilaiAkhir;
+      if (base === null) continue;
+
+      const score = applyNilaiTambahan(base, nilai.nilaiTambahan ?? 0);
+      accItems.push({ score, bobot: pm.mapel.bobot ?? 1 });
+    }
+
+    const avg = calcAkumulatif(accItems);
+    if (avg > highestAverage) {
+      highestAverage = avg;
+      topRiwayatId = riwayat.id;
+    }
+  }
+
+  return topRiwayatId === riwayatId;
 }
 
 function buildDefaultTemplate() {
@@ -129,7 +168,7 @@ export async function getTemplateData() {
   return template ?? buildDefaultTemplate();
 }
 
-export async function getDashboardSantriRows() {
+export const getDashboardSantriRows = cache(async function getDashboardSantriRows() {
   const [masterSantriList, initialRiwayatList, activeDufahName] = await Promise.all([
     getMasterSantriList(),
     prisma.riwayatSantri.findMany({
@@ -298,7 +337,7 @@ export async function getDashboardSantriRows() {
       };
     })
     .sort((left: any, right: any) => left.nama.localeCompare(right.nama, "id"));
-}
+});
 
 export async function getSantriFormData(id: string) {
   let riwayatMatch = await prisma.riwayatSantri.findUnique({
