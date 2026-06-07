@@ -79,7 +79,7 @@ function normalizeSantri(santri: ApiSantriResponse): MasterSantri {
 export async function getMasterSantriList(): Promise<MasterSantri[]> {
   try {
     const response = await fetch(SANTRI_API_URL, {
-      cache: "no-store",
+      next: { revalidate: 86400, tags: ["santri-data"] },
     });
 
     if (!response.ok) {

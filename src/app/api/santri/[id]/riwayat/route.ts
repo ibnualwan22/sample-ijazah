@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { calcMapelNilaiAkhir, calcAkumulatif } from '@/lib/grade-calculator';
 
 export async function GET(
   request: Request,
@@ -88,13 +89,53 @@ export async function GET(
           is_tasmi: dataRiwayat.is_tasmi,
           status_kelulusan: dataRiwayat.status_kelulusan,
         },
-        nilai_per_mapel: dataRiwayat.nilaiList.map((n) => ({
-          mapel: n.mapel.nama_indo,
-          nilai_usbu_1: n.nilaiUsbu1,
-          nilai_usbu_2: n.nilaiUsbu2,
-          nilai_nihai: n.nilaiNihai,
-          nilai_akhir: n.nilaiAkhir,
-        })),
+        nilai_per_mapel: dataRiwayat.nilaiList.map((n) => {
+          const isAkbarnas = dataRiwayat.program?.nama_indo?.toLowerCase().includes("akbarnas") ?? false;
+          const nilaiAkhirComputed = calcMapelNilaiAkhir(
+            { u1: n.nilaiUsbu1, u2: n.nilaiUsbu2, n: n.nilaiNihai },
+            isAkbarnas
+          );
+          return {
+            mapel: n.mapel.nama_indo,
+            bobot: n.mapel.bobot ?? 1,
+            masuk_akumulasi: n.mapel.masuk_akumulasi ?? true,
+            nilai_usbu_1: n.nilaiUsbu1,
+            nilai_usbu_2: n.nilaiUsbu2,
+            nilai_nihai: n.nilaiNihai,
+            nilai_akhir: nilaiAkhirComputed,
+          };
+        }),
+        akumulatif_usbu: (() => {
+          const isAkbarnas = dataRiwayat.program?.nama_indo?.toLowerCase().includes("akbarnas") ?? false;
+          const computeUsbu = (key: 'nilaiUsbu1' | 'nilaiUsbu2' | 'nilaiNihai') => {
+            const items: { score: number; bobot: number }[] = [];
+            dataRiwayat.nilaiList.forEach((n) => {
+              if (n.mapel.masuk_akumulasi !== false) {
+                const score = (n as any)[key];
+                if (score !== null && score !== undefined) {
+                  items.push({ score, bobot: (n.mapel as any).bobot_usbu ?? n.mapel.bobot ?? 1 });
+                }
+              }
+            });
+            return items.length > 0 ? calcAkumulatif(items) : null;
+          };
+          const computeAll = () => {
+            const items: { score: number; bobot: number }[] = [];
+            dataRiwayat.nilaiList.forEach((n) => {
+              if (n.mapel.masuk_akumulasi !== false) {
+                const na = calcMapelNilaiAkhir({ u1: n.nilaiUsbu1, u2: n.nilaiUsbu2, n: n.nilaiNihai }, isAkbarnas);
+                if (na !== null) items.push({ score: na, bobot: n.mapel.bobot ?? 1 });
+              }
+            });
+            return items.length > 0 ? calcAkumulatif(items) : null;
+          };
+          return [
+            { usbu: 1, label: "Usbu' 1", rata_rata_nilai: computeUsbu('nilaiUsbu1') },
+            { usbu: 2, label: "Usbu' 2", rata_rata_nilai: computeUsbu('nilaiUsbu2') },
+            { usbu: 3, label: "Usbu' 3 (Nihai)", rata_rata_nilai: computeUsbu('nilaiNihai') },
+            { usbu: 4, label: "Semua Usbu'", rata_rata_nilai: computeAll() },
+          ];
+        })(),
         rekap_absen_per_usbu: dataRiwayat.riwayatUsbuList.map((u) => ({
           usbu: u.usbu,
           total_hadir: u.totalHadir,
