@@ -28,7 +28,6 @@ export default async function AbsensiKelasPage() {
       });
       
       // Jika user punya jadwal ngajar ATAU punya kelasId (Wali Kelas), batasi aksesnya
-      // Jika tidak punya keduanya (misal KSU/Staff pemantau), biarkan allowedClassIds = null (akses semua)
       if (ps.length > 0 || session.kelasId) {
         allowedClassIds = Array.from(new Set(ps.map(p => p.kelasId)));
         
@@ -37,6 +36,10 @@ export default async function AbsensiKelasPage() {
         }
         
         teacherSessions = ps.map(p => ({ sesi: p.sesi, kelasId: p.kelasId }));
+      } else {
+        // Jika tidak punya jadwal dan bukan admin, apapun rolenya
+        // Set ke array kosong (akses ke 0 kelas), BUKAN null (akses ke semua kelas)
+        allowedClassIds = [];
       }
     }
   }

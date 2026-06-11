@@ -240,6 +240,13 @@ export function AbsensiKelasClient({
     if (!tanggal || !sesi) return;
     if (isTeacher && !hasCheckedSession) return;
     
+    // Cegah kebocoran: Jika dia PENGAJAR tapi tidak punya kelas satupun (baru dibuat, belum dijadwal)
+    if (isTeacher && allowedClassIds && allowedClassIds.length === 0) {
+      setSantriList([]);
+      setAbsenMap({});
+      return;
+    }
+    
     let ignore = false;
     const fetchData = async () => {
       setIsLoading(true);
