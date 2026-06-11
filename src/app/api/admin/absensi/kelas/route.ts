@@ -81,12 +81,17 @@ export async function POST(request: Request) {
       })
     );
 
-    if (userSession && userSession.role !== "ADMIN" && absenPengajar && kelasId) {
+    const isTeacherSubmit = userSession && userSession.role !== "ADMIN";
+    const isAdminBackupSubmit = userSession && userSession.role === "ADMIN" && payload.targetUserId;
+
+    if ((isTeacherSubmit || isAdminBackupSubmit) && absenPengajar && kelasId) {
+      const targetUserId = isTeacherSubmit ? userSession.userId : payload.targetUserId;
+
       operations.push(
         prisma.absenPengajar.upsert({
           where: {
             userId_tanggal_sesi: {
-              userId: userSession.userId,
+              userId: targetUserId,
               tanggal: parsedDate,
               sesi: sesi,
             }
@@ -98,11 +103,12 @@ export async function POST(request: Request) {
             atributNametag: absenPengajar.atributNametag,
             atributKopiah: absenPengajar.atributKopiah,
             atributBros: absenPengajar.atributBros,
+            kecerdasan: absenPengajar.kecerdasan || null,
             isBadal: absenPengajar.isBadal ?? false,
             pengajarDigantikanId: absenPengajar.pengajarDigantikanId || null,
           },
           create: {
-            userId: userSession.userId,
+            userId: targetUserId,
             kelasId: kelasId,
             tanggal: parsedDate,
             sesi: sesi,
@@ -112,6 +118,7 @@ export async function POST(request: Request) {
             atributNametag: absenPengajar.atributNametag,
             atributKopiah: absenPengajar.atributKopiah,
             atributBros: absenPengajar.atributBros,
+            kecerdasan: absenPengajar.kecerdasan || null,
             isBadal: absenPengajar.isBadal ?? false,
             pengajarDigantikanId: absenPengajar.pengajarDigantikanId || null,
           }

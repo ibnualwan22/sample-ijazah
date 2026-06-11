@@ -33,7 +33,7 @@ function computeSessionState(jadwalSesiList: any[]) {
     } else {
       isActive = curVal >= bukaVal && curVal <= tutupVal;
     }
-    
+
     if (isActive) {
       activeSesis.push(jadwal.sesi);
     } else {
@@ -44,7 +44,7 @@ function computeSessionState(jadwalSesiList: any[]) {
       }
     }
   }
-  
+
   return { activeSesis, nextSession, isResting: activeSesis.length === 0 && !nextSession };
 }
 
@@ -53,7 +53,7 @@ function getCacheKey(tanggal: string, sesi: string, kelasId: string): string {
   return `absen_pengajar_${tanggal}_${sesi}_${kelasId}`;
 }
 function saveFormCache(tanggal: string, sesi: string, kelasId: string, data: any) {
-  try { localStorage.setItem(getCacheKey(tanggal, sesi, kelasId), JSON.stringify(data)); } catch {}
+  try { localStorage.setItem(getCacheKey(tanggal, sesi, kelasId), JSON.stringify(data)); } catch { }
 }
 function loadFormCache(tanggal: string, sesi: string, kelasId: string): any | null {
   try {
@@ -62,7 +62,7 @@ function loadFormCache(tanggal: string, sesi: string, kelasId: string): any | nu
   } catch { return null; }
 }
 function clearFormCache(tanggal: string, sesi: string, kelasId: string) {
-  try { localStorage.removeItem(getCacheKey(tanggal, sesi, kelasId)); } catch {}
+  try { localStorage.removeItem(getCacheKey(tanggal, sesi, kelasId)); } catch { }
 }
 
 type SantriAbsenTarget = {
@@ -82,16 +82,18 @@ type SantriAbsenTarget = {
 type AbsenStatus = "HADIR" | "IZIN" | "SAKIT" | "ALPHA";
 type SesiKelas = "SESI_1" | "SESI_2" | "SESI_3" | "SESI_4" | "SESI_5" | "SESI_6";
 
-export function AbsensiKelasClient({ 
-  programList, 
-  allowedClassIds = null, 
+export function AbsensiKelasClient({
+  programList,
+  allowedClassIds = null,
   userRole,
-  teacherSessions = []
-}: { 
-  programList: any[]; 
-  allowedClassIds?: string[] | null; 
+  teacherSessions = [],
+  allPengajarSesi = []
+}: {
+  programList: any[];
+  allowedClassIds?: string[] | null;
   userRole?: string;
   teacherSessions?: { sesi: string; kelasId: string }[];
+  allPengajarSesi?: { sesi: string; kelasId: string; user: { id: string; nama: string } }[];
 }) {
   const [tanggal, setTanggal] = useState("");
   const [sesi, setSesi] = useState<SesiKelas>("SESI_1");
@@ -102,10 +104,11 @@ export function AbsensiKelasClient({
   const [absenMap, setAbsenMap] = useState<Record<string, { status: AbsenStatus; keterangan: string }>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   const isTeacher = userRole !== "ADMIN" && allowedClassIds !== null;
   const [activeSession, setActiveSession] = useState<string | null>(null);
   const activeSessionRef = useRef<string | null>(null);
+  const loadedSessionRef = useRef({ sesi: "", kelasId: "" });
   const [hasCheckedSession, setHasCheckedSession] = useState(false);
   const [activeClassId, setActiveClassId] = useState<string | null>(null);
   const [jadwalSesiList, setJadwalSesiList] = useState<any[]>([]);
@@ -115,11 +118,17 @@ export function AbsensiKelasClient({
   const [waktuMulai, setWaktuMulai] = useState("");
   const [waktuSelesai, setWaktuSelesai] = useState("");
   const [atribut, setAtribut] = useState({ kopiah: false, nametag: false, bros: false });
+  const [kecerdasan, setKecerdasan] = useState("");
   const [isBadalMode, setIsBadalMode] = useState(false);
   const [showBadalModal, setShowBadalModal] = useState(false);
   const [badalTargetKelasId, setBadalTargetKelasId] = useState("");
   const [isSaved, setIsSaved] = useState(false); // Indikator apakah absen sudah tersimpan
-  
+
+  // Admin Backup Mode
+  const [showAdminPengajarForm, setShowAdminPengajarForm] = useState(false);
+  const [selectedAdminPengajarId, setSelectedAdminPengajarId] = useState("");
+  const adminFormRef = useRef<HTMLDivElement>(null);
+
   const [activeSessionsList, setActiveSessionsList] = useState<string[]>([]);
   const [nextSessionInfo, setNextSessionInfo] = useState<any | null>(null);
   const [isResting, setIsResting] = useState(false);
@@ -149,9 +158,9 @@ export function AbsensiKelasClient({
         setActiveSessionsList(activeSesis);
         setNextSessionInfo(nextSession);
         setIsResting(isResting);
-        
+
         const currentActive = activeSesis.length > 0 ? activeSesis[0] : null;
-        
+
         if (isTeacher) {
           if (currentActive) {
             const teachingThisSession = teacherSessions.find(ts => ts.sesi === currentActive);
@@ -161,7 +170,7 @@ export function AbsensiKelasClient({
               setActiveClassId(teachingThisSession.kelasId);
             }
           } else {
-            setSesi("" as SesiKelas); 
+            setSesi("" as SesiKelas);
           }
         }
         setActiveSession(currentActive);
@@ -190,7 +199,7 @@ export function AbsensiKelasClient({
       setActiveSessionsList(activeSesis);
       setNextSessionInfo(nextSession);
       setIsResting(isResting);
-      
+
       const prevSession = activeSessionRef.current;
 
       let currentActive: string | null = null;
@@ -208,21 +217,21 @@ export function AbsensiKelasClient({
       }
 
       if (prevSession !== currentActive) {
-         setActiveSession(currentActive);
-         setIsBadalMode(false);
-         setIsSaved(false);
-         if (currentActive) {
-           const teachingThisSession = teacherSessions.find(ts => ts.sesi === currentActive);
-           setSesi(currentActive as SesiKelas);
-           if (teachingThisSession) {
-             setKelasId(teachingThisSession.kelasId);
-             setActiveClassId(teachingThisSession.kelasId);
-           }
-           toast("Sesi berganti otomatis ke " + currentActive.replace('_', ' '), { icon: '🔄' });
-         } else {
-           setSesi("" as SesiKelas);
-           toast("Sesi saat ini telah berakhir", { icon: '🔒' });
-         }
+        setActiveSession(currentActive);
+        setIsBadalMode(false);
+        setIsSaved(false);
+        if (currentActive) {
+          const teachingThisSession = teacherSessions.find(ts => ts.sesi === currentActive);
+          setSesi(currentActive as SesiKelas);
+          if (teachingThisSession) {
+            setKelasId(teachingThisSession.kelasId);
+            setActiveClassId(teachingThisSession.kelasId);
+          }
+          toast("Sesi berganti otomatis ke " + currentActive.replace('_', ' '), { icon: '🔄' });
+        } else {
+          setSesi("" as SesiKelas);
+          toast("Sesi saat ini telah berakhir", { icon: '🔒' });
+        }
       }
     }, 10000);
 
@@ -232,21 +241,23 @@ export function AbsensiKelasClient({
   // Auto-save form pengajar ke localStorage saat berubah
   useEffect(() => {
     if (!isTeacher || !tanggal || !sesi || !kelasId) return;
-    const data = { materi, waktuMulai, waktuSelesai, atribut };
+    // Cegah save data lama ke sesi baru sebelum data sesi baru selesai di-fetch
+    if (loadedSessionRef.current.sesi !== sesi || loadedSessionRef.current.kelasId !== kelasId) return;
+    const data = { materi, waktuMulai, waktuSelesai, atribut, kecerdasan };
     saveFormCache(tanggal, sesi, kelasId, data);
-  }, [isTeacher, tanggal, sesi, kelasId, materi, waktuMulai, waktuSelesai, atribut]);
+  }, [isTeacher, tanggal, sesi, kelasId, materi, waktuMulai, waktuSelesai, atribut, kecerdasan]);
 
   useEffect(() => {
     if (!tanggal || !sesi) return;
     if (isTeacher && !hasCheckedSession) return;
-    
+
     // Cegah kebocoran: Jika dia PENGAJAR tapi tidak punya kelas satupun (baru dibuat, belum dijadwal)
     if (isTeacher && allowedClassIds && allowedClassIds.length === 0) {
       setSantriList([]);
       setAbsenMap({});
       return;
     }
-    
+
     let ignore = false;
     const fetchData = async () => {
       setIsLoading(true);
@@ -254,15 +265,15 @@ export function AbsensiKelasClient({
       try {
         const res = await fetch(`/api/admin/absensi/kelas?tanggal=${tanggal}&sesi=${sesi}&kelasId=${kelasId}`);
         const data = await res.json();
-        
+
         if (ignore) return;
-        
+
         if (data.santriList) {
           setSantriList(data.santriList);
         } else {
           setSantriList([]);
         }
-        
+
         // Prioritas: data dari server > cache localStorage
         if (data.absenPengajarData) {
           setMateri(data.absenPengajarData.materi || "");
@@ -273,6 +284,7 @@ export function AbsensiKelasClient({
             nametag: !!data.absenPengajarData.atributNametag,
             bros: !!data.absenPengajarData.atributBros,
           });
+          setKecerdasan(data.absenPengajarData.kecerdasan || "");
           setIsSaved(true); // Data sudah tersimpan di server
         } else {
           // Coba muat dari cache localStorage
@@ -282,15 +294,17 @@ export function AbsensiKelasClient({
             setWaktuMulai(cached.waktuMulai || "");
             setWaktuSelesai(cached.waktuSelesai || "");
             setAtribut(cached.atribut || { kopiah: false, nametag: false, bros: false });
+            setKecerdasan(cached.kecerdasan || "");
           } else {
             setMateri("");
             setWaktuMulai("");
             setWaktuSelesai("");
             setAtribut({ kopiah: false, nametag: false, bros: false });
+            setKecerdasan("");
           }
           setIsSaved(false);
         }
-        
+
         const newMap: Record<string, any> = {};
         if (data.absenData) {
           data.absenData.forEach((a: any) => {
@@ -302,6 +316,9 @@ export function AbsensiKelasClient({
           }
         }
         setAbsenMap(newMap);
+
+        // Tandai bahwa data untuk sesi ini sudah selesai dimuat (mengizinkan auto-save)
+        loadedSessionRef.current = { sesi, kelasId };
       } catch (error) {
         if (!ignore) toast.error("Gagal memuat data absensi kelas");
       } finally {
@@ -348,12 +365,13 @@ export function AbsensiKelasClient({
       }));
 
       const payload: any = { tanggal, sesi, kelasId, absenList };
-      if (isTeacher) {
+      if (isTeacher || (userRole === "ADMIN" && showAdminPengajarForm)) {
         if (!materi || !waktuMulai || !waktuSelesai) {
           toast.error("Mohon lengkapi Form Absensi Pengajar (Materi dan Waktu)");
           setIsSaving(false);
           return;
         }
+        // Admin backup: pilih pengajar bersifat opsional, jika ada maka dikirim
         payload.absenPengajar = {
           materi,
           waktuMulai,
@@ -361,8 +379,12 @@ export function AbsensiKelasClient({
           atributKopiah: atribut.kopiah,
           atributNametag: atribut.nametag,
           atributBros: atribut.bros,
+          kecerdasan: kecerdasan || null,
           isBadal: isBadalMode
         };
+        if (userRole === "ADMIN" && showAdminPengajarForm) {
+          payload.targetUserId = selectedAdminPengajarId;
+        }
       }
 
       const res = await fetch("/api/admin/absensi/kelas", {
@@ -370,7 +392,7 @@ export function AbsensiKelasClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      
+
       const result = await res.json();
       if (result.success) {
         toast.success(`Berhasil menyimpan data absensi kelas`);
@@ -402,12 +424,12 @@ export function AbsensiKelasClient({
 
   const allOptions = (() => {
     const list: { id: string; label: string; group: string }[] = [];
-    
+
     // Jika tidak dibatasi, boleh pilih "Semua Santri"
     if (!allowedClassIds) {
       list.push({ id: "ALL", label: "Semua Santri", group: "" });
     }
-    
+
     programList.forEach((program) => {
       if (program.kelasList.length > 0) {
         program.kelasList.forEach((k: any) => {
@@ -423,11 +445,11 @@ export function AbsensiKelasClient({
         }
       }
     });
-    
+
     if (!allowedClassIds) {
       list.push({ id: "UNASSIGNED", label: "Belum Ditempatkan", group: "" });
     }
-    
+
     return list;
   })();
 
@@ -478,7 +500,7 @@ export function AbsensiKelasClient({
               {activeSession && (
                 <div className="mt-2 flex">
                   {isBadalMode ? (
-                     <button onClick={() => { setIsBadalMode(false); setActiveClassId(teacherSessions.find(ts => ts.sesi === activeSession)?.kelasId || null); setKelasId(teacherSessions.find(ts => ts.sesi === activeSession)?.kelasId || allowedClassIds?.[0] || ""); }} className="flex items-center gap-2 text-xs font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text)] border border-[var(--color-surface-dark)] rounded-lg px-3 py-1.5 transition-colors">Batal Badal</button>
+                    <button onClick={() => { setIsBadalMode(false); setActiveClassId(teacherSessions.find(ts => ts.sesi === activeSession)?.kelasId || null); setKelasId(teacherSessions.find(ts => ts.sesi === activeSession)?.kelasId || allowedClassIds?.[0] || ""); }} className="flex items-center gap-2 text-xs font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text)] border border-[var(--color-surface-dark)] rounded-lg px-3 py-1.5 transition-colors">Batal Badal</button>
                   ) : (
                     <button onClick={() => setShowBadalModal(true)} className="flex items-center gap-2 text-xs font-bold text-[var(--color-warning)] bg-[var(--color-warning-light)] hover:bg-[var(--color-warning-light)] border border-[var(--color-warning)] rounded-lg px-3 py-1.5 transition-colors">
                       <UserPlus className="w-4 h-4" />
@@ -519,7 +541,7 @@ export function AbsensiKelasClient({
                   <option value="SESI_6">Sesi 6</option>
                 </select>
               </div>
-              
+
               <div className="w-full md:w-auto">
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                   Filter Kelas
@@ -546,6 +568,23 @@ export function AbsensiKelasClient({
             >
               Hadirkan Semua
             </button>
+            {userRole === "ADMIN" && (
+              <button
+                onClick={() => {
+                  const newState = !showAdminPengajarForm;
+                  setShowAdminPengajarForm(newState);
+                  if (newState) {
+                    setTimeout(() => adminFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+                  }
+                }}
+                className={`rounded-full px-4 py-2 text-xs font-bold transition ${showAdminPengajarForm
+                  ? "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                  : "bg-[var(--color-surface-dark)] text-[var(--color-text)] hover:bg-gray-200"
+                  }`}
+              >
+                {showAdminPengajarForm ? "Tutup Form Pengajar" : "📝 Isi Absen Pengajar"}
+              </button>
+            )}
             {!isTeacher && (
               <button
                 onClick={handleSave}
@@ -597,258 +636,355 @@ export function AbsensiKelasClient({
               </>
             )}
           </div>
+        ) : isTeacher && hasCheckedSession && activeSession && !teacherSessions.some(ts => ts.sesi === activeSession) && !isBadalMode ? (
+          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-[var(--color-surface-dark)] px-6 text-center shadow-sm max-w-4xl mx-auto my-8">
+            <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mb-6 ring-8 ring-amber-50/50">
+              <UserPlus className="w-10 h-10 text-amber-500" />
+            </div>
+            <h3 className="text-2xl font-black text-[var(--color-text)] mb-3">Bukan Jadwal Mengajar Anda</h3>
+            <p className="text-base text-[var(--color-text-muted)] max-w-md font-medium leading-relaxed">
+              Anda tidak memiliki jadwal mengajar di {activeSession.replace('_', ' ')}. Jika Anda diminta untuk menggantikan pengajar lain, silakan aktifkan mode Guru Badal.
+            </p>
+            <button
+              onClick={() => setShowBadalModal(true)}
+              className="mt-8 rounded-full bg-[var(--color-warning)] px-8 py-3 text-sm font-bold text-white transition hover:bg-amber-600 shadow-md shadow-amber-200"
+            >
+              Mulai Jadi Guru Badal
+            </button>
+          </div>
         ) : (
           <>
             {/* Stats */}
             <div className="flex flex-wrap gap-4 border-b border-[var(--color-surface-dark)] px-6 py-4 bg-white">
-               <div className="flex items-center gap-2 text-sm font-bold">
-                 <span className="h-2 w-2 rounded-full bg-[var(--color-primary-50)]0"></span>
-                 <span className="text-[var(--color-text)]">Hadir: {statHadir}</span>
-               </div>
-               <div className="flex items-center gap-2 text-sm font-bold">
-                 <span className="h-2 w-2 rounded-full bg-indigo-500"></span>
-                 <span className="text-[var(--color-text)]">Izin: {statIzin}</span>
-               </div>
-               <div className="flex items-center gap-2 text-sm font-bold">
-                 <span className="h-2 w-2 rounded-full bg-[var(--color-warning-light)]0"></span>
-                 <span className="text-[var(--color-text)]">Sakit: {statSakit}</span>
-               </div>
-               <div className="flex items-center gap-2 text-sm font-bold">
-                 <span className="h-2 w-2 rounded-full bg-[var(--color-danger-light)]0"></span>
-                 <span className="text-[var(--color-text)]">Alpha: {statAlpha}</span>
-               </div>
-               <div className="flex items-center gap-2 text-sm font-bold pl-4 border-l border-[var(--color-surface-dark)]">
-                 <span className="text-[var(--color-text-subtle)]">Belum Diabsen: {belumDiabsen}</span>
-               </div>
+              <div className="flex items-center gap-2 text-sm font-bold">
+                <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+                <span className="text-[var(--color-text)]">Hadir: {statHadir}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm font-bold">
+                <span className="h-2 w-2 rounded-full bg-indigo-500"></span>
+                <span className="text-[var(--color-text)]">Izin: {statIzin}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm font-bold">
+                <span className="h-2 w-2 rounded-full bg-amber-500"></span>
+                <span className="text-[var(--color-text)]">Sakit: {statSakit}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm font-bold">
+                <span className="h-2 w-2 rounded-full bg-rose-500"></span>
+                <span className="text-[var(--color-text)]">Alpha: {statAlpha}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm font-bold pl-4 border-l border-[var(--color-surface-dark)]">
+                <span className="text-[var(--color-text-subtle)]">Belum Diabsen: {belumDiabsen}</span>
+              </div>
             </div>
 
-        <div className="overflow-x-auto">
-          {isLoading ? (
-            <div className="p-8 text-center text-sm font-semibold text-[var(--color-text-muted)]">Memuat data santri...</div>
-          ) : (
-            <table className="min-w-full divide-y divide-[var(--color-surface-dark)] text-left">
-              <thead className="bg-[var(--color-secondary)] text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
-                <tr>
-                  <th className="px-4 py-4 text-center w-16">#</th>
-                  <th className="px-6 py-4">Santri</th>
-                  <th className="px-6 py-4 min-w-[300px]">Status Kehadiran</th>
-                  <th className="px-6 py-4">Keterangan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--color-surface)] text-sm text-[var(--color-text-muted)]">
-                {santriList.map((santri, index) => {
-                  const currentStatus = absenMap[santri.riwayatId]?.status;
-                  const currentKet = absenMap[santri.riwayatId]?.keterangan || "";
-                  
-                  return (
-                    <tr key={santri.riwayatId} className="hover:bg-[var(--color-surface-light)]">
-                      <td className="px-4 py-4 text-center font-bold text-[var(--color-text-subtle)]">{index + 1}</td>
-                      <td className="px-6 py-4">
-                        <p className="font-bold text-[var(--color-text)]">{santri.nama}</p>
-                        <div className="mt-1 flex flex-wrap items-center gap-2">
-                          <span className="inline-flex items-center rounded-md bg-[var(--color-surface)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-muted)]">
-                            {santri.kelasNama ?? santri.programNama ?? "Tanpa Kelas"}
-                          </span>
-                          {santri.gender === "BANIN" ? (
-                            <span className="inline-flex items-center rounded-md bg-[var(--color-primary-50)] px-2 py-0.5 text-xs font-medium text-[var(--color-primary)]">BANIN</span>
-                          ) : santri.gender === "BANAT" ? (
-                            <span className="inline-flex items-center rounded-md bg-[var(--color-danger-light)] px-2 py-0.5 text-xs font-medium text-[var(--color-danger)]">BANAT</span>
-                          ) : (
-                            <span className="inline-flex items-center rounded-md bg-[var(--color-secondary)] px-2 py-0.5 text-xs font-medium text-[var(--color-text)]">{santri.gender}</span>
-                          )}
-                          {santri.kategori === "BARU" ? (
-                            <span className="inline-flex items-center rounded-md bg-[var(--color-primary-50)] px-2 py-0.5 text-xs font-medium text-[var(--color-primary)] capitalize">Baru</span>
-                          ) : santri.kategori === "LAMA" ? (
-                            <span className="inline-flex items-center rounded-md bg-[var(--color-warning-light)] px-2 py-0.5 text-xs font-medium text-[var(--color-warning)] capitalize">Lama</span>
-                          ) : santri.kategori === "KSU" ? (
-                            <span className="inline-flex items-center rounded-md bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 uppercase">KSU</span>
-                          ) : (
-                            <span className="inline-flex items-center rounded-md bg-[var(--color-secondary)] px-2 py-0.5 text-xs font-medium text-[var(--color-text)] capitalize">{santri.kategori ?? "-"}</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          {(["HADIR", "IZIN", "SAKIT", "ALPHA"] as AbsenStatus[]).map((st) => (
-                            <button
-                              key={st}
-                              onClick={() => handleStatusChange(santri.riwayatId, st)}
-                              className={`rounded-full px-3 py-1.5 text-xs font-bold transition-all ${
-                                currentStatus === st
-                                  ? st === "HADIR" ? "bg-[var(--color-primary-50)]0 text-white shadow-[var(--color-primary-100)] shadow-sm"
-                                  : st === "IZIN" ? "bg-indigo-500 text-white shadow-indigo-200 shadow-sm"
-                                  : st === "SAKIT" ? "bg-[var(--color-warning-light)]0 text-white shadow-amber-200 shadow-sm"
-                                  : "bg-[var(--color-danger-light)]0 text-white shadow-rose-200 shadow-sm"
-                                : "bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-dark)]"
-                              }`}
-                            >
-                              {st}
-                            </button>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <input
-                          type="text"
-                          placeholder="Catatan..."
-                          value={currentKet}
-                          onChange={(e) => handleKeteranganChange(santri.riwayatId, e.target.value)}
-                          className="w-full rounded-xl border border-[var(--color-surface-dark)] bg-white px-3 py-1.5 text-sm outline-none transition focus:border-[var(--color-primary)]"
-                        />
-                      </td>
+            <div className="overflow-x-auto">
+              {isLoading ? (
+                <div className="p-8 text-center text-sm font-semibold text-[var(--color-text-muted)]">Memuat data santri...</div>
+              ) : (
+                <table className="min-w-full divide-y divide-[var(--color-surface-dark)] text-left">
+                  <thead className="bg-[var(--color-secondary)] text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+                    <tr>
+                      <th className="px-4 py-4 text-center w-16">#</th>
+                      <th className="px-6 py-4">Santri</th>
+                      <th className="px-6 py-4 min-w-[300px]">Status Kehadiran</th>
+                      <th className="px-6 py-4">Keterangan</th>
                     </tr>
-                  )
-                })}
-                {santriList.length === 0 && !isLoading && (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-[var(--color-text-muted)] font-medium">
-                      Tidak ada santri yang ditemukan pada filter ini.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
-        </div>
-        
-        {(isTeacher && activeSession && (teacherSessions.some(ts => ts.sesi === activeSession && ts.kelasId === kelasId) || isBadalMode)) && (
-          <div className="p-6 md:p-8 bg-[var(--color-surface-light)] border-t border-[var(--color-surface-dark)]">
-               <div className={`border rounded-3xl p-8 space-y-6 shadow-sm max-w-4xl mx-auto ${isSaved ? 'bg-[var(--color-primary-50)]/40 border-[var(--color-primary-50)]' : 'bg-white border-[var(--color-surface-dark)]'}`}>
-                 {/* Header dengan status indikator */}
-                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--color-surface-dark)]/30 pb-5">
-                   <div>
-                     <h3 className="text-lg font-bold text-[var(--color-primary-dark)] flex items-center gap-2">
-                       <CheckCircle2 className="w-5 h-5 text-[var(--color-primary)]" />
-                       Formulir Kehadiran Pengajar
-                     </h3>
-                     <p className="text-xs font-medium text-[var(--color-text-muted)] mt-1">Lengkapi data mengajar Anda. Data akan tersimpan otomatis di perangkat ini.</p>
-                   </div>
-                   {/* Status Badge */}
-                   {isSaved ? (
-                     <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--color-primary-100)] border border-[var(--color-primary-50)]">
-                       <Save className="w-4 h-4 text-[var(--color-primary)]" />
-                       <span className="text-xs font-bold text-[var(--color-primary)]">Tersimpan di Server</span>
-                     </div>
-                   ) : (
-                     <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200">
-                       <AlertCircle className="w-4 h-4 text-amber-600" />
-                       <span className="text-xs font-bold text-amber-600">Belum Disimpan</span>
-                     </div>
-                   )}
-                 </div>
-                 
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-2">Materi Pelajaran Hari Ini</label>
-                      <input type="text" value={materi} onChange={e=>{setMateri(e.target.value); setIsSaved(false);}} placeholder="Contoh: Nahwu Bab Isim" className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-2">Jam Masuk (24H)</label>
-                        <input type="text" placeholder="Contoh: 15:30" maxLength={5} value={waktuMulai} onChange={e=>{
-                          let val = e.target.value.replace(/[^0-9:]/g, '');
-                          if (val.length === 2 && !val.includes(':') && e.target.value.length > waktuMulai.length) val += ':';
-                          setWaktuMulai(val);
-                          setIsSaved(false);
-                        }} className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all font-mono placeholder:text-[var(--color-text-subtle)]" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-2">Jam Selesai (24H)</label>
-                        <input type="text" placeholder="Contoh: 17:00" maxLength={5} value={waktuSelesai} onChange={e=>{
-                          let val = e.target.value.replace(/[^0-9:]/g, '');
-                          if (val.length === 2 && !val.includes(':') && e.target.value.length > waktuSelesai.length) val += ':';
-                          setWaktuSelesai(val);
-                          setIsSaved(false);
-                        }} className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all font-mono placeholder:text-[var(--color-text-subtle)]" />
-                      </div>
-                    </div>
-                 </div>
-                 
-                 <div>
-                    <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-3">Kelengkapan Atribut Mengajar</label>
-                    <div className="flex flex-wrap gap-4">
-                       <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-[var(--color-surface-dark)] hover:border-[var(--color-primary-100)] transition-colors shadow-sm">
-                         <input type="checkbox" checked={atribut.kopiah} onChange={e=>{setAtribut({...atribut, kopiah: e.target.checked}); setIsSaved(false);}} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
-                         <span className="text-sm font-bold text-[var(--color-text)]">Kopiah / Khimar</span>
-                       </label>
-                       <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-[var(--color-surface-dark)] hover:border-[var(--color-primary-100)] transition-colors shadow-sm">
-                         <input type="checkbox" checked={atribut.nametag} onChange={e=>{setAtribut({...atribut, nametag: e.target.checked}); setIsSaved(false);}} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
-                         <span className="text-sm font-bold text-[var(--color-text)]">Nametag</span>
-                       </label>
-                       <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-[var(--color-surface-dark)] hover:border-[var(--color-primary-100)] transition-colors shadow-sm">
-                         <input type="checkbox" checked={atribut.bros} onChange={e=>{setAtribut({...atribut, bros: e.target.checked}); setIsSaved(false);}} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
-                         <span className="text-sm font-bold text-[var(--color-text)]">Bros Markaz</span>
-                       </label>
-                    </div>
-                 </div>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--color-surface)] text-sm text-[var(--color-text-muted)]">
+                    {santriList.map((santri, index) => {
+                      const currentStatus = absenMap[santri.riwayatId]?.status;
+                      const currentKet = absenMap[santri.riwayatId]?.keterangan || "";
 
-                 {/* Info belum absen santri */}
-                 {belumDiabsen > 0 && (
-                   <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200">
-                     <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                     <p className="text-sm text-amber-700 font-medium">
-                       Masih ada <strong className="font-bold">{belumDiabsen} santri</strong> yang belum diabsen. Selesaikan absensi santri untuk menyimpan data.
-                     </p>
-                   </div>
-                 )}
-                 
-                 <div className="pt-6 border-t border-[var(--color-surface-dark)]/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <p className="text-xs text-[var(--color-text-subtle)] font-medium">
-                      {belumDiabsen > 0 
-                        ? "⚠️ Absensi santri belum lengkap — tombol simpan dikunci" 
-                        : !materi || !waktuMulai || !waktuSelesai 
-                          ? "⚠️ Lengkapi materi dan waktu untuk menyimpan"
-                          : isSaved 
-                            ? "✅ Data sudah tersimpan. Anda bisa mengubah dan menyimpan ulang."
-                            : "📝 Siap disimpan ke server"}
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                      {isSaved && activeSessionsList.length > 1 && activeSessionsList.indexOf(activeSession || "") + 1 < activeSessionsList.length && (
-                        <button
-                          onClick={() => {
-                            const nextSesi = activeSessionsList[activeSessionsList.indexOf(activeSession || "") + 1];
-                            setActiveSession(nextSesi);
-                            setIsBadalMode(false);
-                            setIsSaved(false);
-                            const teachingNext = teacherSessions.find(ts => ts.sesi === nextSesi);
-                            setSesi(nextSesi as SesiKelas);
-                            if (teachingNext) {
-                              setKelasId(teachingNext.kelasId);
-                              setActiveClassId(teachingNext.kelasId);
-                            }
-                            toast.success("Berpindah ke " + nextSesi.replace('_', ' '));
-                          }}
-                          className="w-full sm:w-auto rounded-full bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-emerald-600 shadow-md shadow-emerald-200"
-                        >
-                          Lanjut Sesi {activeSessionsList[activeSessionsList.indexOf(activeSession || "") + 1].replace('SESI_', '')} 👉
-                        </button>
+                      return (
+                        <tr key={santri.riwayatId} className="hover:bg-[var(--color-surface-light)]">
+                          <td className="px-4 py-4 text-center font-bold text-[var(--color-text-subtle)]">{index + 1}</td>
+                          <td className="px-6 py-4">
+                            <p className="font-bold text-[var(--color-text)]">{santri.nama}</p>
+                            <div className="mt-1 flex flex-wrap items-center gap-2">
+                              <span className="inline-flex items-center rounded-md bg-[var(--color-surface)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-muted)]">
+                                {santri.kelasNama ?? santri.programNama ?? "Tanpa Kelas"}
+                              </span>
+                              {santri.gender === "BANIN" ? (
+                                <span className="inline-flex items-center rounded-md bg-[var(--color-primary-50)] px-2 py-0.5 text-xs font-medium text-[var(--color-primary)]">BANIN</span>
+                              ) : santri.gender === "BANAT" ? (
+                                <span className="inline-flex items-center rounded-md bg-[var(--color-danger-light)] px-2 py-0.5 text-xs font-medium text-[var(--color-danger)]">BANAT</span>
+                              ) : (
+                                <span className="inline-flex items-center rounded-md bg-[var(--color-secondary)] px-2 py-0.5 text-xs font-medium text-[var(--color-text)]">{santri.gender}</span>
+                              )}
+                              {santri.kategori === "BARU" ? (
+                                <span className="inline-flex items-center rounded-md bg-[var(--color-primary-50)] px-2 py-0.5 text-xs font-medium text-[var(--color-primary)] capitalize">Baru</span>
+                              ) : santri.kategori === "LAMA" ? (
+                                <span className="inline-flex items-center rounded-md bg-[var(--color-warning-light)] px-2 py-0.5 text-xs font-medium text-[var(--color-warning)] capitalize">Lama</span>
+                              ) : santri.kategori === "KSU" ? (
+                                <span className="inline-flex items-center rounded-md bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 uppercase">KSU</span>
+                              ) : (
+                                <span className="inline-flex items-center rounded-md bg-[var(--color-secondary)] px-2 py-0.5 text-xs font-medium text-[var(--color-text)] capitalize">{santri.kategori ?? "-"}</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex gap-2">
+                              {(["HADIR", "IZIN", "SAKIT", "ALPHA"] as AbsenStatus[]).map((st) => (
+                                <button
+                                  key={st}
+                                  onClick={() => handleStatusChange(santri.riwayatId, st)}
+                                  className={`rounded-full px-3 py-1.5 text-xs font-bold transition-all ${currentStatus === st
+                                    ? st === "HADIR" ? "bg-emerald-500 text-white shadow-emerald-200 shadow-sm"
+                                      : st === "IZIN" ? "bg-indigo-500 text-white shadow-indigo-200 shadow-sm"
+                                        : st === "SAKIT" ? "bg-amber-500 text-white shadow-amber-200 shadow-sm"
+                                          : "bg-rose-500 text-white shadow-rose-200 shadow-sm"
+                                    : "bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-dark)]"
+                                    }`}
+                                >
+                                  {st}
+                                </button>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <input
+                              type="text"
+                              placeholder="Catatan..."
+                              value={currentKet}
+                              onChange={(e) => handleKeteranganChange(santri.riwayatId, e.target.value)}
+                              className="w-full rounded-xl border border-[var(--color-surface-dark)] bg-white px-3 py-1.5 text-sm outline-none transition focus:border-[var(--color-primary)]"
+                            />
+                          </td>
+                        </tr>
+                      )
+                    })}
+                    {santriList.length === 0 && !isLoading && (
+                      <tr>
+                        <td colSpan={4} className="px-6 py-8 text-center text-[var(--color-text-muted)] font-medium">
+                          Tidak ada santri yang ditemukan pada filter ini.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {(
+              (isTeacher && activeSession && (teacherSessions.some(ts => ts.sesi === activeSession && ts.kelasId === kelasId) || isBadalMode)) ||
+              (userRole === "ADMIN" && showAdminPengajarForm)
+            ) && (
+                <div ref={adminFormRef} className="p-6 md:p-8 bg-[var(--color-surface-light)] border-t border-[var(--color-surface-dark)]">
+                  <div className={`border rounded-3xl p-8 space-y-6 shadow-sm max-w-4xl mx-auto ${isSaved ? 'bg-[var(--color-primary-50)]/40 border-[var(--color-primary-50)]' : 'bg-white border-[var(--color-surface-dark)]'}`}>
+                    {/* Header dengan status indikator */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--color-surface-dark)]/30 pb-5">
+                      <div>
+                        <h3 className="text-lg font-bold text-[var(--color-primary-dark)] flex items-center gap-2">
+                          <CheckCircle2 className="w-5 h-5 text-[var(--color-primary)]" />
+                          Formulir Kehadiran Pengajar {userRole === "ADMIN" && "(Admin Backup)"}
+                        </h3>
+                        <p className="text-xs font-medium text-[var(--color-text-muted)] mt-1">Lengkapi data mengajar {userRole === "ADMIN" ? "pengajar" : "Anda"}. Data akan tersimpan otomatis di perangkat ini.</p>
+                      </div>
+                      {/* Status Badge */}
+                      {isSaved ? (
+                        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--color-primary-100)] border border-[var(--color-primary-50)]">
+                          <Save className="w-4 h-4 text-[var(--color-primary)]" />
+                          <span className="text-xs font-bold text-[var(--color-primary)]">Tersimpan di Server</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200">
+                          <AlertCircle className="w-4 h-4 text-amber-600" />
+                          <span className="text-xs font-bold text-amber-600">Belum Disimpan</span>
+                        </div>
                       )}
-                      <button
-                        onClick={handleSave}
-                        disabled={isSaving || !tanggal || !sesi || belumDiabsen > 0 || !materi || !waktuMulai || !waktuSelesai}
-                        className="w-full sm:w-auto rounded-full bg-[var(--color-primary)] px-8 py-3 text-sm font-bold text-white transition hover:bg-[var(--color-primary-dark)] hover:shadow-md hover:shadow-[var(--color-primary-100)] disabled:opacity-50"
-                      >
-                        {isSaving ? "Menyimpan Data..." : isSaved ? "Simpan Ulang" : "Simpan Absensi Final"}
-                      </button>
                     </div>
-                 </div>
-              </div>
 
-              {/* Quotes Motivasi Mengajar Mobile Optimized */}
-              <div className="mt-12 mb-4 px-4 text-center max-w-2xl mx-auto">
-                <div className="relative inline-block px-8 py-4 bg-violet-50/50 rounded-3xl border border-violet-100/50">
-                  <span className="text-4xl absolute top-2 left-3 text-violet-200 font-serif leading-none">"</span>
-                  <p className="text-sm md:text-base font-semibold text-violet-800/80 italic relative z-10 leading-relaxed px-2">
-                    Kejujuran adalah perhiasan bagi orang yang berilmu.
-                  </p>
-                  <span className="text-4xl absolute bottom-[-10px] right-3 text-violet-200 font-serif leading-none">"</span>
+                    {userRole === "ADMIN" && (
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-2">Pilih Pengajar</label>
+                        <select
+                          value={selectedAdminPengajarId}
+                          onChange={(e) => setSelectedAdminPengajarId(e.target.value)}
+                          className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all"
+                        >
+                          <option value="">-- Pilih Pengajar --</option>
+                          {(() => {
+                            // Kumpulkan semua user unik
+                            const uniqueUsersMap = new Map<string, { id: string, nama: string }>();
+                            allPengajarSesi.forEach(ps => {
+                              if (!uniqueUsersMap.has(ps.user.id)) {
+                                uniqueUsersMap.set(ps.user.id, ps.user);
+                              }
+                            });
+
+                            // Filter pengajar yang BENAR-BENAR terjadwal di tab ini
+                            const matchedTeachers = allPengajarSesi
+                              .filter(ps => ps.sesi === sesi && ps.kelasId === kelasId)
+                              .map(ps => ps.user);
+
+                            // Sisa pengajar lain (sebagai fallback/badal admin)
+                            const otherTeachers = Array.from(uniqueUsersMap.values())
+                              .filter(u => !matchedTeachers.some(mt => mt.id === u.id))
+                              .sort((a, b) => a.nama.localeCompare(b.nama));
+
+                            const currentKelasLabel = allClassesOptions.find(c => c.id === kelasId)?.label ?? kelasId;
+                            const currentSesiLabel = sesi ? sesi.replace('SESI_', 'Sesi ') : "";
+
+                            return (
+                              <>
+                                {matchedTeachers.length > 0 && (
+                                  <optgroup label={`Terjadwal di ${currentSesiLabel} | ${currentKelasLabel}`}>
+                                    {matchedTeachers.map(u => (
+                                      <option key={`matched-${u.id}`} value={u.id}>
+                                        {u.nama}
+                                      </option>
+                                    ))}
+                                  </optgroup>
+                                )}
+                                {otherTeachers.length > 0 && (
+                                  <optgroup label="Pengajar Lain (Sebagai Pengganti)">
+                                    {otherTeachers.map(u => (
+                                      <option key={`other-${u.id}`} value={u.id}>
+                                        {u.nama}
+                                      </option>
+                                    ))}
+                                  </optgroup>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </select>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-2">Materi Pelajaran Hari Ini</label>
+                        <input type="text" value={materi} onChange={e => { setMateri(e.target.value); setIsSaved(false); }} placeholder="Contoh: Nahwu Bab Isim" className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-2">Jam Masuk (24H)</label>
+                          <input type="text" placeholder="Contoh: 15:30" maxLength={5} value={waktuMulai} onChange={e => {
+                            let val = e.target.value.replace(/[^0-9:]/g, '');
+                            if (val.length === 2 && !val.includes(':') && e.target.value.length > waktuMulai.length) val += ':';
+                            setWaktuMulai(val);
+                            setIsSaved(false);
+                          }} className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all font-mono placeholder:text-[var(--color-text-subtle)]" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-2">Jam Selesai (24H)</label>
+                          <input type="text" placeholder="Contoh: 17:00" maxLength={5} value={waktuSelesai} onChange={e => {
+                            let val = e.target.value.replace(/[^0-9:]/g, '');
+                            if (val.length === 2 && !val.includes(':') && e.target.value.length > waktuSelesai.length) val += ':';
+                            setWaktuSelesai(val);
+                            setIsSaved(false);
+                          }} className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all font-mono placeholder:text-[var(--color-text-subtle)]" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-3">Kelengkapan Atribut Mengajar</label>
+                        <div className="flex flex-wrap gap-4">
+                          <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-[var(--color-surface-dark)] hover:border-[var(--color-primary-100)] transition-colors shadow-sm">
+                            <input type="checkbox" checked={atribut.kopiah} onChange={e => { setAtribut({ ...atribut, kopiah: e.target.checked }); setIsSaved(false); }} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
+                            <span className="text-sm font-bold text-[var(--color-text)]">Kopiah / Khimar</span>
+                          </label>
+                          <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-[var(--color-surface-dark)] hover:border-[var(--color-primary-100)] transition-colors shadow-sm">
+                            <input type="checkbox" checked={atribut.nametag} onChange={e => { setAtribut({ ...atribut, nametag: e.target.checked }); setIsSaved(false); }} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
+                            <span className="text-sm font-bold text-[var(--color-text)]">Nametag</span>
+                          </label>
+                          <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-[var(--color-surface-dark)] hover:border-[var(--color-primary-100)] transition-colors shadow-sm">
+                            <input type="checkbox" checked={atribut.bros} onChange={e => { setAtribut({ ...atribut, bros: e.target.checked }); setIsSaved(false); }} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
+                            <span className="text-sm font-bold text-[var(--color-text)]">Baju</span>
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-3">Basic Kecerdasan</label>
+                        <select
+                          value={kecerdasan}
+                          onChange={(e) => { setKecerdasan(e.target.value); setIsSaved(false); }}
+                          className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all"
+                        >
+                          <option value="">-- Pilih Jenis Kecerdasan --</option>
+                          <option value="Verbal-Linguistic">Verbal-Linguistic Intelligence (الذَّكَاءُ اللُّغَوِيُّ)</option>
+                          <option value="Logical-Mathematical">Logical-Mathematical Intelligence (الذَّكَاءُ الْمَنْطِقِيُّ الرِّيَاضِيُّ)</option>
+                          <option value="Visual-Spatial">Visual-Spatial Intelligence (الذَّكَاءُ الْبَصَرِيُّ الْمَكَانِيُّ)</option>
+                          <option value="Musical-Rhythmic">Musical-Rhythmic Intelligence (الذَّكَاءُ الْمُوسِيقِيُّ)</option>
+                          <option value="Bodily-Kinesthetic">Bodily-Kinesthetic Intelligence (الذَّكَاءُ الْجَسَدِيُّ الْحَرَكِيُّ)</option>
+                          <option value="Interpersonal">Interpersonal Intelligence (الذَّكَاءُ الاِجْتِمَاعِيُّ)</option>
+                          <option value="Intrapersonal">Intrapersonal Intelligence (الذَّكَاءُ الذَّاتِيُّ)</option>
+                          <option value="Naturalistic">Naturalistic Intelligence (الذَّكَاءُ الطَّبِيعِيُّ)</option>
+                          <option value="Existential">Existential Intelligence (الذَّكَاءُ الْوُجُودِيُّ)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Info belum absen santri — hanya peringatan, tidak mengunci tombol */}
+                    {belumDiabsen > 0 && (
+                      <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200">
+                        <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                        <p className="text-sm text-amber-700 font-medium">
+                          Ada <strong className="font-bold">{belumDiabsen} santri</strong> yang belum diisi statusnya. Data tetap bisa disimpan, namun santri tersebut belum tercatat.
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="pt-6 border-t border-[var(--color-surface-dark)]/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <p className="text-xs text-[var(--color-text-subtle)] font-medium">
+                        {!materi || !waktuMulai || !waktuSelesai
+                          ? "⚠️ Lengkapi materi dan waktu untuk menyimpan"
+                          : belumDiabsen > 0
+                            ? `⚠️ ${belumDiabsen} santri belum diabsen — data tetap bisa disimpan`
+                            : isSaved
+                              ? "✅ Data sudah tersimpan. Anda bisa mengubah dan menyimpan ulang."
+                              : "📝 Siap disimpan ke server"}
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                        {isSaved && activeSessionsList.length > 1 && activeSessionsList.indexOf(activeSession || "") + 1 < activeSessionsList.length && (
+                          <button
+                            onClick={() => {
+                              const nextSesi = activeSessionsList[activeSessionsList.indexOf(activeSession || "") + 1];
+                              setActiveSession(nextSesi);
+                              setIsBadalMode(false);
+                              setIsSaved(false);
+                              const teachingNext = teacherSessions.find(ts => ts.sesi === nextSesi);
+                              setSesi(nextSesi as SesiKelas);
+                              if (teachingNext) {
+                                setKelasId(teachingNext.kelasId);
+                                setActiveClassId(teachingNext.kelasId);
+                              }
+                              toast.success("Berpindah ke " + nextSesi.replace('_', ' '));
+                            }}
+                            className="w-full sm:w-auto rounded-full bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-emerald-600 shadow-md shadow-emerald-200"
+                          >
+                            Lanjut Sesi {activeSessionsList[activeSessionsList.indexOf(activeSession || "") + 1].replace('SESI_', '')} 👉
+                          </button>
+                        )}
+                        <button
+                          onClick={handleSave}
+                          disabled={isSaving || !tanggal || !sesi || !materi || !waktuMulai || !waktuSelesai}
+                          className="w-full sm:w-auto rounded-full bg-[var(--color-primary)] px-8 py-3 text-sm font-bold text-white transition hover:bg-[var(--color-primary-dark)] hover:shadow-md hover:shadow-[var(--color-primary-100)] disabled:opacity-50"
+                        >
+                          {isSaving ? "Menyimpan Data..." : isSaved ? "Simpan Ulang" : "Simpan Absensi Final"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quotes Motivasi Mengajar Mobile Optimized */}
+                  <div className="mt-12 mb-4 px-4 text-center max-w-2xl mx-auto">
+                    <div className="relative inline-block px-8 py-4 bg-violet-50/50 rounded-3xl border border-violet-100/50">
+                      <span className="text-4xl absolute top-2 left-3 text-violet-200 font-serif leading-none">"</span>
+                      <p className="text-sm md:text-base font-semibold text-violet-800/80 italic relative z-10 leading-relaxed px-2">
+                        Kejujuran adalah perhiasan bagi orang yang berilmu.
+                      </p>
+                      <span className="text-4xl absolute bottom-[-10px] right-3 text-violet-200 font-serif leading-none">"</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-          </div>
+              )}
+          </>
         )}
-        </>
-        )}
-            </section>
+      </section>
 
       {/* Badal Modal */}
       {showBadalModal && (
@@ -861,7 +997,7 @@ export function AbsensiKelasClient({
               </button>
             </div>
             <p className="text-sm text-[var(--color-text-muted)] mb-6">Pilih kelas yang akan Anda gantikan (Badal) untuk sesi <strong className="text-[var(--color-text)]">{activeSession?.replace('_', ' ')}</strong> saat ini.</p>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Kelas Tujuan</label>
@@ -877,10 +1013,10 @@ export function AbsensiKelasClient({
                 </select>
               </div>
             </div>
-            
+
             <div className="mt-8 flex gap-3">
               <button onClick={() => setShowBadalModal(false)} className="w-full rounded-xl bg-[var(--color-surface)] py-3 text-sm font-bold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-dark)]">Batal</button>
-              <button 
+              <button
                 onClick={() => {
                   if (badalTargetKelasId) {
                     setIsBadalMode(true);
@@ -891,8 +1027,8 @@ export function AbsensiKelasClient({
                   } else {
                     toast.error("Pilih kelas terlebih dahulu");
                   }
-                }} 
-                className="w-full rounded-xl bg-[var(--color-warning-light)]0 py-3 text-sm font-bold text-white hover:bg-[var(--color-warning)]"
+                }}
+                className="w-full rounded-xl bg-amber-500 py-3 text-sm font-bold text-white hover:bg-[var(--color-warning)]"
               >
                 Mulai Badal
               </button>
