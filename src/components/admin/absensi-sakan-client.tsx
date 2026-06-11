@@ -31,9 +31,12 @@ export function AbsensiSakanClient({ sakanList, defaultSakan }: { sakanList: str
   const [isSendingWa, setIsSendingWa] = useState(false);
 
   useEffect(() => {
-    // Set default tanggal to today WIB
-    const wib = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
-    setTanggal(wib.toISOString().split("T")[0]);
+    // Set default tanggal to today WIB (timezone-safe)
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jakarta',
+      year: 'numeric', month: '2-digit', day: '2-digit'
+    });
+    setTanggal(formatter.format(new Date()));
   }, []);
 
   useEffect(() => {

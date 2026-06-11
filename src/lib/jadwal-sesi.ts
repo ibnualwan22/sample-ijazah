@@ -7,9 +7,13 @@ const TIMEZONE = "Asia/Jakarta";
  * Returns today's date formatted as "YYYY-MM-DD" in WIB (Asia/Jakarta)
  */
 export function getTodayWibString(): string {
-  const now = new Date();
-  const wibTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
-  return wibTime.toISOString().split("T")[0];
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  return formatter.format(new Date()); // Returns YYYY-MM-DD
 }
 
 /**
@@ -81,6 +85,13 @@ export async function getSesiStatusToday(): Promise<SesiStatusInfo[]> {
 
     if (!jadwal.isActive) {
       isPassed = true; // Anggap lewat jika tidak aktif
+    } else if (tutupMinutes < bukaMinutes) {
+      // Cross-midnight session (e.g. buka 22:00, tutup 00:30+toleransi)
+      isOpen = currentMinutes >= bukaMinutes || currentMinutes <= tutupMinutes;
+      if (!isOpen) {
+        isUpcoming = currentMinutes < bukaMinutes;
+        isPassed = !isUpcoming;
+      }
     } else if (currentMinutes >= bukaMinutes && currentMinutes <= tutupMinutes) {
       isOpen = true;
     } else if (currentMinutes < bukaMinutes) {

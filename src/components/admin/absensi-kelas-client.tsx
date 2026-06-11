@@ -1,8 +1,56 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { toast } from "react-hot-toast";
-import { Clock, Lock, CheckCircle2, UserPlus, X } from "lucide-react";
+import { Clock, Lock, CheckCircle2, UserPlus, X, Save, AlertCircle } from "lucide-react";
+
+// Helper: Hitung sesi aktif dari jadwal list dan waktu WIB saat ini
+function computeActiveSessions(jadwalSesiList: any[]): string[] {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Jakarta',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  });
+  const parts = formatter.formatToParts(new Date());
+  const curHour = parseInt(parts.find(p => p.type === 'hour')?.value || '0');
+  const curMin = parseInt(parts.find(p => p.type === 'minute')?.value || '0');
+  const curVal = curHour * 60 + curMin;
+
+  const active: string[] = [];
+  for (const jadwal of jadwalSesiList) {
+    if (!jadwal.isActive) continue;
+    const [bukaH, bukaM] = jadwal.jamBuka.split(':').map(Number);
+    const [tutupH, tutupM] = jadwal.jamTutup.split(':').map(Number);
+    const bukaVal = bukaH * 60 + bukaM;
+    const tutupVal = tutupH * 60 + tutupM + jadwal.toleransiMenit;
+    const isCrossMidnight = (tutupH * 60 + tutupM) < bukaVal;
+
+    let isActive: boolean;
+    if (isCrossMidnight) {
+      isActive = curVal >= bukaVal || curVal <= (tutupVal % 1440);
+    } else {
+      isActive = curVal >= bukaVal && curVal <= tutupVal;
+    }
+    if (isActive) active.push(jadwal.sesi);
+  }
+  return active;
+}
+
+// Helper: Cache key untuk form pengajar
+function getCacheKey(tanggal: string, sesi: string, kelasId: string): string {
+  return `absen_pengajar_${tanggal}_${sesi}_${kelasId}`;
+}
+function saveFormCache(tanggal: string, sesi: string, kelasId: string, data: any) {
+  try { localStorage.setItem(getCacheKey(tanggal, sesi, kelasId), JSON.stringify(data)); } catch {}
+}
+function loadFormCache(tanggal: string, sesi: string, kelasId: string): any | null {
+  try {
+    const raw = localStorage.getItem(getCacheKey(tanggal, sesi, kelasId));
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+function clearFormCache(tanggal: string, sesi: string, kelasId: string) {
+  try { localStorage.removeItem(getCacheKey(tanggal, sesi, kelasId)); } catch {}
+}
 
 type SantriAbsenTarget = {
   riwayatId: string;
@@ -44,6 +92,7 @@ export function AbsensiKelasClient({
   
   const isTeacher = userRole !== "ADMIN" && allowedClassIds !== null;
   const [activeSession, setActiveSession] = useState<string | null>(null);
+  const activeSessionRef = useRef<string | null>(null);
   const [hasCheckedSession, setHasCheckedSession] = useState(false);
   const [activeClassId, setActiveClassId] = useState<string | null>(null);
   const [jadwalSesiList, setJadwalSesiList] = useState<any[]>([]);
@@ -56,6 +105,10 @@ export function AbsensiKelasClient({
   const [isBadalMode, setIsBadalMode] = useState(false);
   const [showBadalModal, setShowBadalModal] = useState(false);
   const [badalTargetKelasId, setBadalTargetKelasId] = useState("");
+  const [isSaved, setIsSaved] = useState(false); // Indikator apakah absen sudah tersimpan
+
+  // Sync ref dengan state
+  useEffect(() => { activeSessionRef.current = activeSession; }, [activeSession]);
 
   useEffect(() => {
     const formatter = new Intl.DateTimeFormat('en-US', {
@@ -63,9 +116,6 @@ export function AbsensiKelasClient({
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
     });
     const parts = formatter.formatToParts(new Date());
     const y = parts.find(p => p.type === 'year')?.value;
@@ -78,40 +128,11 @@ export function AbsensiKelasClient({
       .then(res => res.json())
       .then(data => {
         setJadwalSesiList(data);
-        const curHour = parseInt(parts.find(p => p.type === 'hour')?.value || '0');
-        const curMin = parseInt(parts.find(p => p.type === 'minute')?.value || '0');
-        
-        let currentActive: string | null = null;
-        for (const jadwal of data) {
-           if (!jadwal.isActive) continue;
-           const [bukaH, bukaM] = jadwal.jamBuka.split(':').map(Number);
-           const [tutupH, tutupM] = jadwal.jamTutup.split(':').map(Number);
-           
-           const bukaVal = bukaH * 60 + bukaM;
-           const tutupBase = tutupH * 60 + tutupM;
-           let adjustedTutupVal = tutupBase + jadwal.toleransiMenit;
-           
-           if (tutupBase < bukaVal) {
-             adjustedTutupVal += 1440;
-           }
-           
-           const curVal = curHour * 60 + curMin;
-           let adjustedCurVal = curVal;
-           if (curVal < bukaVal) {
-             adjustedCurVal += 1440;
-           }
-           
-           const isActive = adjustedCurVal >= bukaVal && adjustedCurVal <= adjustedTutupVal;
-           
-           if (isActive) {
-             currentActive = jadwal.sesi;
-             break;
-           }
-        }
+        const activeSesis = computeActiveSessions(data);
+        const currentActive = activeSesis.length > 0 ? activeSesis[0] : null;
         
         if (isTeacher) {
           if (currentActive) {
-            // Find class for this session
             const teachingThisSession = teacherSessions.find(ts => ts.sesi === currentActive);
             setSesi(currentActive as SesiKelas);
             if (teachingThisSession) {
@@ -131,109 +152,64 @@ export function AbsensiKelasClient({
   const isCompleted = useMemo(() => {
     if (!isTeacher) return false;
     const statBelum = santriList.length - Object.keys(absenMap).length;
-    return statBelum === 0 && materi.trim() !== "" && waktuMulai !== "" && waktuSelesai !== "";
-  }, [isTeacher, santriList, absenMap, materi, waktuMulai, waktuSelesai]);
+    return statBelum === 0 && santriList.length > 0 && isSaved;
+  }, [isTeacher, santriList, absenMap, isSaved]);
 
   const isCompletedRef = useRef(isCompleted);
   useEffect(() => {
     isCompletedRef.current = isCompleted;
   }, [isCompleted]);
 
-  // Efek interval untuk auto-switch sesi
+  // Efek interval untuk auto-switch sesi — TANPA activeSession di dependency
   useEffect(() => {
     if (!isTeacher || jadwalSesiList.length === 0) return;
 
     const intervalId = setInterval(() => {
-      const formatter = new Intl.DateTimeFormat('en-US', {
-        timeZone: 'Asia/Jakarta',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      });
-      const parts = formatter.formatToParts(new Date());
-      const curHour = parseInt(parts.find(p => p.type === 'hour')?.value || '0');
-      const curMin = parseInt(parts.find(p => p.type === 'minute')?.value || '0');
-      
-      const activeSesis: string[] = [];
-      for (const jadwal of jadwalSesiList) {
-         if (!jadwal.isActive) continue;
-         const [bukaH, bukaM] = jadwal.jamBuka.split(':').map(Number);
-         const [tutupH, tutupM] = jadwal.jamTutup.split(':').map(Number);
-         
-         const bukaVal = bukaH * 60 + bukaM;
-         const tutupBase = tutupH * 60 + tutupM;
-         let adjustedTutupVal = tutupBase + jadwal.toleransiMenit;
-         
-         if (tutupBase < bukaVal) {
-           adjustedTutupVal += 1440;
-         }
-         
-         const curVal = curHour * 60 + curMin;
-         let adjustedCurVal = curVal;
-         if (curVal < bukaVal) {
-           adjustedCurVal += 1440;
-         }
-         
-         const isActive = adjustedCurVal >= bukaVal && adjustedCurVal <= adjustedTutupVal;
-         
-         if (isActive) {
-           activeSesis.push(jadwal.sesi);
-         }
-      }
+      const activeSesis = computeActiveSessions(jadwalSesiList);
+      const prevSession = activeSessionRef.current;
 
       let currentActive: string | null = null;
       if (activeSesis.length > 0) {
-        if (activeSession && activeSesis.includes(activeSession)) {
-          // Sedang berada di sesi yang valid
+        if (prevSession && activeSesis.includes(prevSession)) {
           if (isCompletedRef.current && activeSesis.length > 1) {
-            // Sudah selesai absen, dan ada sesi berikutnya yang bertabrakan (overlap)
-            const idx = activeSesis.indexOf(activeSession);
-            if (idx + 1 < activeSesis.length) {
-              currentActive = activeSesis[idx + 1];
-            } else {
-              currentActive = activeSession;
-            }
+            const idx = activeSesis.indexOf(prevSession);
+            currentActive = idx + 1 < activeSesis.length ? activeSesis[idx + 1] : prevSession;
           } else {
-            // Belum selesai ATAU tidak ada sesi overlap
-            currentActive = activeSession;
+            currentActive = prevSession;
           }
         } else {
-          // Sesi saat ini sudah tidak valid (waktu habis), ambil yang pertama valid
           currentActive = activeSesis[0];
         }
       }
 
-      if (activeSession !== currentActive) {
+      if (prevSession !== currentActive) {
          setActiveSession(currentActive);
-         // Pergantian sesi terdeteksi!
          setIsBadalMode(false);
-         setIsBadalMode(false);
+         setIsSaved(false);
          if (currentActive) {
-           if (isTeacher) {
-             const teachingThisSession = teacherSessions.find(ts => ts.sesi === currentActive);
-             setSesi(currentActive as SesiKelas);
-             if (teachingThisSession) {
-               setKelasId(teachingThisSession.kelasId);
-               setActiveClassId(teachingThisSession.kelasId);
-               toast("Sesi berganti otomatis ke " + currentActive.replace('_', ' '), { icon: '🔄' });
-             } else if (teacherSessions.length > 0) {
-               toast("Sesi berganti otomatis ke " + currentActive.replace('_', ' '), { icon: '🔄' });
-             } else {
-               toast("Sesi aktif berganti otomatis ke " + currentActive.replace('_', ' '), { icon: '🔄' });
-             }
-           } else {
-             setSesi(currentActive as SesiKelas);
-             toast("Sesi aktif berganti otomatis ke " + currentActive.replace('_', ' '), { icon: '🔄' });
+           const teachingThisSession = teacherSessions.find(ts => ts.sesi === currentActive);
+           setSesi(currentActive as SesiKelas);
+           if (teachingThisSession) {
+             setKelasId(teachingThisSession.kelasId);
+             setActiveClassId(teachingThisSession.kelasId);
            }
+           toast("Sesi berganti otomatis ke " + currentActive.replace('_', ' '), { icon: '🔄' });
          } else {
            setSesi("" as SesiKelas);
            toast("Sesi saat ini telah berakhir", { icon: '🔒' });
          }
       }
-    }, 10000); // Check setiap 10 detik
+    }, 10000);
 
     return () => clearInterval(intervalId);
-  }, [isTeacher, jadwalSesiList, teacherSessions, activeSession]);
+  }, [isTeacher, jadwalSesiList, teacherSessions]); // ← activeSession DIHAPUS dari deps
+
+  // Auto-save form pengajar ke localStorage saat berubah
+  useEffect(() => {
+    if (!isTeacher || !tanggal || !sesi || !kelasId) return;
+    const data = { materi, waktuMulai, waktuSelesai, atribut };
+    saveFormCache(tanggal, sesi, kelasId, data);
+  }, [isTeacher, tanggal, sesi, kelasId, materi, waktuMulai, waktuSelesai, atribut]);
 
   useEffect(() => {
     if (!tanggal || !sesi) return;
@@ -242,6 +218,7 @@ export function AbsensiKelasClient({
     let ignore = false;
     const fetchData = async () => {
       setIsLoading(true);
+      setIsSaved(false);
       try {
         const res = await fetch(`/api/admin/absensi/kelas?tanggal=${tanggal}&sesi=${sesi}&kelasId=${kelasId}`);
         const data = await res.json();
@@ -254,6 +231,7 @@ export function AbsensiKelasClient({
           setSantriList([]);
         }
         
+        // Prioritas: data dari server > cache localStorage
         if (data.absenPengajarData) {
           setMateri(data.absenPengajarData.materi || "");
           setWaktuMulai(data.absenPengajarData.waktuMulai || "");
@@ -263,11 +241,22 @@ export function AbsensiKelasClient({
             nametag: !!data.absenPengajarData.atributNametag,
             bros: !!data.absenPengajarData.atributBros,
           });
+          setIsSaved(true); // Data sudah tersimpan di server
         } else {
-          setMateri("");
-          setWaktuMulai("");
-          setWaktuSelesai("");
-          setAtribut({ kopiah: false, nametag: false, bros: false });
+          // Coba muat dari cache localStorage
+          const cached = loadFormCache(tanggal, sesi, kelasId);
+          if (cached) {
+            setMateri(cached.materi || "");
+            setWaktuMulai(cached.waktuMulai || "");
+            setWaktuSelesai(cached.waktuSelesai || "");
+            setAtribut(cached.atribut || { kopiah: false, nametag: false, bros: false });
+          } else {
+            setMateri("");
+            setWaktuMulai("");
+            setWaktuSelesai("");
+            setAtribut({ kopiah: false, nametag: false, bros: false });
+          }
+          setIsSaved(false);
         }
         
         const newMap: Record<string, any> = {};
@@ -275,6 +264,10 @@ export function AbsensiKelasClient({
           data.absenData.forEach((a: any) => {
             newMap[a.riwayatId] = { status: a.status, keterangan: a.keterangan || "" };
           });
+          // Jika ada data absen santri yang sudah tersimpan, tandai saved
+          if (Object.keys(newMap).length > 0 && data.absenPengajarData) {
+            setIsSaved(true);
+          }
         }
         setAbsenMap(newMap);
       } catch (error) {
@@ -295,6 +288,7 @@ export function AbsensiKelasClient({
       ...prev,
       [riwayatId]: { ...prev[riwayatId], status, keterangan: prev[riwayatId]?.keterangan || "" }
     }));
+    setIsSaved(false);
   };
 
   const handleKeteranganChange = (riwayatId: string, keterangan: string) => {
@@ -348,6 +342,9 @@ export function AbsensiKelasClient({
       const result = await res.json();
       if (result.success) {
         toast.success(`Berhasil menyimpan data absensi kelas`);
+        setIsSaved(true);
+        // Bersihkan cache setelah tersimpan ke server
+        if (isTeacher) clearFormCache(tanggal, sesi, kelasId);
       } else {
         toast.error(result.error || "Gagal menyimpan absensi");
       }
@@ -653,32 +650,34 @@ export function AbsensiKelasClient({
         
         {(isTeacher && activeSession && (teacherSessions.some(ts => ts.sesi === activeSession && ts.kelasId === kelasId) || isBadalMode)) && (
           <div className="p-6 md:p-8 bg-[var(--color-surface-light)] border-t border-[var(--color-surface-dark)]">
-            {belumDiabsen > 0 ? (
-              <div className="bg-white border border-[var(--color-surface-dark)] rounded-3xl p-10 text-center flex flex-col items-center justify-center shadow-sm max-w-2xl mx-auto">
-                 <div className="w-16 h-16 bg-[var(--color-surface)] rounded-full flex items-center justify-center mb-4">
-                   <Lock className="w-8 h-8 text-[var(--color-text-subtle)]" />
-                 </div>
-                 <h3 className="text-xl font-bold text-[var(--color-text)] mb-2">Formulir Pengajar Terkunci</h3>
-                 <p className="text-[var(--color-text-muted)] text-sm max-w-md leading-relaxed">
-                   Anda diwajibkan menyelesaikan absensi seluruh santri di kelas ini terlebih dahulu. Masih ada <strong className="text-[var(--color-danger)] font-bold">{belumDiabsen} santri</strong> yang statusnya belum ditentukan.
-                 </p>
-              </div>
-            ) : (
-              <div className="bg-[var(--color-primary-50)]/40 border border-[var(--color-primary-50)] rounded-3xl p-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 shadow-sm max-w-4xl mx-auto">
-                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--color-primary-50)]/50 pb-5">
+               <div className={`border rounded-3xl p-8 space-y-6 shadow-sm max-w-4xl mx-auto ${isSaved ? 'bg-[var(--color-primary-50)]/40 border-[var(--color-primary-50)]' : 'bg-white border-[var(--color-surface-dark)]'}`}>
+                 {/* Header dengan status indikator */}
+                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--color-surface-dark)]/30 pb-5">
                    <div>
                      <h3 className="text-lg font-bold text-[var(--color-primary-dark)] flex items-center gap-2">
                        <CheckCircle2 className="w-5 h-5 text-[var(--color-primary)]" />
                        Formulir Kehadiran Pengajar
                      </h3>
-                     <p className="text-xs font-medium text-[var(--color-primary)] mt-1">Lengkapi data mengajar Anda untuk menyelesaikan absensi sesi ini.</p>
+                     <p className="text-xs font-medium text-[var(--color-text-muted)] mt-1">Lengkapi data mengajar Anda. Data akan tersimpan otomatis di perangkat ini.</p>
                    </div>
+                   {/* Status Badge */}
+                   {isSaved ? (
+                     <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--color-primary-100)] border border-[var(--color-primary-50)]">
+                       <Save className="w-4 h-4 text-[var(--color-primary)]" />
+                       <span className="text-xs font-bold text-[var(--color-primary)]">Tersimpan di Server</span>
+                     </div>
+                   ) : (
+                     <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200">
+                       <AlertCircle className="w-4 h-4 text-amber-600" />
+                       <span className="text-xs font-bold text-amber-600">Belum Disimpan</span>
+                     </div>
+                   )}
                  </div>
                  
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-2">Materi Pelajaran Hari Ini</label>
-                      <input type="text" value={materi} onChange={e=>setMateri(e.target.value)} placeholder="Contoh: Nahwu Bab Isim" className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all" />
+                      <input type="text" value={materi} onChange={e=>{setMateri(e.target.value); setIsSaved(false);}} placeholder="Contoh: Nahwu Bab Isim" className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -687,6 +686,7 @@ export function AbsensiKelasClient({
                           let val = e.target.value.replace(/[^0-9:]/g, '');
                           if (val.length === 2 && !val.includes(':') && e.target.value.length > waktuMulai.length) val += ':';
                           setWaktuMulai(val);
+                          setIsSaved(false);
                         }} className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all font-mono placeholder:text-[var(--color-text-subtle)]" />
                       </div>
                       <div>
@@ -695,6 +695,7 @@ export function AbsensiKelasClient({
                           let val = e.target.value.replace(/[^0-9:]/g, '');
                           if (val.length === 2 && !val.includes(':') && e.target.value.length > waktuSelesai.length) val += ':';
                           setWaktuSelesai(val);
+                          setIsSaved(false);
                         }} className="w-full rounded-2xl border border-[var(--color-surface-dark)] bg-white px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all font-mono placeholder:text-[var(--color-text-subtle)]" />
                       </div>
                     </div>
@@ -704,31 +705,49 @@ export function AbsensiKelasClient({
                     <label className="block text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)] mb-3">Kelengkapan Atribut Mengajar</label>
                     <div className="flex flex-wrap gap-4">
                        <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-[var(--color-surface-dark)] hover:border-[var(--color-primary-100)] transition-colors shadow-sm">
-                         <input type="checkbox" checked={atribut.kopiah} onChange={e=>setAtribut({...atribut, kopiah: e.target.checked})} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
+                         <input type="checkbox" checked={atribut.kopiah} onChange={e=>{setAtribut({...atribut, kopiah: e.target.checked}); setIsSaved(false);}} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
                          <span className="text-sm font-bold text-[var(--color-text)]">Kopiah / Khimar</span>
                        </label>
                        <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-[var(--color-surface-dark)] hover:border-[var(--color-primary-100)] transition-colors shadow-sm">
-                         <input type="checkbox" checked={atribut.nametag} onChange={e=>setAtribut({...atribut, nametag: e.target.checked})} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
+                         <input type="checkbox" checked={atribut.nametag} onChange={e=>{setAtribut({...atribut, nametag: e.target.checked}); setIsSaved(false);}} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
                          <span className="text-sm font-bold text-[var(--color-text)]">Nametag</span>
                        </label>
                        <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3.5 rounded-2xl border border-[var(--color-surface-dark)] hover:border-[var(--color-primary-100)] transition-colors shadow-sm">
-                         <input type="checkbox" checked={atribut.bros} onChange={e=>setAtribut({...atribut, bros: e.target.checked})} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
+                         <input type="checkbox" checked={atribut.bros} onChange={e=>{setAtribut({...atribut, bros: e.target.checked}); setIsSaved(false);}} className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-[var(--color-surface-dark)]" />
                          <span className="text-sm font-bold text-[var(--color-text)]">Bros Markaz</span>
                        </label>
                     </div>
                  </div>
+
+                 {/* Info belum absen santri */}
+                 {belumDiabsen > 0 && (
+                   <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200">
+                     <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                     <p className="text-sm text-amber-700 font-medium">
+                       Masih ada <strong className="font-bold">{belumDiabsen} santri</strong> yang belum diabsen. Selesaikan absensi santri untuk menyimpan data.
+                     </p>
+                   </div>
+                 )}
                  
-                 <div className="pt-6 border-t border-[var(--color-primary-50)]/50 flex justify-end">
+                 <div className="pt-6 border-t border-[var(--color-surface-dark)]/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p className="text-xs text-[var(--color-text-subtle)] font-medium">
+                      {belumDiabsen > 0 
+                        ? "⚠️ Absensi santri belum lengkap — tombol simpan dikunci" 
+                        : !materi || !waktuMulai || !waktuSelesai 
+                          ? "⚠️ Lengkapi materi dan waktu untuk menyimpan"
+                          : isSaved 
+                            ? "✅ Data sudah tersimpan. Anda bisa mengubah dan menyimpan ulang."
+                            : "📝 Siap disimpan ke server"}
+                    </p>
                     <button
                       onClick={handleSave}
-                      disabled={isSaving || !tanggal || !sesi}
-                      className="w-full md:w-auto rounded-full bg-[var(--color-primary)] px-8 py-3 text-sm font-bold text-white transition hover:bg-[var(--color-primary-dark)] hover:shadow-md hover:shadow-[var(--color-primary-100)] disabled:opacity-50"
+                      disabled={isSaving || !tanggal || !sesi || belumDiabsen > 0 || !materi || !waktuMulai || !waktuSelesai}
+                      className="w-full sm:w-auto rounded-full bg-[var(--color-primary)] px-8 py-3 text-sm font-bold text-white transition hover:bg-[var(--color-primary-dark)] hover:shadow-md hover:shadow-[var(--color-primary-100)] disabled:opacity-50"
                     >
-                      {isSaving ? "Menyimpan Data..." : "Simpan Absensi Final"}
+                      {isSaving ? "Menyimpan Data..." : isSaved ? "Simpan Ulang" : "Simpan Absensi Final"}
                     </button>
                  </div>
               </div>
-            )}
           </div>
         )}
         </>

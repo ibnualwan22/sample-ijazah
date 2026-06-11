@@ -47,8 +47,11 @@ export function AbsensiKegiatanClient({
   const activeKegiatanList = kegiatanList.filter((k) => k.aktif);
 
   useEffect(() => {
-    const wib = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
-    setTanggal(wib.toISOString().split("T")[0]);
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jakarta',
+      year: 'numeric', month: '2-digit', day: '2-digit'
+    });
+    setTanggal(formatter.format(new Date()));
     if (activeKegiatanList.length > 0) {
       setKategoriId(activeKegiatanList[0].id);
     }
