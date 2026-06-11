@@ -14,16 +14,27 @@ type Dufah = {
   usbu3EndDate: string | null;
 };
 
-// Inline function to get today WIB as YYYY-MM-DD
+// Timezone-safe date helper
 function getWibDateString(offsetDays = 0): string {
-  const wib = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
-  wib.setDate(wib.getDate() + offsetDays);
-  return wib.toISOString().split("T")[0];
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  });
+  const now = new Date();
+  if (offsetDays !== 0) {
+    now.setDate(now.getDate() + offsetDays);
+  }
+  return formatter.format(now);
 }
 
 function getFirstDayOfMonth(): string {
-  const wib = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
-  return `${wib.getFullYear()}-${String(wib.getMonth() + 1).padStart(2, "0")}-01`;
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  });
+  const todayStr = formatter.format(new Date());
+  const [year, month] = todayStr.split('-');
+  return `${year}-${month}-01`;
 }
 
 export function RekapFilterClient({ type, title, useUsbu }: { type: string, title: string, useUsbu: boolean }) {

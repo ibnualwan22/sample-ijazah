@@ -105,114 +105,137 @@ export function RekapPengajarClient() {
     }));
   }, [data, searchQuery, filterHari, filterKelas, filterPengajar]);
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     if (!dari || !data.length) return;
 
-    // Menentukan rentang tanggal 12 sampai 5 bulan depan
-    const dDate = new Date(dari);
-    let startYear = dDate.getFullYear();
-    let startMonth = dDate.getMonth();
-    if (dDate.getDate() < 12) {
+    // Selalu gunakan bulan berjalan WIB untuk penentuan periode export (12 s.d 5)
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jakarta',
+      year: 'numeric', month: '2-digit', day: '2-digit'
+    });
+    const todayStr = formatter.format(new Date());
+    const [tYearStr, tMonthStr, tDayStr] = todayStr.split('-');
+    
+    let startYear = parseInt(tYearStr, 10);
+    let startMonth = parseInt(tMonthStr, 10) - 1; // 0-indexed month
+    const tDay = parseInt(tDayStr, 10);
+    
+    // Jika tanggal sekarang <= 5, maka ini masih periode bulan sebelumnya
+    if (tDay <= 5) {
       startMonth -= 1;
     }
+
     const exportStart = new Date(startYear, startMonth, 12);
     const exportEnd = new Date(startYear, startMonth + 1, 5);
 
-    const datesArray: Date[] = [];
-    let curr = new Date(exportStart);
-    while (curr <= exportEnd) {
-      datesArray.push(new Date(curr));
-      curr.setDate(curr.getDate() + 1);
-    }
+    const dStartStr = format(exportStart, "yyyy-MM-dd");
+    const dEndStr = format(exportEnd, "yyyy-MM-dd");
 
-    // Grouping data for Excel: teacher -> kelas||sesi -> date -> record
-    const grouped: Record<string, Record<string, Record<string, PengajarRecord>>> = {};
-    
-    data.forEach(r => {
-      if (!grouped[r.pengajar]) grouped[r.pengajar] = {};
-      const rowKey = `${r.kelas}||${r.sesi}`;
-      if (!grouped[r.pengajar][rowKey]) grouped[r.pengajar][rowKey] = {};
-      grouped[r.pengajar][rowKey][r.tanggal] = r;
-    });
+    try {
+      // Ambil data untuk seluruh range export, jangan hanya dari table view
+      const params = new URLSearchParams({ dari: dStartStr, sampai: dEndStr });
+      const res = await fetch(`/api/admin/absensi/rekap/pengajar?${params}`);
+      const exportData: PengajarRecord[] = await res.json();
 
-    const SESI_ROMAN: Record<string, string> = {
-      "SESI_1": "I", "SESI_2": "II", "SESI_3": "III",
-      "SESI_4": "IV", "SESI_5": "V", "SESI_6": "VI"
-    };
+      const datesArray: Date[] = [];
+      let curr = new Date(exportStart);
+      while (curr <= exportEnd) {
+        datesArray.push(new Date(curr));
+        curr.setDate(curr.getDate() + 1);
+      }
 
-    let html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel">
-      <head>
-        <meta charset="utf-8">
-        <style>
-          table { border-collapse: collapse; font-family: sans-serif; font-size: 12px; }
-          th, td { border: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle; }
-          th { background-color: #f2f2f2; font-weight: bold; }
-          .blue { background-color: #4f81bd; color: #4f81bd; } /* Biru tulisan biru biar ga kelihatan textnya kalo kosong */
-          .red { background-color: #ff4c4c; color: #fff; font-weight: bold; }
-          .gray { background-color: #d9d9d9; }
-          .white-red { background-color: #fff; color: #ff0000; font-weight: bold; }
-        </style>
-      </head>
-      <body>
-        <table>
-          <thead>
-            <tr>
-              <th>Nama</th>
-              <th>Kelas</th>
-              <th>Sesi</th>
-              ${datesArray.map(d => `<th>${format(d, "d")} <br/> ${format(d, "EEE", { locale: id })}</th>`).join('')}
-            </tr>
-          </thead>
-          <tbody>`;
-
-    Object.keys(grouped).sort().forEach(teacher => {
-      const rows = grouped[teacher];
-      let firstRow = true;
-      const rowKeys = Object.keys(rows).sort();
+      // Grouping data for Excel: teacher -> kelas||sesi -> date -> record
+      const grouped: Record<string, Record<string, Record<string, PengajarRecord>>> = {};
       
-      rowKeys.forEach(rowKey => {
-        const [kelas, sesi] = rowKey.split("||");
-        html += `<tr>`;
-        if (firstRow) {
-          html += `<td rowspan="${rowKeys.length}"><b>${teacher}</b></td>`;
-          firstRow = false;
-        }
-        html += `<td>${kelas}</td>`;
-        html += `<td>${SESI_ROMAN[sesi] || sesi}</td>`;
-        
-        datesArray.forEach(dateObj => {
-          const dateStr = format(dateObj, "yyyy-MM-dd");
-          const record = rows[rowKey][dateStr];
-          
-          if (!record) {
-            html += `<td class="gray"></td>`;
-          } else if (record.status === "ALPHA") {
-            html += `<td class="red">A</td>`;
-          } else if (record.status === "HADIR") {
-            if (record.terlambatMenit && record.terlambatMenit > 0) {
-              html += `<td class="white-red">-${record.terlambatMenit}</td>`;
-            } else {
-              html += `<td class="blue">Y</td>`;
-            }
-          } else {
-            html += `<td></td>`;
-          }
-        });
-        html += `</tr>`;
+      exportData.forEach(r => {
+        if (!grouped[r.pengajar]) grouped[r.pengajar] = {};
+        const rowKey = `${r.kelas}||${r.sesi}`;
+        if (!grouped[r.pengajar][rowKey]) grouped[r.pengajar][rowKey] = {};
+        grouped[r.pengajar][rowKey][r.tanggal] = r;
       });
-      // Empty row separation
-      html += `<tr><td colspan="${3 + datesArray.length}" style="border:none; height: 20px;"></td></tr>`;
-    });
 
-    html += `</tbody></table></body></html>`;
+      const SESI_ROMAN: Record<string, string> = {
+        "SESI_1": "I", "SESI_2": "II", "SESI_3": "III",
+        "SESI_4": "IV", "SESI_5": "V", "SESI_6": "VI"
+      };
 
-    const blob = new Blob([html], { type: "application/vnd.ms-excel" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Rekap_Pengajar_${format(exportStart, "MMM_yyyy")}.xls`;
-    a.click();
-    URL.revokeObjectURL(url);
+      let html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel">
+        <head>
+          <meta charset="utf-8">
+          <style>
+            table { border-collapse: collapse; font-family: sans-serif; font-size: 12px; }
+            th, td { border: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+            .blue { background-color: #4f81bd; color: #4f81bd; }
+            .red { background-color: #ff4c4c; color: #fff; font-weight: bold; }
+            .gray { background-color: #d9d9d9; }
+            .white-red { background-color: #fff; color: #ff0000; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <table>
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Kelas</th>
+                <th>Sesi</th>
+                ${datesArray.map(d => `<th>${format(d, "d")} <br/> ${format(d, "EEE", { locale: id })}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>`;
+
+      Object.keys(grouped).sort().forEach(teacher => {
+        const rows = grouped[teacher];
+        let firstRow = true;
+        const rowKeys = Object.keys(rows).sort();
+        
+        rowKeys.forEach(rowKey => {
+          const [kelas, sesi] = rowKey.split("||");
+          html += `<tr>`;
+          if (firstRow) {
+            html += `<td rowspan="${rowKeys.length}"><b>${teacher}</b></td>`;
+            firstRow = false;
+          }
+          html += `<td>${kelas}</td>`;
+          html += `<td>${SESI_ROMAN[sesi] || sesi}</td>`;
+          
+          datesArray.forEach(dateObj => {
+            const dateStr = format(dateObj, "yyyy-MM-dd");
+            const record = rows[rowKey][dateStr];
+            
+            if (!record) {
+              html += `<td class="gray"></td>`;
+            } else if (record.status === "ALPHA") {
+              html += `<td class="red">A</td>`;
+            } else if (record.status === "HADIR") {
+              if (record.terlambatMenit && record.terlambatMenit > 0) {
+                html += `<td class="white-red">-${record.terlambatMenit}</td>`;
+              } else {
+                html += `<td class="blue">Y</td>`;
+              }
+            } else {
+              html += `<td></td>`;
+            }
+          });
+          html += `</tr>`;
+        });
+        // Empty row separation
+        html += `<tr><td colspan="${3 + datesArray.length}" style="border:none; height: 20px;"></td></tr>`;
+      });
+
+      html += `</tbody></table></body></html>`;
+
+      const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Rekap_Pengajar_${format(exportStart, "MMM_yyyy")}.xls`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("Gagal export excel:", e);
+      alert("Terjadi kesalahan saat meng-export Excel");
+    }
   };
 
   if (!dari || !sampai) {

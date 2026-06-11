@@ -69,27 +69,34 @@ export async function GET(request: Request) {
       };
     });
 
-    const absenKelas = await prisma.absenKelas.findMany({
-      where: {
-        tanggal: {
-          gte: new Date(`${dari}T00:00:00Z`),
-          lte: new Date(`${sampai}T23:59:59Z`),
-        }
-      },
-      select: {
-        tanggal: true,
-        sesi: true,
-        riwayat: {
-          select: { kelasId: true, kelas: { select: { nama: true } } }
-        }
-      }
-    });
-
+    const dufahs = await prisma.dufah.findMany();
+    
     const activeDates = new Set<string>();
-    for (const ak of absenKelas) {
-      if (ak.tanggal) {
-        activeDates.add(ak.tanggal.toISOString().split("T")[0]);
+    const startDate = new Date(`${dari}T00:00:00Z`);
+    const endDate = new Date(`${sampai}T23:59:59Z`);
+    
+    let curr = new Date(startDate);
+    while (curr <= endDate) {
+      const dStr = curr.toISOString().split("T")[0];
+      const dDate = new Date(`${dStr}T00:00:00Z`);
+      
+      let isActive = false;
+      for (const d of dufahs) {
+        if (d.usbu1Active && d.usbu1StartDate && d.usbu1EndDate) {
+          if (dDate >= d.usbu1StartDate && dDate <= d.usbu1EndDate) isActive = true;
+        }
+        if (d.usbu2Active && d.usbu2StartDate && d.usbu2EndDate) {
+          if (dDate >= d.usbu2StartDate && dDate <= d.usbu2EndDate) isActive = true;
+        }
+        if (d.usbu3Active && d.usbu3StartDate && d.usbu3EndDate) {
+          if (dDate >= d.usbu3StartDate && dDate <= d.usbu3EndDate) isActive = true;
+        }
       }
+      
+      if (isActive) {
+        activeDates.add(dStr);
+      }
+      curr.setDate(curr.getDate() + 1);
     }
 
     const pengajarSesi = await prisma.pengajarSesi.findMany({
