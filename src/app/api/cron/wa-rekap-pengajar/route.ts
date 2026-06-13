@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       message += `${index + 1}. ${r.pengajar} - ${r.kelas} - ${sesiLabel}\n`;
     });
 
-    const targetWa = "081227225453"; // Hardcoded sesuai permintaan
+    const targetWa = "6281227225453"; // Diubah ke format 62 agar kompatibel dengan WA API
     const result = await sendWhatsAppMessage(targetWa, message.trim());
 
     return NextResponse.json({
