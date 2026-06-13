@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HaflahWadaPage() {
-  await requirePermission("data_syahadah");
+  await requirePermission("haflah_wada");
 
   const [santriRows, kelasList, activeDufahName] = await Promise.all([
     getDashboardSantriRows(),

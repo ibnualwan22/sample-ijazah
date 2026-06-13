@@ -5,7 +5,7 @@ import { AgendaClient } from "@/components/admin/agenda-client";
 export const dynamic = "force-dynamic";
 
 export default async function AgendaPage() {
-  await requirePermission("manajemen_konten");
+  await requirePermission("agenda_rutinan");
   const agendas = await prisma.agenda.findMany({
     orderBy: { waktuMulai: "desc" }
   });

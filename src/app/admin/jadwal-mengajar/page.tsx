@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function JadwalMengajarPage() {
-  await requirePermission("manajemen_kelas");
+  await requirePermission("jadwal_mengajar");
   const programs = await prisma.program.findMany({
     include: {
       kelasList: {

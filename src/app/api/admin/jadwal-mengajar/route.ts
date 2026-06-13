@@ -5,7 +5,7 @@ import { checkPermission } from "@/lib/permission";
 
 export async function POST(request: Request) {
   const session = await getSession();
-  const hasPermission = await checkPermission("manajemen_kelas_edit");
+  const hasPermission = await checkPermission("jadwal_mengajar_edit");
   if (!session || !hasPermission) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

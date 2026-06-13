@@ -11,7 +11,7 @@ const navigationGroups = [
     title: "Utama",
     items: [
       { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard, permissionId: "dashboard" },
-      { href: "/admin/jadwal-saya", label: "Jadwal Saya", icon: Calendar, requiredRoles: ["PENGAJAR", "WALI_KELAS"] },
+      { href: "/admin/jadwal-saya", label: "Jadwal Saya", icon: Calendar, permissionId: "jadwal_saya" },
     ]
   },
   {
@@ -43,17 +43,17 @@ const navigationGroups = [
   {
     title: "Divisi Kelas",
     items: [
-      { href: "/admin/manajemen-kelas", label: "Alokasi Kelas", icon: Users, permissionId: "manajemen_kelas" },
-      { href: "/admin/kelas", label: "Manajemen Ruang Kelas", icon: DoorOpen, permissionId: "manajemen_kelas" },
-      { href: "/admin/jadwal-mengajar", label: "Jadwal Mengajar", icon: Calendar, permissionId: "manajemen_kelas" },
+      { href: "/admin/manajemen-kelas", label: "Alokasi Kelas", icon: Users, permissionId: "alokasi_kelas" },
+      { href: "/admin/kelas", label: "Manajemen Ruang Kelas", icon: DoorOpen, permissionId: "ruang_kelas" },
+      { href: "/admin/jadwal-mengajar", label: "Jadwal Mengajar", icon: Calendar, permissionId: "jadwal_mengajar" },
     ]
   },
   {
     title: "Divisi Syahadah",
     items: [
       { href: "/admin/syahadah", label: "Data Syahadah", icon: GraduationCap, permissionId: "data_syahadah" },
-      { href: "/admin/martabah-ula", label: "Martabah Ula", icon: Medal, permissionId: "data_syahadah" },
-      { href: "/admin/haflah-wada", label: "Haflah Wada'", icon: Armchair, permissionId: "data_syahadah" },
+      { href: "/admin/martabah-ula", label: "Martabah Ula", icon: Medal, permissionId: "martabah_ula" },
+      { href: "/admin/haflah-wada", label: "Haflah Wada'", icon: Armchair, permissionId: "haflah_wada" },
       { href: "/admin/input-nilai-kelas", label: "Input Nilai", icon: BookOpen, permissionId: "input_nilai" },
       { href: "/admin/nilai-kosong", label: "Nilai Kosong", icon: AlertTriangle, permissionId: "monitor_nilai_kosong" },
       { href: "/admin/cetak-usbu", label: "Cetak Nilai Pekanan", icon: Printer, permissionId: "cetak_nilai_pekanan" },
@@ -65,10 +65,10 @@ const navigationGroups = [
   {
     title: "Manajemen Aplikasi",
     items: [
-      { href: "/admin/manajemen-user", label: "Manajemen User", icon: UserCog, requiredRole: "ADMIN", permissionId: "manajemen_user" },
-      { href: "/admin/manajemen-role", label: "Hak Akses (Role)", icon: ShieldCheck, requiredRole: "ADMIN", permissionId: "manajemen_user" },
-      { href: "/admin/manajemen-konten/agenda", label: "Agenda Rutinan", icon: CalendarDays, permissionId: "manajemen_konten" },
-      { href: "/admin/manajemen-konten/instagram", label: "Konten Instagram", icon: Instagram, permissionId: "manajemen_konten" },
+      { href: "/admin/manajemen-user", label: "Manajemen User", icon: UserCog, permissionId: "manajemen_user" },
+      { href: "/admin/manajemen-role", label: "Hak Akses (Role)", icon: ShieldCheck, permissionId: "manajemen_role" },
+      { href: "/admin/manajemen-konten/agenda", label: "Agenda Rutinan", icon: CalendarDays, permissionId: "agenda_rutinan" },
+      { href: "/admin/manajemen-konten/instagram", label: "Konten Instagram", icon: Instagram, permissionId: "konten_instagram" },
     ]
   }
 ];

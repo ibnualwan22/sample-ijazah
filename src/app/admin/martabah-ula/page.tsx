@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function MartabahUlaPage() {
-  await requirePermission("data_syahadah"); // Reusing data_syahadah permission
+  await requirePermission("martabah_ula");
   const allRows = await getDashboardSantriRows();
   const santriRows = allRows.filter((santri: any) => santri.isAktif);
 

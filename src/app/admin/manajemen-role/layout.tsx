@@ -5,6 +5,6 @@ export default async function ManajemenRoleLayout({
 }: {
   children: React.ReactNode;
 }) {
-  await requirePermission("manajemen_user");
+  await requirePermission("manajemen_role");
   return <>{children}</>;
 }

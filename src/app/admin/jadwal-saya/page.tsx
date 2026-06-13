@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { Clock, Calendar, CheckCircle2 } from "lucide-react";
+import { requirePermission } from "@/lib/permission";
 
 export const dynamic = "force-dynamic";
 
@@ -10,16 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default async function JadwalSayaPage() {
+  await requirePermission("jadwal_saya");
   const session = await getSession();
-  
-  if (!session || (session.role !== "PENGAJAR" && session.role !== "WALI_KELAS")) {
-    return (
-      <div className="p-12 text-center flex flex-col items-center justify-center">
-        <h1 className="text-2xl font-bold text-[var(--color-text)]">Akses Ditolak</h1>
-        <p className="text-[var(--color-text-muted)] mt-2">Anda tidak memiliki akses ke halaman ini. Halaman ini khusus untuk pengajar.</p>
-      </div>
-    );
-  }
+  if (!session) return null;
 
   // Ambil data jadwal sesi yang aktif
   const jadwalSesiList = await prisma.jadwalSesi.findMany({

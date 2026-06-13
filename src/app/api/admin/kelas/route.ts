@@ -1,7 +1,15 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
+import { checkPermission } from "@/lib/permission";
 
 export async function GET() {
+  const session = await getSession();
+  const hasPermission = await checkPermission("ruang_kelas");
+  if (!session || !hasPermission) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const kelasList = await prisma.kelas.findMany({
       orderBy: { nama: "asc" },
@@ -18,6 +26,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const session = await getSession();
+  const hasPermission = await checkPermission("ruang_kelas_edit");
+  if (!session || !hasPermission) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { nama, programId } = body;
@@ -49,6 +63,12 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
+  const session = await getSession();
+  const hasPermission = await checkPermission("ruang_kelas_edit");
+  if (!session || !hasPermission) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { id, nama, programId } = body;
@@ -84,6 +104,12 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const session = await getSession();
+  const hasPermission = await checkPermission("ruang_kelas_edit");
+  if (!session || !hasPermission) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");

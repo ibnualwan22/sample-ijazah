@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   const session = await getSession();
-  const hasPermission = await checkPermission("manajemen_kelas");
+  const hasPermission = await checkPermission("jadwal_mengajar") || await checkPermission("manajemen_user");
   if (!session || !hasPermission) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -37,7 +37,7 @@ export async function POST(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   const session = await getSession();
-  const hasPermission = await checkPermission("manajemen_kelas_edit");
+  const hasPermission = await checkPermission("jadwal_mengajar_edit") || await checkPermission("manajemen_user_edit");
   if (!session || !hasPermission) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

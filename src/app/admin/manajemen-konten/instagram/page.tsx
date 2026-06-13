@@ -5,7 +5,7 @@ import { InstagramClient } from "@/components/admin/instagram-client";
 export const dynamic = "force-dynamic";
 
 export default async function InstagramPage() {
-  await requirePermission("manajemen_konten");
+  await requirePermission("konten_instagram");
   const posts = await prisma.instagramPost.findMany({
     orderBy: { createdAt: "desc" }
   });

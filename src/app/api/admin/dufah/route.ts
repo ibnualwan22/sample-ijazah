@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { syncDufahTable } from "@/lib/absensi";
+import { getSession } from "@/lib/auth";
+import { checkPermission } from "@/lib/permission";
 
 export async function GET() {
   try {
@@ -27,6 +29,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const session = await getSession();
+  const hasPermission = await checkPermission("manajemen_dufah_edit");
+  if (!session || !hasPermission) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { nama } = body;

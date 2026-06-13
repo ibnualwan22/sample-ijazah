@@ -11,27 +11,77 @@ type RolePermission = {
 };
 
 const AVAILABLE_PERMISSIONS = [
-  { id: "dashboard", label: "Dashboard Admin", desc: "Akses ke halaman dashboard utama admin" },
-  { id: "absen_sakan", label: "Absen Sakan", desc: "Akses untuk absen kehadiran di asrama" },
-  { id: "absen_kelas", label: "Absen Kelas", desc: "Akses untuk absen kehadiran santri di kelas" },
-  { id: "absen_kegiatan", label: "Absen Kegiatan", desc: "Akses untuk absen kegiatan santri" },
-  { id: "rekap_sakan", label: "Rekap Sakan", desc: "Akses untuk melihat rekap kehadiran sakan" },
-  { id: "rekap_kelas", label: "Rekap Kelas", desc: "Akses untuk melihat rekap kehadiran kelas" },
-  { id: "rekap_kegiatan", label: "Rekap Kegiatan", desc: "Akses untuk melihat rekap kegiatan" },
-  { id: "rekap_pengajar", label: "Rekap Pengajar", desc: "Akses untuk melihat laporan absen pengajar" },
-  { id: "pengaturan_kegiatan", label: "Pengaturan Kegiatan", desc: "Akses untuk mengatur jenis kegiatan absensi" },
-  { id: "manajemen_kelas", label: "Manajemen Kelas (Lihat)", desc: "Akses untuk melihat kelas dan plotting santri" },
-  { id: "manajemen_kelas_edit", label: "Manajemen Kelas (Aksi)", desc: "Akses untuk mengatur pengajar, jadwal, dan mengedit plotting" },
-  { id: "manajemen_sesi", label: "Jadwal Buka/Tutup Sesi", desc: "Akses untuk mengatur jadwal mengajar (sesi)" },
-  { id: "manajemen_dufah", label: "Manajemen Angkatan & Usbu'", desc: "Akses untuk tambah/edit angkatan dan usbu'" },
-  { id: "manajemen_user", label: "Manajemen User & Role", desc: "Akses khusus Super Admin" },
-  { id: "manajemen_konten", label: "Manajemen Konten (Landing Page)", desc: "Akses untuk mengatur konten Instagram dan Agenda Rutinan" },
-  { id: "data_syahadah", label: "Data Syahadah", desc: "Akses untuk melihat daftar syahadah dan profil santri" },
-  { id: "input_nilai", label: "Input Nilai Santri", desc: "Akses untuk menginput nilai dan status kelulusan santri" },
-  { id: "cetak_nilai_pekanan", label: "Cetak Nilai Pekanan", desc: "Akses untuk melihat dan mencetak nilai pekanan santri" },
-  { id: "layout_syahadah", label: "Layout Syahadah", desc: "Akses untuk mendesain layout cetak syahadah" },
-  { id: "riwayat_santri", label: "Riwayat Santri", desc: "Akses untuk melihat riwayat historis santri (Duf'ah sebelumnya)" },
-  { id: "pengaturan_syahadah", label: "Pengaturan Syahadah", desc: "Akses ke pengaturan syahadah (Kop, TTD, Bobot Mapel, dll)" }
+  // Utama
+  { id: "dashboard", label: "Dashboard (Lihat)", desc: "Akses melihat halaman dashboard utama", category: "Utama", type: "lihat" },
+  { id: "dashboard_edit", label: "Dashboard (Aksi)", desc: "Akses melakukan aksi/edit di dashboard", category: "Utama", type: "aksi" },
+  { id: "jadwal_saya", label: "Jadwal Saya (Lihat)", desc: "Akses melihat jadwal mengajar sendiri", category: "Utama", type: "lihat" },
+  { id: "jadwal_saya_edit", label: "Jadwal Saya (Aksi)", desc: "Akses mengubah jadwal mengajar sendiri", category: "Utama", type: "aksi" },
+
+  // Divisi Angkatan (Duf'ah)
+  { id: "manajemen_dufah", label: "Manajemen Angkatan & Usbu' (Lihat)", desc: "Akses melihat angkatan dan status usbu'", category: "Divisi Angkatan (Duf'ah)", type: "lihat" },
+  { id: "manajemen_dufah_edit", label: "Manajemen Angkatan & Usbu' (Aksi)", desc: "Akses menambah, mengubah, dan menghapus angkatan/usbu'", category: "Divisi Angkatan (Duf'ah)", type: "aksi" },
+
+  // Divisi Data Santri
+  { id: "data_santri_dufah", label: "Data Santri Duf'ah (Lihat)", desc: "Akses melihat data santri duf'ah", category: "Divisi Data Santri", type: "lihat" },
+  { id: "data_santri_dufah_edit", label: "Data Santri Duf'ah (Aksi)", desc: "Akses mengedit data santri duf'ah", category: "Divisi Data Santri", type: "aksi" },
+
+  // Divisi Absensi
+  { id: "absen_sakan", label: "Absen Sakan (Lihat)", desc: "Akses melihat absensi sakan", category: "Divisi Absensi", type: "lihat" },
+  { id: "absen_sakan_edit", label: "Absen Sakan (Aksi)", desc: "Akses melakukan absensi sakan", category: "Divisi Absensi", type: "aksi" },
+  { id: "absen_kelas", label: "Absen Kelas (Lihat)", desc: "Akses melihat absensi kelas", category: "Divisi Absensi", type: "lihat" },
+  { id: "absen_kelas_edit", label: "Absen Kelas (Aksi)", desc: "Akses melakukan absensi kelas", category: "Divisi Absensi", type: "aksi" },
+  { id: "manajemen_sesi", label: "Jadwal Buka/Tutup Sesi (Lihat)", desc: "Akses melihat jadwal sesi", category: "Divisi Absensi", type: "lihat" },
+  { id: "manajemen_sesi_edit", label: "Jadwal Buka/Tutup Sesi (Aksi)", desc: "Akses mengatur jadwal sesi", category: "Divisi Absensi", type: "aksi" },
+  { id: "absen_kegiatan", label: "Absen Kegiatan (Lihat)", desc: "Akses melihat absensi kegiatan", category: "Divisi Absensi", type: "lihat" },
+  { id: "absen_kegiatan_edit", label: "Absen Kegiatan (Aksi)", desc: "Akses melakukan absensi kegiatan", category: "Divisi Absensi", type: "aksi" },
+  { id: "rekap_sakan", label: "Rekap Sakan (Lihat)", desc: "Akses melihat rekap absensi sakan", category: "Divisi Absensi", type: "lihat" },
+  { id: "rekap_sakan_edit", label: "Rekap Sakan (Aksi)", desc: "Akses mendownload/mencetak rekap sakan", category: "Divisi Absensi", type: "aksi" },
+  { id: "rekap_kegiatan", label: "Rekap Kegiatan (Lihat)", desc: "Akses melihat rekap absensi kegiatan", category: "Divisi Absensi", type: "lihat" },
+  { id: "rekap_kegiatan_edit", label: "Rekap Kegiatan (Aksi)", desc: "Akses mendownload/mencetak rekap kegiatan", category: "Divisi Absensi", type: "aksi" },
+  { id: "rekap_kelas", label: "Rekap Kelas (Lihat)", desc: "Akses melihat rekap absensi kelas", category: "Divisi Absensi", type: "lihat" },
+  { id: "rekap_kelas_edit", label: "Rekap Kelas (Aksi)", desc: "Akses mendownload/mencetak rekap kelas", category: "Divisi Absensi", type: "aksi" },
+  { id: "rekap_pengajar", label: "Rekap Pengajar (Lihat)", desc: "Akses melihat rekap absensi pengajar", category: "Divisi Absensi", type: "lihat" },
+  { id: "rekap_pengajar_edit", label: "Rekap Pengajar (Aksi)", desc: "Akses mendownload/mencetak rekap pengajar", category: "Divisi Absensi", type: "aksi" },
+  { id: "pengaturan_kegiatan", label: "Pengaturan Kegiatan (Lihat)", desc: "Akses melihat jenis kegiatan absensi", category: "Divisi Absensi", type: "lihat" },
+  { id: "pengaturan_kegiatan_edit", label: "Pengaturan Kegiatan (Aksi)", desc: "Akses menambah/mengedit jenis kegiatan absensi", category: "Divisi Absensi", type: "aksi" },
+
+  // Divisi Kelas
+  { id: "alokasi_kelas", label: "Alokasi Kelas (Lihat)", desc: "Akses melihat alokasi kelas santri", category: "Divisi Kelas", type: "lihat" },
+  { id: "alokasi_kelas_edit", label: "Alokasi Kelas (Aksi)", desc: "Akses memplotting kelas santri", category: "Divisi Kelas", type: "aksi" },
+  { id: "ruang_kelas", label: "Manajemen Ruang Kelas (Lihat)", desc: "Akses melihat daftar ruang kelas", category: "Divisi Kelas", type: "lihat" },
+  { id: "ruang_kelas_edit", label: "Manajemen Ruang Kelas (Aksi)", desc: "Akses menambah/mengedit ruang kelas", category: "Divisi Kelas", type: "aksi" },
+  { id: "jadwal_mengajar", label: "Jadwal Mengajar (Lihat)", desc: "Akses melihat jadwal mengajar", category: "Divisi Kelas", type: "lihat" },
+  { id: "jadwal_mengajar_edit", label: "Jadwal Mengajar (Aksi)", desc: "Akses mengatur jadwal mengajar pengajar", category: "Divisi Kelas", type: "aksi" },
+
+  // Divisi Syahadah
+  { id: "data_syahadah", label: "Data Syahadah (Lihat)", desc: "Akses melihat data syahadah & profil santri", category: "Divisi Syahadah", type: "lihat" },
+  { id: "data_syahadah_edit", label: "Data Syahadah (Aksi)", desc: "Akses mengedit data syahadah & profil santri", category: "Divisi Syahadah", type: "aksi" },
+  { id: "martabah_ula", label: "Martabah Ula (Lihat)", desc: "Akses melihat data santri Martabah Ula", category: "Divisi Syahadah", type: "lihat" },
+  { id: "martabah_ula_edit", label: "Martabah Ula (Aksi)", desc: "Akses memproses data Martabah Ula", category: "Divisi Syahadah", type: "aksi" },
+  { id: "haflah_wada", label: "Haflah Wada' (Lihat)", desc: "Akses melihat data Haflah Wada'", category: "Divisi Syahadah", type: "lihat" },
+  { id: "haflah_wada_edit", label: "Haflah Wada' (Aksi)", desc: "Akses memproses data Haflah Wada'", category: "Divisi Syahadah", type: "aksi" },
+  { id: "input_nilai", label: "Input Nilai (Lihat)", desc: "Akses melihat nilai santri", category: "Divisi Syahadah", type: "lihat" },
+  { id: "input_nilai_edit", label: "Input Nilai (Aksi)", desc: "Akses menginput & mengubah nilai santri", category: "Divisi Syahadah", type: "aksi" },
+  { id: "monitor_nilai_kosong", label: "Nilai Kosong (Lihat)", desc: "Akses melihat santri dengan nilai kosong", category: "Divisi Syahadah", type: "lihat" },
+  { id: "monitor_nilai_kosong_edit", label: "Nilai Kosong (Aksi)", desc: "Akses menindaklanjuti nilai kosong", category: "Divisi Syahadah", type: "aksi" },
+  { id: "cetak_nilai_pekanan", label: "Cetak Nilai Pekanan (Lihat)", desc: "Akses melihat cetakan nilai pekanan", category: "Divisi Syahadah", type: "lihat" },
+  { id: "cetak_nilai_pekanan_edit", label: "Cetak Nilai Pekanan (Aksi)", desc: "Akses mencetak nilai pekanan", category: "Divisi Syahadah", type: "aksi" },
+  { id: "layout_syahadah", label: "Layout Syahadah (Lihat)", desc: "Akses melihat layout syahadah", category: "Divisi Syahadah", type: "lihat" },
+  { id: "layout_syahadah_edit", label: "Layout Syahadah (Aksi)", desc: "Akses mendesain layout syahadah", category: "Divisi Syahadah", type: "aksi" },
+  { id: "riwayat_santri", label: "Riwayat Santri (Lihat)", desc: "Akses melihat riwayat historis santri", category: "Divisi Syahadah", type: "lihat" },
+  { id: "riwayat_santri_edit", label: "Riwayat Santri (Aksi)", desc: "Akses mengedit riwayat santri", category: "Divisi Syahadah", type: "aksi" },
+  { id: "pengaturan_syahadah", label: "Pengaturan Syahadah (Lihat)", desc: "Akses melihat pengaturan syahadah", category: "Divisi Syahadah", type: "lihat" },
+  { id: "pengaturan_syahadah_edit", label: "Pengaturan Syahadah (Aksi)", desc: "Akses mengubah pengaturan syahadah (Kop, TTD, Bobot Mapel)", category: "Divisi Syahadah", type: "aksi" },
+
+  // Manajemen Aplikasi
+  { id: "manajemen_user", label: "Manajemen User (Lihat)", desc: "Akses melihat daftar user", category: "Manajemen Aplikasi", type: "lihat" },
+  { id: "manajemen_user_edit", label: "Manajemen User (Aksi)", desc: "Akses menambah, mengubah, dan menghapus user", category: "Manajemen Aplikasi", type: "aksi" },
+  { id: "manajemen_role", label: "Hak Akses (Role) (Lihat)", desc: "Akses melihat daftar role & permission", category: "Manajemen Aplikasi", type: "lihat" },
+  { id: "manajemen_role_edit", label: "Hak Akses (Role) (Aksi)", desc: "Akses mengubah hak akses role", category: "Manajemen Aplikasi", type: "aksi" },
+  { id: "agenda_rutinan", label: "Agenda Rutinan (Lihat)", desc: "Akses melihat agenda rutinan", category: "Manajemen Aplikasi", type: "lihat" },
+  { id: "agenda_rutinan_edit", label: "Agenda Rutinan (Aksi)", desc: "Akses mengelola agenda rutinan", category: "Manajemen Aplikasi", type: "aksi" },
+  { id: "konten_instagram", label: "Konten Instagram (Lihat)", desc: "Akses melihat feed instagram", category: "Manajemen Aplikasi", type: "lihat" },
+  { id: "konten_instagram_edit", label: "Konten Instagram (Aksi)", desc: "Akses mengelola feed instagram", category: "Manajemen Aplikasi", type: "aksi" }
 ];
 
 export default function ManajemenRolePage() {
@@ -244,34 +294,49 @@ export default function ManajemenRolePage() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {AVAILABLE_PERMISSIONS.map(perm => (
-                  <label 
-                    key={perm.id} 
-                    className={`flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer ${
-                      permissionsMap[activeRole]?.has(perm.id) 
-                        ? "bg-[var(--color-primary-50)] border-[var(--color-primary-100)] shadow-sm" 
-                        : "bg-white border-[var(--color-surface-dark)] hover:border-slate-300"
-                    } ${activeRole === "ADMIN" ? "opacity-70 pointer-events-none cursor-not-allowed" : ""}`}
-                  >
-                    <div className="pt-0.5">
-                      <input
-                        type="checkbox"
-                        checked={permissionsMap[activeRole]?.has(perm.id) || false}
-                        onChange={() => handleToggle(perm.id)}
-                        disabled={activeRole === "ADMIN"}
-                        className="w-5 h-5 rounded border-slate-300 text-[var(--color-primary)] focus:ring-emerald-500"
-                      />
+              <div className="space-y-8">
+                {Object.entries(
+                  AVAILABLE_PERMISSIONS.reduce((acc, perm) => {
+                    if (!acc[perm.category]) acc[perm.category] = [];
+                    acc[perm.category].push(perm);
+                    return acc;
+                  }, {} as Record<string, typeof AVAILABLE_PERMISSIONS>)
+                ).map(([category, perms]) => (
+                  <div key={category} className="space-y-4">
+                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--color-primary)] border-b border-slate-100 pb-2">
+                      {category}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {perms.map(perm => (
+                        <label 
+                          key={perm.id} 
+                          className={`flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer ${
+                            permissionsMap[activeRole]?.has(perm.id) 
+                              ? "bg-[var(--color-primary-50)] border-[var(--color-primary-100)] shadow-sm" 
+                              : "bg-white border-[var(--color-surface-dark)] hover:border-slate-300"
+                          } ${activeRole === "ADMIN" ? "opacity-70 pointer-events-none cursor-not-allowed" : ""}`}
+                        >
+                          <div className="pt-0.5">
+                            <input
+                              type="checkbox"
+                              checked={permissionsMap[activeRole]?.has(perm.id) || false}
+                              onChange={() => handleToggle(perm.id)}
+                              disabled={activeRole === "ADMIN"}
+                              className="w-5 h-5 rounded border-slate-300 text-[var(--color-primary)] focus:ring-emerald-500"
+                            />
+                          </div>
+                          <div>
+                            <p className={`text-sm font-bold ${permissionsMap[activeRole]?.has(perm.id) ? "text-[var(--color-primary-dark)]" : "text-[var(--color-text)]"}`}>
+                              {perm.label}
+                            </p>
+                            <p className="text-xs text-[var(--color-text-muted)] mt-1 leading-relaxed">
+                              {perm.desc}
+                            </p>
+                          </div>
+                        </label>
+                      ))}
                     </div>
-                    <div>
-                      <p className={`text-sm font-bold ${permissionsMap[activeRole]?.has(perm.id) ? "text-[var(--color-primary-dark)]" : "text-[var(--color-text)]"}`}>
-                        {perm.label}
-                      </p>
-                      <p className="text-xs text-[var(--color-text-muted)] mt-1 leading-relaxed">
-                        {perm.desc}
-                      </p>
-                    </div>
-                  </label>
+                  </div>
                 ))}
               </div>
             </div>

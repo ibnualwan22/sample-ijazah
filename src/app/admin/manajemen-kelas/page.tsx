@@ -5,7 +5,7 @@ import { ManajemenKelasClient } from "@/components/admin/manajemen-kelas-client"
 export const dynamic = "force-dynamic";
 
 export default async function ManajemenKelasPage() {
-  await requirePermission("manajemen_kelas");
+  await requirePermission("alokasi_kelas");
   const allRows = await getDashboardSantriRows();
   const programList = await getProgramCatalog();
 

@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
+import { checkPermission } from "@/lib/permission";
 
 export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
+  const session = await getSession();
+  const hasPermission = await checkPermission("konten_instagram_edit");
+  if (!session || !hasPermission) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { id } = await context.params;
     const body = await req.json();
@@ -27,6 +35,12 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
 }
 
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+  const session = await getSession();
+  const hasPermission = await checkPermission("konten_instagram_edit");
+  if (!session || !hasPermission) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { id } = await context.params;
     await prisma.instagramPost.delete({

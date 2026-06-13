@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
+import { checkPermission } from "@/lib/permission";
 
 export async function GET() {
+  const session = await getSession();
+  const hasPermission = await checkPermission("agenda_rutinan");
+  if (!session || !hasPermission) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const agendas = await prisma.agenda.findMany({
       orderBy: { waktuMulai: "desc" },
@@ -13,6 +21,12 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const session = await getSession();
+  const hasPermission = await checkPermission("agenda_rutinan_edit");
+  if (!session || !hasPermission) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const {

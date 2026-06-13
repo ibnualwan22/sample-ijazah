@@ -3,8 +3,16 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getMasterSantriById } from "@/lib/santri-api";
 import { getActiveDufahName } from "@/lib/absensi";
+import { getSession } from "@/lib/auth";
+import { checkPermission } from "@/lib/permission";
 
 export async function POST(request: Request) {
+  const session = await getSession();
+  const hasPermission = await checkPermission("alokasi_kelas_edit");
+  if (!session || !hasPermission) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const payload = (await request.json()) as {
       santriIds?: string[];

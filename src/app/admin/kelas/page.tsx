@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NamaKelasPage() {
-  await requirePermission("manajemen_kelas");
+  await requirePermission("ruang_kelas");
   const programList = await getProgramCatalog();
 
   return (
