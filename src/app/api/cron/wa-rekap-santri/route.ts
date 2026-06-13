@@ -29,23 +29,45 @@ export async function GET(request: NextRequest) {
       const todayStr = formatter.format(today);
       const todayDate = new Date(`${todayStr}T00:00:00Z`);
 
+      // Kumpulkan semua Usbu yang berstatus aktif
+      const allActiveUsbus: { start: Date; end: Date; label: string }[] = [];
+
       for (const d of dufahs) {
         if (d.usbu1Active && d.usbu1StartDate && d.usbu1EndDate) {
-          activeUsbu = { start: d.usbu1StartDate, end: d.usbu1EndDate, label: "Usbu' 1" };
-        } else if (d.usbu2Active && d.usbu2StartDate && d.usbu2EndDate) {
-          activeUsbu = { start: d.usbu2StartDate, end: d.usbu2EndDate, label: "Usbu' 2" };
-        } else if (d.usbu3Active && d.usbu3StartDate && d.usbu3EndDate) {
-          activeUsbu = { start: d.usbu3StartDate, end: d.usbu3EndDate, label: "Nihai" };
+          allActiveUsbus.push({ start: d.usbu1StartDate, end: d.usbu1EndDate, label: "Usbu' 1" });
         }
-        if (activeUsbu) break;
+        if (d.usbu2Active && d.usbu2StartDate && d.usbu2EndDate) {
+          allActiveUsbus.push({ start: d.usbu2StartDate, end: d.usbu2EndDate, label: "Usbu' 2" });
+        }
+        if (d.usbu3Active && d.usbu3StartDate && d.usbu3EndDate) {
+          allActiveUsbus.push({ start: d.usbu3StartDate, end: d.usbu3EndDate, label: "Nihai" });
+        }
       }
 
-      if (!activeUsbu) {
+      if (allActiveUsbus.length === 0) {
         return NextResponse.json({ success: false, message: "Tidak ada Usbu' yang aktif saat ini." });
       }
 
+      // Jika ada lebih dari satu yang diaktifkan di web, kecerdasan buatan mencari mana yang paling tepat:
+      // Prioritas 1: Usbu yang HARI INI adalah hari terakhirnya (Sangat penting untuk pengiriman Cron)
+      // Prioritas 2: Usbu yang sedang berjalan hari ini (hari ini berada di antara start dan end)
+      // Prioritas 3: Jika tidak ada yang cocok dengan hari ini, ambil yang paling terakhir
+      activeUsbu = allActiveUsbus.find(u => u.end.toISOString().split("T")[0] === todayStr) || null;
+      if (!activeUsbu) {
+        activeUsbu = allActiveUsbus.find(u => todayDate >= u.start && todayDate <= u.end) || allActiveUsbus[allActiveUsbus.length - 1];
+      }
+      const endDateStr = activeUsbu.end.toISOString().split("T")[0];
+      
+      // Validasi: Jika dipicu otomatis, PASTIKAN hari ini adalah tanggal berakhirnya Usbu'
+      if (todayStr !== endDateStr) {
+        return NextResponse.json({ 
+          success: false, 
+          message: `Hari ini (${todayStr}) bukan hari terakhir dari ${activeUsbu.label} (${endDateStr}). Laporan otomatis diabaikan.` 
+        });
+      }
+
       dari = activeUsbu.start.toISOString().split("T")[0];
-      sampai = activeUsbu.end.toISOString().split("T")[0];
+      sampai = endDateStr;
       usbuLabel = activeUsbu.label;
     }
 
